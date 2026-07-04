@@ -7,13 +7,28 @@ import type { User } from '@supabase/supabase-js'
 
 export default function Nav() {
   const [user, setUser] = useState<User | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user))
+    const loadUser = async (currentUser: User | null) => {
+      setUser(currentUser)
+      if (currentUser) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', currentUser.id)
+          .single()
+        setIsAdmin(!!data?.is_admin)
+      } else {
+        setIsAdmin(false)
+      }
+    }
+
+    supabase.auth.getUser().then(({ data }) => loadUser(data.user))
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+      loadUser(session?.user ?? null)
     })
 
     return () => listener.subscription.unsubscribe()
@@ -40,7 +55,8 @@ export default function Nav() {
 
       {user ? (
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-         <Link href="/favorites">Mes favoris</Link>
+          {isAdmin && <Link href="/admin">Admin</Link>}
+          <Link href="/favorites">Mes favoris</Link>
           <span style={{ fontSize: '0.9rem' }}>{user.email}</span>
           <button onClick={handleLogout} style={{ cursor: 'pointer' }}>
             Se déconnecter
