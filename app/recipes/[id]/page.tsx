@@ -27,6 +27,10 @@ export default async function RecipeDetail({
 
       <FavoriteButton recipeId={id} />
 
+      {recipe.image_url && (
+  <img src={recipe.image_url} alt={recipe.title} style={{ width: '100%', borderRadius: '8px', marginBottom: '1rem' }} />
+)}
+
       <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{recipe.title}</h1>
       <p style={{ color: '#666', marginBottom: '1rem' }}>{recipe.description}</p>
       <p style={{ marginBottom: '1.5rem' }}>

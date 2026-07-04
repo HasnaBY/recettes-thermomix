@@ -1,7 +1,8 @@
 'use client'
-
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import RecipesAdminList from '@/components/RecipesAdminList'
 
 type Profile = {
   id: string
@@ -67,6 +68,11 @@ export default function AdminPage() {
   return (
     <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
       <h1 style={{ fontSize: '2rem', marginBottom: '1.5rem' }}>Administration</h1>
+
+      <Link href="/admin/new-recipe" style={{ display: 'inline-block', marginBottom: '1.5rem' }}>
+  + Ajouter une recette
+</Link>
+
 
       <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>
         Demandes en attente ({pending.length})
@@ -143,6 +149,11 @@ export default function AdminPage() {
           </div>
         ))}
       </div>
+
+
+      <h2 style={{ fontSize: '1.25rem', margin: '2rem 0 1rem' }}>Recettes</h2>
+<RecipesAdminList />
+
     </div>
   )
 }
