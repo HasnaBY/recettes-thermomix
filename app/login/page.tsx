@@ -27,6 +27,22 @@ export default function Login() {
       router.refresh()
     }
   }
+const handleResetPassword = async () => {
+  if (!email) {
+    setError('Entre ton email d\'abord, puis clique sur "Mot de passe oublié"')
+    return
+  }
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  })
+  if (error) {
+    setError(error.message)
+  } else {
+    setError('') 
+    alert('Un email de réinitialisation a été envoyé.')
+  }
+}
+
 
   return (
     <div style={{ padding: '2rem', maxWidth: '400px', margin: '0 auto' }}>
@@ -66,6 +82,16 @@ export default function Login() {
       >
         {isSignUp ? 'Déjà un compte ? Se connecter' : "Pas de compte ? S'inscrire"}
       </button>
+
+    {!isSignUp && (
+  <button
+    onClick={handleResetPassword}
+    style={{ marginTop: '0.5rem', background: 'none', border: 'none', color: '#666', textDecoration: 'underline', display: 'block' }}
+  >
+    Mot de passe oublié ?
+  </button>
+)}
+  
     </div>
   )
 }

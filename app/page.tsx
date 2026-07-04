@@ -17,10 +17,27 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('toutes')
+  const [pendingApproval, setPendingApproval] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
     const load = async () => {
+      const { data: userData } = await supabase.auth.getUser()
+
+      if (userData.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('approved')
+          .eq('id', userData.user.id)
+          .single()
+
+        if (!profile?.approved) {
+          setPendingApproval(true)
+          setLoading(false)
+          return
+        }
+      }
+
       const { data, error } = await supabase.from('recipes').select('*')
       if (!error && data) setRecipes(data)
       setLoading(false)
@@ -37,6 +54,14 @@ export default function Home() {
   })
 
   if (loading) return <div style={{ padding: '2rem' }}>Chargement...</div>
+
+  if (pendingApproval) {
+    return (
+      <div style={{ padding: '2rem' }}>
+        <p>Ton compte est en attente de validation. Tu recevras un accès une fois ton compte approuvé.</p>
+      </div>
+    )
+  }
 
   return (
     <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
