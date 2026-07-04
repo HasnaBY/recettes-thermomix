@@ -27,37 +27,37 @@ export default function Login() {
       router.refresh()
     }
   }
-const handleResetPassword = async () => {
-  if (!email) {
-    setError('Entre ton email d\'abord, puis clique sur "Mot de passe oublié"')
-    return
-  }
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/reset-password`,
-  })
-  if (error) {
-    setError(error.message)
-  } else {
-    setError('') 
-    alert('Un email de réinitialisation a été envoyé.')
-  }
-}
 
+  const handleResetPassword = async () => {
+    if (!email) {
+      setError('Entre ton email d\'abord, puis clique sur "Mot de passe oublié"')
+      return
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    if (error) {
+      setError(error.message)
+    } else {
+      setError('')
+      alert('Un email de réinitialisation a été envoyé.')
+    }
+  }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '400px', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>
+    <div className="p-6 sm:p-8 max-w-sm mx-auto">
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">
         {isSignUp ? 'Créer un compte' : 'Connexion'}
       </h1>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
         <input
           type="password"
@@ -65,12 +65,12 @@ const handleResetPassword = async () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
-        {error && <p style={{ color: 'red', fontSize: '0.9rem' }}>{error}</p>}
+        {error && <p className="text-red-600 text-sm">{error}</p>}
         <button
           type="submit"
-          style={{ padding: '0.75rem', backgroundColor: '#000', color: '#fff', borderRadius: '4px', border: 'none' }}
+          className="py-2.5 bg-gray-900 text-white rounded-lg font-medium hover:bg-black transition-colors"
         >
           {isSignUp ? "S'inscrire" : 'Se connecter'}
         </button>
@@ -78,20 +78,19 @@ const handleResetPassword = async () => {
 
       <button
         onClick={() => setIsSignUp(!isSignUp)}
-        style={{ marginTop: '1rem', background: 'none', border: 'none', color: '#666', textDecoration: 'underline' }}
+        className="mt-4 text-sm text-gray-500 underline block"
       >
         {isSignUp ? 'Déjà un compte ? Se connecter' : "Pas de compte ? S'inscrire"}
       </button>
 
-    {!isSignUp && (
-  <button
-    onClick={handleResetPassword}
-    style={{ marginTop: '0.5rem', background: 'none', border: 'none', color: '#666', textDecoration: 'underline', display: 'block' }}
-  >
-    Mot de passe oublié ?
-  </button>
-)}
-  
+      {!isSignUp && (
+        <button
+          onClick={handleResetPassword}
+          className="mt-2 text-sm text-gray-500 underline block"
+        >
+          Mot de passe oublié ?
+        </button>
+      )}
     </div>
   )
 }

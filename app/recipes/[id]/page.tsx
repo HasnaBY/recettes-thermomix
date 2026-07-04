@@ -16,34 +16,38 @@ export default async function RecipeDetail({
     .single()
 
   if (error || !recipe) {
-    return <div style={{ padding: '2rem' }}>Recette introuvable</div>
+    return <div className="p-8 text-center text-gray-500">Recette introuvable</div>
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
-      <Link href="/" style={{ display: 'inline-block', marginBottom: '1rem' }}>
+    <div className="p-6 sm:p-8 max-w-2xl mx-auto">
+      <Link href="/" className="inline-block mb-4 text-sm text-gray-600 hover:text-black">
         ← Retour aux recettes
       </Link>
 
       <FavoriteButton recipeId={id} />
 
       {recipe.image_url && (
-  <img src={recipe.image_url} alt={recipe.title} style={{ width: '100%', borderRadius: '8px', marginBottom: '1rem' }} />
-)}
+        <img
+          src={recipe.image_url}
+          alt={recipe.title}
+          className="w-full h-64 object-cover rounded-xl my-4"
+        />
+      )}
 
-      <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{recipe.title}</h1>
-      <p style={{ color: '#666', marginBottom: '1rem' }}>{recipe.description}</p>
-      <p style={{ marginBottom: '1.5rem' }}>
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">{recipe.title}</h1>
+      <p className="text-gray-600 mb-3">{recipe.description}</p>
+      <p className="text-sm text-gray-500 mb-6">
         {recipe.category} · {recipe.time_minutes} min
       </p>
 
-      <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Ingrédients</h2>
-      <pre style={{ marginBottom: '1.5rem' }}>
+      <h2 className="text-lg font-semibold text-gray-900 mb-2">Ingrédients</h2>
+      <pre className="text-sm bg-gray-50 rounded-lg p-4 mb-6 whitespace-pre-wrap">
         {JSON.stringify(recipe.ingredients, null, 2)}
       </pre>
 
-      <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Étapes</h2>
-      <p>{recipe.steps}</p>
+      <h2 className="text-lg font-semibold text-gray-900 mb-2">Étapes</h2>
+      <p className="text-gray-700 whitespace-pre-wrap">{recipe.steps}</p>
     </div>
   )
 }

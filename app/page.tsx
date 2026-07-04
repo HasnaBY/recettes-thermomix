@@ -10,6 +10,7 @@ type Recipe = {
   description: string
   category: string
   time_minutes: number
+  image_url: string | null
 }
 
 export default function Home() {
@@ -53,39 +54,35 @@ export default function Home() {
     return matchesSearch && matchesCategory
   })
 
-  if (loading) return <div style={{ padding: '2rem' }}>Chargement...</div>
+  if (loading) {
+    return <div className="p-8 text-center text-gray-500">Chargement...</div>
+  }
 
   if (pendingApproval) {
     return (
-      <div style={{ padding: '2rem' }}>
-        <p>Ton compte est en attente de validation. Tu recevras un accès une fois ton compte approuvé.</p>
+      <div className="p-8 max-w-md mx-auto text-center text-gray-600">
+        Ton compte est en attente de validation. Tu recevras un accès une fois ton compte approuvé.
       </div>
     )
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '2rem', marginBottom: '1.5rem' }}>Mes recettes</h1>
+    <div className="p-6 sm:p-8 max-w-5xl mx-auto">
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">Mes recettes</h1>
 
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+      <div className="flex flex-col sm:flex-row gap-3 mb-8">
         <input
           type="text"
           placeholder="Rechercher une recette..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          style={{
-            flex: 1,
-            minWidth: '200px',
-            padding: '0.5rem',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-          }}
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
 
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         >
           {categories.map((cat) => (
             <option key={cat} value={cat}>
@@ -96,19 +93,30 @@ export default function Home() {
       </div>
 
       {filtered.length === 0 ? (
-        <p>Aucune recette ne correspond à ta recherche.</p>
+        <p className="text-gray-500">Aucune recette ne correspond à ta recherche.</p>
       ) : (
-        <div style={{ display: 'grid', gap: '1rem' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((recipe) => (
             <Link
               key={recipe.id}
               href={`/recipes/${recipe.id}`}
-              style={{ textDecoration: 'none', color: 'inherit' }}
+              className="block rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow no-underline text-inherit"
             >
-              <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '1rem' }}>
-                <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{recipe.title}</h2>
-                <p style={{ color: '#666', marginBottom: '0.5rem' }}>{recipe.description}</p>
-                <p style={{ fontSize: '0.9rem' }}>
+              {recipe.image_url ? (
+                <img
+                  src={recipe.image_url}
+                  alt={recipe.title}
+                  className="w-full h-40 object-cover"
+                />
+              ) : (
+                <div className="w-full h-40 bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
+                  Pas de photo
+                </div>
+              )}
+              <div className="p-4">
+                <h2 className="text-lg font-semibold text-gray-900 mb-1">{recipe.title}</h2>
+                <p className="text-gray-600 text-sm mb-2 line-clamp-2">{recipe.description}</p>
+                <p className="text-xs text-gray-500">
                   {recipe.category} · {recipe.time_minutes} min
                 </p>
               </div>

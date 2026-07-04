@@ -40,30 +40,33 @@ export default function Nav() {
   }
 
   return (
-    <nav
-      style={{
-        padding: '1rem 2rem',
-        borderBottom: '1px solid #ddd',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}
-    >
-      <Link href="/" style={{ fontWeight: 'bold', textDecoration: 'none', color: 'inherit' }}>
+    <nav className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-white">
+      <Link href="/" className="font-bold text-lg text-gray-900 no-underline">
         Recettes Thermomix
       </Link>
 
       {user ? (
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          {isAdmin && <Link href="/admin">Admin</Link>}
-          <Link href="/favorites">Mes favoris</Link>
-          <span style={{ fontSize: '0.9rem' }}>{user.email}</span>
-          <button onClick={handleLogout} style={{ cursor: 'pointer' }}>
+        <div className="flex gap-4 items-center text-sm">
+          {isAdmin && (
+            <Link href="/admin" className="text-gray-700 hover:text-black">
+              Admin
+            </Link>
+          )}
+          <Link href="/favorites" className="text-gray-700 hover:text-black">
+            Mes favoris
+          </Link>
+          <span className="text-gray-500 hidden sm:inline">{user.email}</span>
+          <button
+            onClick={handleLogout}
+            className="text-gray-700 hover:text-black cursor-pointer"
+          >
             Se déconnecter
           </button>
         </div>
       ) : (
-        <Link href="/login">Se connecter</Link>
+        <Link href="/login" className="text-gray-700 hover:text-black text-sm">
+          Se connecter
+        </Link>
       )}
     </nav>
   )
