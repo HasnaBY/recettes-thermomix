@@ -1,7 +1,6 @@
-import FavoriteButton from '@/components/FavoriteButton'
-
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import FavoriteButton from '@/components/FavoriteButton'
 
 export default async function RecipeDetail({
   params,
@@ -9,7 +8,7 @@ export default async function RecipeDetail({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: recipe, error } = await supabase
     .from('recipes')
     .select('*')
@@ -27,8 +26,6 @@ export default async function RecipeDetail({
       </Link>
 
       <FavoriteButton recipeId={id} />
-
-<h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{recipe.title}</h1>
 
       <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{recipe.title}</h1>
       <p style={{ color: '#666', marginBottom: '1rem' }}>{recipe.description}</p>
