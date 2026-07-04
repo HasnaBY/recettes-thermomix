@@ -99,4 +99,33 @@ export default function NewRecipe() {
           value={timeMinutes}
           onChange={(e) => setTimeMinutes(e.target.value)}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-        
+        />
+        <input
+          type="url"
+          placeholder="Lien Cookidoo (optionnel)"
+          value={cookidooUrl}
+          onChange={(e) => setCookidooUrl(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+        />
+        <div>
+          <label className="block mb-2 text-sm text-gray-600">Photo de la recette</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+          />
+        </div>
+
+        {error && <p className="text-red-600 text-sm">{error}</p>}
+
+        <button
+          type="submit"
+          disabled={uploading}
+          className="py-2.5 bg-gray-900 text-white rounded-lg font-medium hover:bg-black transition-colors disabled:opacity-50"
+        >
+          {uploading ? 'Enregistrement...' : 'Créer la recette'}
+        </button>
+      </form>
+    </div>
+  )
+}
