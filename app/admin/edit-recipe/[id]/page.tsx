@@ -11,7 +11,6 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState('')
   const [timeMinutes, setTimeMinutes] = useState('')
-  const [steps, setSteps] = useState('')
   const [cookidooUrl, setCookidooUrl] = useState('')
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
@@ -42,7 +41,6 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
       setDescription(data.description ?? '')
       setCategory(data.category ?? '')
       setTimeMinutes(data.time_minutes?.toString() ?? '')
-      setSteps(data.steps ?? '')
       setCookidooUrl(data.cookidoo_url ?? '')
       setImageUrl(data.image_url)
       setLoading(false)
@@ -92,7 +90,6 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
         description,
         category,
         time_minutes: parseInt(timeMinutes) || null,
-        steps,
         cookidoo_url: cookidooUrl || null,
         image_url: finalImageUrl,
       })
@@ -154,13 +151,6 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
           placeholder="Lien Cookidoo (optionnel)"
           value={cookidooUrl}
           onChange={(e) => setCookidooUrl(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-        />
-        <textarea
-          placeholder="Étapes de préparation"
-          value={steps}
-          onChange={(e) => setSteps(e.target.value)}
-          rows={5}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
         <div>
