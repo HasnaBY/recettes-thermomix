@@ -148,7 +148,7 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
         />
         <input
           type="url"
-          placeholder="Lien Cookidoo (optionnel)"
+          placeholder="Lien Cookidoo"
           value={cookidooUrl}
           onChange={(e) => setCookidooUrl(e.target.value)}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
