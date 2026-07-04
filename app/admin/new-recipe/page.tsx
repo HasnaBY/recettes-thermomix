@@ -11,6 +11,7 @@ export default function NewRecipe() {
   const [category, setCategory] = useState('')
   const [timeMinutes, setTimeMinutes] = useState('')
   const [steps, setSteps] = useState('')
+  const [cookidooUrl, setCookidooUrl] = useState('')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
@@ -58,6 +59,7 @@ export default function NewRecipe() {
       category,
       time_minutes: parseInt(timeMinutes) || null,
       steps,
+      cookidoo_url: cookidooUrl || null,
       image_url: imageUrl,
     })
 
@@ -65,52 +67,57 @@ export default function NewRecipe() {
       setError(insertError.message)
       setUploading(false)
     } else {
-      router.push('/')
+      router.push('/admin')
     }
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '500px', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Ajouter une recette</h1>
+    <div className="p-6 sm:p-8 max-w-lg mx-auto">
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Ajouter une recette</h1>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           placeholder="Titre"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
         <textarea
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
         <input
           placeholder="Catégorie (ex: plat, dessert...)"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
         <input
           type="number"
           placeholder="Temps (minutes)"
           value={timeMinutes}
           onChange={(e) => setTimeMinutes(e.target.value)}
-          style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+        />
+        <input
+          type="url"
+          placeholder="Lien Cookidoo (optionnel)"
+          value={cookidooUrl}
+          onChange={(e) => setCookidooUrl(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
         <textarea
           placeholder="Étapes de préparation"
           value={steps}
           onChange={(e) => setSteps(e.target.value)}
           rows={5}
-          style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
         <div>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-            Photo de la recette
-          </label>
+          <label className="block mb-2 text-sm text-gray-600">Photo de la recette</label>
           <input
             type="file"
             accept="image/*"
@@ -118,18 +125,12 @@ export default function NewRecipe() {
           />
         </div>
 
-        {error && <p style={{ color: 'red', fontSize: '0.9rem' }}>{error}</p>}
+        {error && <p className="text-red-600 text-sm">{error}</p>}
 
         <button
           type="submit"
           disabled={uploading}
-          style={{
-            padding: '0.75rem',
-            backgroundColor: '#000',
-            color: '#fff',
-            borderRadius: '4px',
-            border: 'none',
-          }}
+          className="py-2.5 bg-gray-900 text-white rounded-lg font-medium hover:bg-black transition-colors disabled:opacity-50"
         >
           {uploading ? 'Enregistrement...' : 'Créer la recette'}
         </button>

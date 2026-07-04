@@ -39,6 +39,17 @@ export default async function RecipeDetail({
       <p className="text-gray-600 mb-3">{recipe.description}</p>
       <p className="text-sm text-gray-500 mb-6">
         {recipe.category} · {recipe.time_minutes} min
+        {recipe.cookidoo_url && (
+  <a
+    href={recipe.cookidoo_url}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-block mb-6 px-4 py-2 bg-orange-50 text-orange-700 rounded-lg text-sm font-medium hover:bg-orange-100"
+  >
+    📱 Ouvrir sur Cookidoo
+  </a>
+)}
+
       </p>
 
       <h2 className="text-lg font-semibold text-gray-900 mb-2">Ingrédients</h2>

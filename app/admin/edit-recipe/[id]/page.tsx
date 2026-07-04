@@ -12,6 +12,7 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
   const [category, setCategory] = useState('')
   const [timeMinutes, setTimeMinutes] = useState('')
   const [steps, setSteps] = useState('')
+  const [cookidooUrl, setCookidooUrl] = useState('')
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(true)
@@ -42,6 +43,7 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
       setCategory(data.category ?? '')
       setTimeMinutes(data.time_minutes?.toString() ?? '')
       setSteps(data.steps ?? '')
+      setCookidooUrl(data.cookidoo_url ?? '')
       setImageUrl(data.image_url)
       setLoading(false)
     }
@@ -91,6 +93,7 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
         category,
         time_minutes: parseInt(timeMinutes) || null,
         steps,
+        cookidoo_url: cookidooUrl || null,
         image_url: finalImageUrl,
       })
       .eq('id', id)
@@ -109,54 +112,59 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
     router.push('/admin')
   }
 
-  if (loading) return <div style={{ padding: '2rem' }}>Chargement...</div>
+  if (loading) return <div className="p-8 text-center text-gray-500">Chargement...</div>
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '500px', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Modifier la recette</h1>
+    <div className="p-6 sm:p-8 max-w-lg mx-auto">
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Modifier la recette</h1>
 
       {imageUrl && (
-        <img src={imageUrl} alt={title} style={{ width: '100%', borderRadius: '8px', marginBottom: '1rem' }} />
+        <img src={imageUrl} alt={title} className="w-full h-48 object-cover rounded-lg mb-4" />
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           placeholder="Titre"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
         <textarea
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
         <input
           placeholder="Catégorie"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
         <input
           type="number"
           placeholder="Temps (minutes)"
           value={timeMinutes}
           onChange={(e) => setTimeMinutes(e.target.value)}
-          style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+        />
+        <input
+          type="url"
+          placeholder="Lien Cookidoo (optionnel)"
+          value={cookidooUrl}
+          onChange={(e) => setCookidooUrl(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
         <textarea
           placeholder="Étapes de préparation"
           value={steps}
           onChange={(e) => setSteps(e.target.value)}
           rows={5}
-          style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
         <div>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-            Remplacer la photo (optionnel)
-          </label>
+          <label className="block mb-2 text-sm text-gray-600">Remplacer la photo (optionnel)</label>
           <input
             type="file"
             accept="image/*"
@@ -164,12 +172,12 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
           />
         </div>
 
-        {error && <p style={{ color: 'red', fontSize: '0.9rem' }}>{error}</p>}
+        {error && <p className="text-red-600 text-sm">{error}</p>}
 
         <button
           type="submit"
           disabled={saving}
-          style={{ padding: '0.75rem', backgroundColor: '#000', color: '#fff', borderRadius: '4px', border: 'none' }}
+          className="py-2.5 bg-gray-900 text-white rounded-lg font-medium hover:bg-black transition-colors disabled:opacity-50"
         >
           {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
         </button>
@@ -177,7 +185,7 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
 
       <button
         onClick={handleDelete}
-        style={{ marginTop: '1rem', padding: '0.75rem', backgroundColor: '#fff', color: 'red', border: '1px solid red', borderRadius: '4px', width: '100%' }}
+        className="mt-4 w-full py-2.5 bg-white text-red-600 border border-red-600 rounded-lg font-medium hover:bg-red-50 transition-colors"
       >
         Supprimer cette recette
       </button>
