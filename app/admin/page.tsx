@@ -93,7 +93,7 @@ export default function AdminPage() {
 </Link>
 
 <Link href="/admin/club" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
-  Gérer le Club Fondatrices
+  Gérer le Cercle With Love
 </Link>
 
 <Link href="/admin/referrals" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
@@ -109,6 +109,10 @@ export default function AdminPage() {
 
 <Link href="/admin/social-proof" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
   Gérer "Elles m'ont fait confiance"
+</Link>
+
+<Link href="/admin/challenge" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
+  Gérer le challenge du mois
 </Link>
 
       <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>

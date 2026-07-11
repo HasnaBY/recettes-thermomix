@@ -57,7 +57,7 @@ export default function PourquoiCommander() {
           href="/club-fondatrices"
           className="inline-block px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-black transition-colors no-underline"
         >
-          Rejoindre le Club Fondatrices
+             Le Cercle With Love
         </Link>
       </div>
 

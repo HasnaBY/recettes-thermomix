@@ -9,6 +9,7 @@ export default function AdminClub() {
   const [intro, setIntro] = useState('')
   const [benefits, setBenefits] = useState<string[]>([])
   const [spotsRemaining, setSpotsRemaining] = useState(30)
+  const [showSpotsRemaining, setShowSpotsRemaining] = useState(true)
   const [signups, setSignups] = useState<Signup[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -26,6 +27,7 @@ export default function AdminClub() {
           setIntro(data.intro ?? '')
           setBenefits(data.benefits ?? [])
           setSpotsRemaining(data.spots_remaining ?? 30)
+          setShowSpotsRemaining(data.show_spots_remaining ?? true)
         }
         setLoading(false)
       })
@@ -54,7 +56,12 @@ export default function AdminClub() {
 
     const { error } = await supabase
       .from('club_content')
-      .update({ intro, benefits, spots_remaining: spotsRemaining })
+      .update({
+        intro,
+        benefits,
+        spots_remaining: spotsRemaining,
+        show_spots_remaining: showSpotsRemaining,
+      })
       .eq('id', 1)
 
     setSaving(false)
@@ -65,7 +72,7 @@ export default function AdminClub() {
 
   return (
     <div className="p-6 sm:p-8 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Gérer le Club Fondatrices</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Gérer  Le Cercle With Love </h1>
 
       <form onSubmit={handleSave} className="flex flex-col gap-6 mb-10">
         <div>
@@ -86,6 +93,19 @@ export default function AdminClub() {
             onChange={(e) => setSpotsRemaining(parseInt(e.target.value) || 0)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg"
           />
+        </div>
+
+        <div className="flex justify-between items-center border border-gray-200 rounded-xl p-4">
+          <span className="text-gray-900 font-medium">Afficher le nombre de places restantes</span>
+          <button
+            type="button"
+            onClick={() => setShowSpotsRemaining(!showSpotsRemaining)}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium ${
+              showSpotsRemaining ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-500'
+            }`}
+          >
+            {showSpotsRemaining ? 'Visible' : 'Masqué'}
+          </button>
         </div>
 
         <div>

@@ -70,9 +70,16 @@ export default function Nav() {
         <Link href="/pourquoi-commander" className="text-gray-700 hover:text-black">
           Pourquoi commander
         </Link>
+
+        {user && (
+  <Link href="/challenge" className="text-gray-700 hover:text-black">
+    Challenge du mois
+  </Link>
+)}
+
         {settings.show_club && (
           <Link href="/club-fondatrices" className="text-gray-700 hover:text-black">
-            Club Fondatrices
+             Le Cercle With Love
           </Link>
         )}
         <Link href="/recettes" className="text-gray-700 hover:text-black">

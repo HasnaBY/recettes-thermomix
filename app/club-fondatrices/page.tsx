@@ -8,6 +8,7 @@ type ClubContent = {
   intro: string
   benefits: string[]
   spots_remaining: number
+  show_spots_remaining: boolean
 }
 
 export default function ClubFondatrices() {
@@ -68,9 +69,9 @@ export default function ClubFondatrices() {
 
   return (
     <div className="px-6 sm:px-8 py-12 max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-4 text-center">🎁 Club Fondatrices</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-4 text-center"> 💛 Le Cercle With Love </h1>
       <p className="text-gray-600 text-center mb-2">{content.intro}</p>
-      {content.spots_remaining > 0 && (
+      {content.show_spots_remaining && content.spots_remaining > 0 && (
         <p className="text-center text-amber-600 font-medium mb-8">
           Plus que {content.spots_remaining} places disponibles !
         </p>
