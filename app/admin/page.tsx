@@ -191,6 +191,11 @@ export default function AdminPage() {
       <h2 style={{ fontSize: '1.25rem', margin: '2rem 0 1rem' }}>Recettes</h2>
 <RecipesAdminList />
 <AdminEditButton href="/admin/homepage" />`
+  
+  <Link href="/admin/site-settings" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
+  Visibilité des pages
+</Link>
+
     </div>
   )
 }

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import Link from 'next/link'
 import AdminEditButton from '@/components/AdminEditButton'
 
 type ClubContent = {
@@ -12,6 +11,8 @@ type ClubContent = {
 }
 
 export default function ClubFondatrices() {
+  const [visible, setVisible] = useState(true)
+  const [checkingVisibility, setCheckingVisibility] = useState(true)
   const [content, setContent] = useState<ClubContent | null>(null)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -21,6 +22,16 @@ export default function ClubFondatrices() {
   const supabase = createClient()
 
   useEffect(() => {
+    supabase
+      .from('site_settings')
+      .select('show_club')
+      .eq('id', 1)
+      .single()
+      .then(({ data }) => {
+        setVisible(data?.show_club ?? true)
+        setCheckingVisibility(false)
+      })
+
     supabase
       .from('club_content')
       .select('*')
@@ -40,6 +51,17 @@ export default function ClubFondatrices() {
     } else {
       setSent(true)
     }
+  }
+
+  if (checkingVisibility) return <div className="p-8 text-center text-gray-500">Chargement...</div>
+
+  if (!visible) {
+    return (
+      <div className="p-8 text-center text-gray-500 max-w-md mx-auto">
+        Cette page n'est pas disponible pour le moment.
+        <AdminEditButton href="/admin/site-settings" />
+      </div>
+    )
   }
 
   if (!content) return <div className="p-8 text-center text-gray-500">Chargement...</div>
@@ -102,11 +124,6 @@ export default function ClubFondatrices() {
         )}
       </div>
 
-      <div className="text-center mt-8">
-        <Link href="/contact" className="text-sm text-gray-600 underline">
-          Une question ? Prends contact avec moi
-        </Link>
-      </div>
       <AdminEditButton href="/admin/club" />
     </div>
   )

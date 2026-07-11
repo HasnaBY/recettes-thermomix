@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import AdminEditButton from '@/components/AdminEditButton'
 
-
 type ReferralContent = { explanation: string; rewards: string[] }
 
 export default function Parrainage() {
+  const [visible, setVisible] = useState(true)
+  const [checkingVisibility, setCheckingVisibility] = useState(true)
   const [content, setContent] = useState<ReferralContent | null>(null)
   const [referrerName, setReferrerName] = useState('')
   const [referrerEmail, setReferrerEmail] = useState('')
@@ -19,6 +20,16 @@ export default function Parrainage() {
   const supabase = createClient()
 
   useEffect(() => {
+    supabase
+      .from('site_settings')
+      .select('show_parrainage')
+      .eq('id', 1)
+      .single()
+      .then(({ data }) => {
+        setVisible(data?.show_parrainage ?? true)
+        setCheckingVisibility(false)
+      })
+
     supabase
       .from('referral_content')
       .select('*')
@@ -44,6 +55,17 @@ export default function Parrainage() {
     } else {
       setSent(true)
     }
+  }
+
+  if (checkingVisibility) return <div className="p-8 text-center text-gray-500">Chargement...</div>
+
+  if (!visible) {
+    return (
+      <div className="p-8 text-center text-gray-500 max-w-md mx-auto">
+        Cette page n'est pas disponible pour le moment.
+        <AdminEditButton href="/admin/site-settings" />
+      </div>
+    )
   }
 
   if (!content) return <div className="p-8 text-center text-gray-500">Chargement...</div>
@@ -118,7 +140,7 @@ export default function Parrainage() {
         )}
       </div>
 
-<AdminEditButton href="/admin/referrals" />
+      <AdminEditButton href="/admin/referrals" />
     </div>
   )
 }

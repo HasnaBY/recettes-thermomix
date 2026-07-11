@@ -16,11 +16,23 @@ type ContestContent = {
 type Photo = { id: string; image_url: string; caption: string | null }
 
 export default function GrandConcours() {
+  const [visible, setVisible] = useState(true)
+  const [checkingVisibility, setCheckingVisibility] = useState(true)
   const [content, setContent] = useState<ContestContent | null>(null)
   const [photos, setPhotos] = useState<Photo[]>([])
   const supabase = createClient()
 
   useEffect(() => {
+    supabase
+      .from('site_settings')
+      .select('show_concours')
+      .eq('id', 1)
+      .single()
+      .then(({ data }) => {
+        setVisible(data?.show_concours ?? true)
+        setCheckingVisibility(false)
+      })
+
     supabase
       .from('contest_content')
       .select('*')
@@ -34,6 +46,17 @@ export default function GrandConcours() {
       .order('position')
       .then(({ data }) => setPhotos(data ?? []))
   }, [])
+
+  if (checkingVisibility) return <div className="p-8 text-center text-gray-500">Chargement...</div>
+
+  if (!visible) {
+    return (
+      <div className="p-8 text-center text-gray-500 max-w-md mx-auto">
+        Cette page n'est pas disponible pour le moment.
+        <AdminEditButton href="/admin/site-settings" />
+      </div>
+    )
+  }
 
   if (!content) return <div className="p-8 text-center text-gray-500">Chargement...</div>
 
