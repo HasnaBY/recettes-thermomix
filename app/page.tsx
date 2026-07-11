@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import AdminEditButton from '@/components/AdminEditButton'
 
 type Advantage = { icon: string; title: string; text: string }
 type Testimonial = { id: string; client_name: string | null; content: string; rating: number | null }
@@ -128,6 +129,8 @@ export default function Home() {
           </Link>
         </div>
       </section>
+     <AdminEditButton href="/admin/homepage" />
+ 
     </div>
   )
 }
