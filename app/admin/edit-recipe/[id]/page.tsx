@@ -10,6 +10,7 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState('')
+  const [origin, setOrigin] = useState('')
   const [timeMinutes, setTimeMinutes] = useState('')
   const [cookidooUrl, setCookidooUrl] = useState('')
   const [imageUrl, setImageUrl] = useState<string | null>(null)
@@ -40,6 +41,7 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
       setTitle(data.title ?? '')
       setDescription(data.description ?? '')
       setCategory(data.category ?? '')
+      setOrigin(data.origin ?? '')
       setTimeMinutes(data.time_minutes?.toString() ?? '')
       setCookidooUrl(data.cookidoo_url ?? '')
       setImageUrl(data.image_url)
@@ -89,6 +91,7 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
         title,
         description,
         category,
+        origin,
         time_minutes: parseInt(timeMinutes) || null,
         cookidoo_url: cookidooUrl || null,
         image_url: finalImageUrl,
@@ -140,6 +143,12 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
           className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
         <input
+          placeholder="Origine (ex: tunisienne, italienne...)"
+          value={origin}
+          onChange={(e) => setOrigin(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+        />
+        <input
           type="number"
           placeholder="Temps (minutes)"
           value={timeMinutes}
@@ -148,7 +157,7 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
         />
         <input
           type="url"
-          placeholder="Lien Cookidoo"
+          placeholder="Lien Cookidoo (optionnel)"
           value={cookidooUrl}
           onChange={(e) => setCookidooUrl(e.target.value)}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"

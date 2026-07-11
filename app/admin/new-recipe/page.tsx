@@ -9,6 +9,7 @@ export default function NewRecipe() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState('')
+  const [origin, setOrigin] = useState('')
   const [timeMinutes, setTimeMinutes] = useState('')
   const [cookidooUrl, setCookidooUrl] = useState('')
   const [imageFile, setImageFile] = useState<File | null>(null)
@@ -56,6 +57,7 @@ export default function NewRecipe() {
       title,
       description,
       category,
+      origin,
       time_minutes: parseInt(timeMinutes) || null,
       cookidoo_url: cookidooUrl || null,
       image_url: imageUrl,
@@ -91,6 +93,12 @@ export default function NewRecipe() {
           placeholder="Catégorie (ex: plat, dessert...)"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+        />
+        <input
+          placeholder="Origine (ex: tunisienne, italienne...)"
+          value={origin}
+          onChange={(e) => setOrigin(e.target.value)}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
         <input

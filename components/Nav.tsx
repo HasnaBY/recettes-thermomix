@@ -40,34 +40,62 @@ export default function Nav() {
   }
 
   return (
-    <nav className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-white">
+    <nav className="px-6 py-4 border-b border-gray-200 flex flex-wrap justify-between items-center gap-3 bg-white">
       <Link href="/" className="font-bold text-lg text-gray-900 no-underline">
         Recettes Thermomix
       </Link>
 
-      {user ? (
-        <div className="flex gap-4 items-center text-sm">
-          {isAdmin && (
-            <Link href="/admin" className="text-gray-700 hover:text-black">
-              Admin
-            </Link>
-          )}
-          <Link href="/favorites" className="text-gray-700 hover:text-black">
-            Mes favoris
-          </Link>
-          <span className="text-gray-500 hidden sm:inline">{user.email}</span>
-          <button
-            onClick={handleLogout}
-            className="text-gray-700 hover:text-black cursor-pointer"
-          >
-            Se déconnecter
-          </button>
-        </div>
-      ) : (
-        <Link href="/login" className="text-gray-700 hover:text-black text-sm">
-          Se connecter
+      <div className="flex flex-wrap gap-4 items-center text-sm">
+        <Link href="/qui-suis-je" className="text-gray-700 hover:text-black">
+          Qui suis-je
         </Link>
-      )}
+        <Link href="/pourquoi-commander" className="text-gray-700 hover:text-black">
+          Pourquoi commander
+        </Link>
+        <Link href="/club-fondatrices" className="text-gray-700 hover:text-black">
+          Club Fondatrices
+        </Link>
+        <Link href="/recettes" className="text-gray-700 hover:text-black">
+          Recettes
+        </Link>
+        <Link href="/confiance" className="text-gray-700 hover:text-black">
+          Elles m'ont fait confiance
+        </Link>
+        <Link href="/parrainage" className="text-gray-700 hover:text-black">
+          Parrainage
+        </Link>
+        <Link href="/grand-concours" className="text-gray-700 hover:text-black">
+          Grand Concours
+        </Link>
+
+        <Link
+          href="/contact"
+          className="px-3 py-1.5 bg-gray-900 text-white rounded-lg font-medium hover:bg-black transition-colors no-underline"
+        >
+          Me contacter
+        </Link>
+
+        {user ? (
+          <>
+            {isAdmin && (
+              <Link href="/admin" className="text-gray-700 hover:text-black">
+                Admin
+              </Link>
+            )}
+            <Link href="/favorites" className="text-gray-700 hover:text-black">
+              Mes favoris
+            </Link>
+            <span className="text-gray-500 hidden sm:inline">{user.email}</span>
+            <button onClick={handleLogout} className="text-gray-700 hover:text-black cursor-pointer">
+              Se déconnecter
+            </button>
+          </>
+        ) : (
+          <Link href="/login" className="text-gray-700 hover:text-black">
+            Se connecter
+          </Link>
+        )}
+      </div>
     </nav>
   )
 }

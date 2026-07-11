@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import RecipesAdminList from '@/components/RecipesAdminList'
+import AdminEditButton from '@/components/AdminEditButton'
 
 type Profile = {
   id: string
@@ -72,13 +73,49 @@ export default function AdminPage() {
       <Link href="/admin/new-recipe" style={{ display: 'inline-block', marginBottom: '1.5rem' }}>
   + Ajouter une recette
 </Link>
+<Link href="/admin/testimonials" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
+  Gérer les témoignages
+</Link>
+<Link href="/admin/messages" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
+  Messages de contact
+</Link>
 
+<Link href="/admin/homepage" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
+  Modifier l'accueil
+</Link>
+
+<Link href="/admin/about" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
+  Modifier "Qui suis-je ?"
+</Link>
+
+<Link href="/admin/why-order" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
+  Modifier "Pourquoi commander"
+</Link>
+
+<Link href="/admin/club" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
+  Gérer le Club Fondatrices
+</Link>
+
+<Link href="/admin/referrals" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
+  Gérer le parrainage
+</Link>
+<Link href="/admin/contest" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
+  Modifier "Grand Concours"
+</Link>
+
+<Link href="/admin/contact-settings" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
+  Réglages contact
+</Link>
+
+<Link href="/admin/social-proof" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
+  Gérer "Elles m'ont fait confiance"
+</Link>
 
       <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>
         Demandes en attente ({pending.length})
       </h2>
       {pending.length === 0 ? (
-        <p style={{ color: '#666', marginBottom: '2rem' }}>Aucune demande en attente.</p>
+        <p style={{ color:'#666', marginBottom: '2rem' }}>Aucune demande en attente.</p>
       ) : (
         <div style={{ display: 'grid', gap: '0.75rem', marginBottom: '2rem' }}>
           {pending.map((p) => (
@@ -153,7 +190,7 @@ export default function AdminPage() {
 
       <h2 style={{ fontSize: '1.25rem', margin: '2rem 0 1rem' }}>Recettes</h2>
 <RecipesAdminList />
-
+<AdminEditButton href="/admin/homepage" />`
     </div>
   )
 }

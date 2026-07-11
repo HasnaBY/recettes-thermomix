@@ -38,7 +38,9 @@ export default async function RecipeDetail({
       <h1 className="text-3xl font-bold text-gray-900 mb-2">{recipe.title}</h1>
       <p className="text-gray-600 mb-3">{recipe.description}</p>
       <p className="text-sm text-gray-500 mb-4">
-        {recipe.category} · {recipe.time_minutes} min
+        {recipe.category} 
+        {recipe.origin && ` · ${recipe.origin}`} · 
+        {recipe.time_minutes} min
       </p>
 
       {recipe.cookidoo_url && (
