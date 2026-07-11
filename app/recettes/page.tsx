@@ -20,6 +20,8 @@ export default function Home() {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('toutes')
   const [origin, setOrigin] = useState('toutes')
+
+
   const [pendingApproval, setPendingApproval] = useState(false)
   const supabase = createClient()
 
@@ -48,8 +50,9 @@ export default function Home() {
     load()
   }, [])
 
-  const categories = ['toutes', ...new Set(recipes.map((r) => r.category).filter(Boolean))]
-  const origins = ['toutes', ...new Set(recipes.map((r) => r.origin).filter(Boolean))]
+  const categories = ['toutes', ...new Set(recipes.map((r) => r.category).filter(Boolean))
+]
+const origins = ['toutes', ...new Set(recipes.map((r) => r.origin).filter((o): o is string => Boolean(o)))]
 
   const filtered = recipes.filter((recipe) => {
     const matchesSearch = recipe.title.toLowerCase().includes(search.toLowerCase())
