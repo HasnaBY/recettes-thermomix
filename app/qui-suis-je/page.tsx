@@ -14,10 +14,13 @@ type AboutContent = {
   why_advisor: string
   values: ValueItem[]
   accompaniment: string
+  club_sharing_text: string
 }
 
 export default function QuiSuisJe() {
   const [content, setContent] = useState<AboutContent | null>(null)
+  const [ramenId, setRamenId] = useState<string | null>(null)
+  const [bouzaId, setBouzaId] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -27,6 +30,20 @@ export default function QuiSuisJe() {
       .eq('id', 1)
       .single()
       .then(({ data }) => data && setContent(data as any))
+
+    supabase
+      .from('recipes')
+      .select('id')
+      .eq('title', 'Ramen curry rouge au poulet')
+      .maybeSingle()
+      .then(({ data }) => data && setRamenId(data.id))
+
+    supabase
+      .from('recipes')
+      .select('id')
+      .eq('title', 'Bouza noisettes')
+      .maybeSingle()
+      .then(({ data }) => data && setBouzaId(data.id))
   }, [])
 
   if (!content) return <div className="p-8 text-center text-gray-500">Chargement...</div>
@@ -47,13 +64,34 @@ export default function QuiSuisJe() {
 
       <section className="mb-10">
         <h2 className="text-xl font-semibold text-gray-900 mb-3">Ce que Thermomix a changé</h2>
-        <ul className="grid gap-2">
+        <ul className="grid gap-2 mb-4">
           {content.what_changed?.map((item, i) => (
             <li key={i} className="text-gray-600 flex gap-2">
               <span>✓</span> {item}
             </li>
           ))}
         </ul>
+        {content.club_sharing_text && (
+          <p className="text-gray-600">
+            Au sein du Club, je partage à mes clientes une sélection de recettes testées et validées par mes soins — comme{' '}
+            {ramenId ? (
+              <Link href={`/recipes/${ramenId}`} className="text-gray-900 underline">
+                ce ramen au curry rouge et poulet
+              </Link>
+            ) : (
+              'ce ramen au curry rouge et poulet'
+            )}
+            {' '}— en plus de mes propres créations personnelles, comme{' '}
+            {bouzaId ? (
+              <Link href={`/recipes/${bouzaId}`} className="text-gray-900 underline">
+                la bouza noisettes
+              </Link>
+            ) : (
+              'la bouza noisettes'
+            )}
+            .
+          </p>
+        )}
       </section>
 
       <section className="mb-10">
