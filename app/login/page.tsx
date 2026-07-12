@@ -46,7 +46,7 @@ export default function Login() {
 
   return (
     <div className="p-6 sm:p-8 max-w-sm mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">
+      <h1 className="font-display text-2xl text-[#3A3532] mb-6">
         {isSignUp ? 'Créer un compte' : 'Connexion'}
       </h1>
 
@@ -57,7 +57,7 @@ export default function Login() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+          className="px-4 py-2 border border-[#F0EAE0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C9A44C]"
         />
         <input
           type="password"
@@ -65,12 +65,12 @@ export default function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+          className="px-4 py-2 border border-[#F0EAE0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C9A44C]"
         />
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <button
           type="submit"
-          className="py-2.5 bg-gray-900 text-white rounded-lg font-medium hover:bg-black transition-colors"
+          className="py-2.5 bg-[#3A3532] text-[#FDFBF6] rounded-full font-medium hover:bg-[#2A2622] transition-colors border border-[#C9A44C]"
         >
           {isSignUp ? "S'inscrire" : 'Se connecter'}
         </button>
@@ -78,7 +78,7 @@ export default function Login() {
 
       <button
         onClick={() => setIsSignUp(!isSignUp)}
-        className="mt-4 text-sm text-gray-500 underline block"
+        className="mt-4 text-sm text-[#3A3532]/60 underline block"
       >
         {isSignUp ? 'Déjà un compte ? Se connecter' : "Pas de compte ? S'inscrire"}
       </button>
@@ -86,7 +86,7 @@ export default function Login() {
       {!isSignUp && (
         <button
           onClick={handleResetPassword}
-          className="mt-2 text-sm text-gray-500 underline block"
+          className="mt-2 text-sm text-[#3A3532]/60 underline block"
         >
           Mot de passe oublié ?
         </button>

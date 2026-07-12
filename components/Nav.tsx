@@ -79,7 +79,7 @@ export default function Nav() {
           Recettes
         </Link>
         <Link href="/confiance" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-          Elles m'ont fait confiance
+          Elles me font confiance
         </Link>
         {settings.show_parrainage && (
           <Link href="/parrainage" className="text-[#3A3532]/80 hover:text-[#3A3532]">

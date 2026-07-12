@@ -42,33 +42,33 @@ export default function Favorites() {
     load()
   }, [])
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Chargement...</div>
+  if (loading) return <div className="p-8 text-center text-[#3A3532]/60">Chargement...</div>
 
   return (
     <div className="p-6 sm:p-8 max-w-5xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Mes favoris</h1>
+      <h1 className="font-display text-3xl text-[#3A3532] mb-6">Mes favoris</h1>
 
       {recipes.length === 0 ? (
-        <p className="text-gray-500">Tu n'as pas encore de recette en favori.</p>
+        <p className="text-[#3A3532]/60">Tu n'as pas encore de recette en favori.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {recipes.map((recipe) => (
             <Link
               key={recipe.id}
               href={`/recipes/${recipe.id}`}
-              className="block rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow no-underline text-inherit"
+              className="block rounded-2xl border border-[#F0EAE0] bg-white overflow-hidden hover:shadow-md transition-shadow no-underline text-inherit"
             >
               {recipe.image_url ? (
                 <img src={recipe.image_url} alt={recipe.title} className="w-full h-40 object-cover" />
               ) : (
-                <div className="w-full h-40 bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
+                <div className="w-full h-40 bg-[#F6DEE1]/30 flex items-center justify-center text-[#3A3532]/40 text-sm">
                   Pas de photo
                 </div>
               )}
               <div className="p-4">
-                <h2 className="text-lg font-semibold text-gray-900 mb-1">{recipe.title}</h2>
-                <p className="text-gray-600 text-sm mb-2 line-clamp-2">{recipe.description}</p>
-                <p className="text-xs text-gray-500">
+                <h2 className="font-display text-lg text-[#3A3532] mb-1">{recipe.title}</h2>
+                <p className="text-[#3A3532]/70 text-sm mb-2 line-clamp-2">{recipe.description}</p>
+                <p className="text-xs text-[#3A3532]/50">
                   {recipe.category} · {recipe.time_minutes} min
                 </p>
               </div>
