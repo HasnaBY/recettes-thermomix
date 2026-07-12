@@ -78,6 +78,10 @@ export default function Nav() {
         <Link href="/recettes" className="text-[#3A3532]/80 hover:text-[#3A3532]">
           Recettes
         </Link>
+        <Link href="/listes" className="text-[#3A3532]/80 hover:text-[#3A3532]">
+  Listes
+</Link>
+
         <Link href="/confiance" className="text-[#3A3532]/80 hover:text-[#3A3532]">
           Elles me font confiance
         </Link>

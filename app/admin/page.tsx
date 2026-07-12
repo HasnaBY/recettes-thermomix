@@ -114,6 +114,9 @@ export default function AdminPage() {
 <Link href="/admin/challenge" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
   Gérer le challenge du mois
 </Link>
+<Link href="/admin/recipe-lists" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
+  Gérer les listes de recettes
+</Link>
 
       <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>
         Demandes en attente ({pending.length})
