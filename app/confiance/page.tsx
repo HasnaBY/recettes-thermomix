@@ -74,23 +74,22 @@ export default function Confiance() {
     }
   }
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Chargement...</div>
+  if (loading) return <div className="p-8 text-center text-[#3A3532]/60">Chargement...</div>
 
   return (
     <div className="px-6 sm:px-8 py-12 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2 text-center">
+      <h1 className="font-display text-3xl text-[#3A3532] mb-2 text-center">
         🥰 Elles m'ont fait confiance
       </h1>
-      <p className="text-gray-600 text-center mb-10">
+      <p className="text-[#3A3532]/70 text-center mb-10">
         Quelques mots et moments partagés avec mes clientes.
       </p>
 
-      {/* Formulaire témoignage (clientes connectées uniquement) */}
       {user && (
-        <div className="border border-gray-200 rounded-xl p-5 mb-10 max-w-xl mx-auto">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Laisser un témoignage</h2>
+        <div className="border border-[#F0EAE0] bg-white rounded-2xl p-5 mb-10 max-w-xl mx-auto">
+          <h2 className="font-display text-lg text-[#3A3532] mb-3">Laisser un témoignage</h2>
           {sent ? (
-            <p className="text-gray-600">
+            <p className="text-[#3A3532]/70">
               Merci pour ton témoignage ! Il sera visible après validation.
             </p>
           ) : (
@@ -99,7 +98,7 @@ export default function Confiance() {
                 placeholder="Ton nom (optionnel)"
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
               />
               <textarea
                 placeholder="Ton témoignage"
@@ -107,12 +106,12 @@ export default function Confiance() {
                 onChange={(e) => setContent(e.target.value)}
                 required
                 rows={3}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
               />
               <select
                 value={rating}
                 onChange={(e) => setRating(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
               >
                 {[5, 4, 3, 2, 1].map((n) => (
                   <option key={n} value={n}>
@@ -123,7 +122,7 @@ export default function Confiance() {
               {error && <p className="text-red-600 text-sm">{error}</p>}
               <button
                 type="submit"
-                className="py-2 bg-gray-900 text-white rounded-lg font-medium hover:bg-black transition-colors"
+                className="py-2 bg-[#3A3532] text-[#FDFBF6] rounded-full font-medium hover:bg-[#2A2622] transition-colors border border-[#C9A44C]"
               >
                 Envoyer mon témoignage
               </button>
@@ -132,37 +131,35 @@ export default function Confiance() {
         </div>
       )}
 
-      {/* Témoignages écrits */}
       <section className="mb-12">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Ce qu'elles disent</h2>
+        <h2 className="font-display text-xl text-[#3A3532] mb-4">Ce qu'elles disent</h2>
         {testimonials.length === 0 ? (
-          <p className="text-gray-500">Pas encore de témoignage à afficher.</p>
+          <p className="text-[#3A3532]/60">Pas encore de témoignage à afficher.</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {testimonials.map((t) => (
-              <div key={t.id} className="border border-gray-200 rounded-xl p-4">
+              <div key={t.id} className="border border-[#F0EAE0] bg-white rounded-2xl p-4">
                 {t.rating && (
-                  <div className="text-amber-500 mb-2 text-sm">
+                  <div className="text-[#C9A44C] mb-2 text-sm">
                     {'★'.repeat(t.rating)}
                     {'☆'.repeat(5 - t.rating)}
                   </div>
                 )}
-                <p className="text-gray-700 text-sm mb-2">{t.content}</p>
-                {t.client_name && <p className="text-xs text-gray-500">— {t.client_name}</p>}
+                <p className="text-[#3A3532]/80 text-sm mb-2">{t.content}</p>
+                {t.client_name && <p className="text-xs text-[#3A3532]/50">— {t.client_name}</p>}
               </div>
             ))}
           </div>
         )}
       </section>
 
-      {/* Galeries photo par catégorie */}
       {CATEGORIES.map((cat) => {
         const catItems = items.filter((i) => i.category === cat.key)
         if (catItems.length === 0) return null
 
         return (
           <section key={cat.key} className="mb-10">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            <h2 className="font-display text-xl text-[#3A3532] mb-4">
               {cat.emoji} {cat.label}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -171,9 +168,9 @@ export default function Confiance() {
                   <img
                     src={item.image_url}
                     alt={item.caption ?? cat.label}
-                    className="w-full h-36 object-cover rounded-lg"
+                    className="w-full h-36 object-cover rounded-xl"
                   />
-                  {item.caption && <p className="text-xs text-gray-500 mt-1">{item.caption}</p>}
+                  {item.caption && <p className="text-xs text-[#3A3532]/50 mt-1">{item.caption}</p>}
                 </div>
               ))}
             </div>

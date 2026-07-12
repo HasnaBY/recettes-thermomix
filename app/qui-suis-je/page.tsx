@@ -46,36 +46,36 @@ export default function QuiSuisJe() {
       .then(({ data }) => data && setBouzaId(data.id))
   }, [])
 
-  if (!content) return <div className="p-8 text-center text-gray-500">Chargement...</div>
+  if (!content) return <div className="p-8 text-center text-[#3A3532]/60">Chargement...</div>
 
   return (
     <div className="px-6 sm:px-8 py-12 max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-10 text-center">Qui suis-je ?</h1>
+      <h1 className="font-display text-3xl text-[#3A3532] mb-10 text-center">Qui suis-je ?</h1>
 
       <section className="mb-10">
-        <h2 className="text-xl font-semibold text-gray-900 mb-3">Mon quotidien avant Thermomix</h2>
-        <p className="text-gray-600">{content.before_thermomix}</p>
+        <h2 className="font-display text-xl text-[#3A3532] mb-3">Mon quotidien avant Thermomix</h2>
+        <p className="text-[#3A3532]/70">{content.before_thermomix}</p>
       </section>
 
       <section className="mb-10">
-        <h2 className="text-xl font-semibold text-gray-900 mb-3">La découverte du Thermomix</h2>
-        <p className="text-gray-600">{content.discovery}</p>
+        <h2 className="font-display text-xl text-[#3A3532] mb-3">La découverte du Thermomix</h2>
+        <p className="text-[#3A3532]/70">{content.discovery}</p>
       </section>
 
       <section className="mb-10">
-        <h2 className="text-xl font-semibold text-gray-900 mb-3">Ce que Thermomix a changé</h2>
+        <h2 className="font-display text-xl text-[#3A3532] mb-3">Ce que Thermomix a changé</h2>
         <ul className="grid gap-2 mb-4">
           {content.what_changed?.map((item, i) => (
-            <li key={i} className="text-gray-600 flex gap-2">
-              <span>✓</span> {item}
+            <li key={i} className="text-[#3A3532]/70 flex gap-2">
+              <span className="text-[#C9A44C]">✓</span> {item}
             </li>
           ))}
         </ul>
         {content.club_sharing_text && (
-          <p className="text-gray-600">
+          <p className="text-[#3A3532]/70">
             Au sein du Club, je partage à mes clientes une sélection de recettes testées et validées par mes soins — comme{' '}
             {ramenId ? (
-              <Link href={`/recipes/${ramenId}`} className="text-gray-900 underline">
+              <Link href={`/recipes/${ramenId}`} className="text-[#3A3532] underline">
                 ce ramen au curry rouge et poulet
               </Link>
             ) : (
@@ -83,7 +83,7 @@ export default function QuiSuisJe() {
             )}
             {' '}— en plus de mes propres créations personnelles, comme{' '}
             {bouzaId ? (
-              <Link href={`/recipes/${bouzaId}`} className="text-gray-900 underline">
+              <Link href={`/recipes/${bouzaId}`} className="text-[#3A3532] underline">
                 la bouza noisettes
               </Link>
             ) : (
@@ -95,31 +95,31 @@ export default function QuiSuisJe() {
       </section>
 
       <section className="mb-10">
-        <h2 className="text-xl font-semibold text-gray-900 mb-3">Pourquoi je suis devenue conseillère</h2>
-        <p className="text-gray-600">{content.why_advisor}</p>
+        <h2 className="font-display text-xl text-[#3A3532] mb-3">Pourquoi je suis devenue conseillère</h2>
+        <p className="text-[#3A3532]/70">{content.why_advisor}</p>
       </section>
 
       <section className="mb-10">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Mes valeurs</h2>
+        <h2 className="font-display text-xl text-[#3A3532] mb-4">Mes valeurs</h2>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-center">
           {content.values?.map((v, i) => (
             <div key={i}>
               <div className="text-3xl mb-1">{v.icon}</div>
-              <p className="text-sm text-gray-600">{v.label}</p>
+              <p className="text-sm text-[#3A3532]/70">{v.label}</p>
             </div>
           ))}
         </div>
       </section>
 
       <section className="mb-10">
-        <h2 className="text-xl font-semibold text-gray-900 mb-3">Mon accompagnement</h2>
-        <p className="text-gray-600">{content.accompaniment}</p>
+        <h2 className="font-display text-xl text-[#3A3532] mb-3">Mon accompagnement</h2>
+        <p className="text-[#3A3532]/70">{content.accompaniment}</p>
       </section>
 
       <div className="text-center">
         <Link
           href="/pourquoi-commander"
-          className="inline-block px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-black transition-colors no-underline"
+          className="inline-block px-6 py-3 bg-[#3A3532] text-[#FDFBF6] rounded-full font-medium hover:bg-[#2A2622] transition-colors no-underline border border-[#C9A44C]"
         >
           Découvrir les avantages de commander avec moi
         </Link>

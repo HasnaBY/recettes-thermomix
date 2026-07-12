@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import AdminEditButton from '@/components/AdminEditButton'
 
 type RequestType = 'atelier' | 'demo' | 'rappel' | 'question' | 'offres'
 
@@ -63,7 +62,7 @@ export default function Contact() {
 
   return (
     <div className="px-6 sm:px-8 py-12 max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">📩 Me contacter</h1>
+      <h1 className="font-display text-3xl text-[#3A3532] mb-8 text-center">📩 Me contacter</h1>
 
       {!activeType ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -71,10 +70,10 @@ export default function Contact() {
             <button
               key={card.type}
               onClick={() => setActiveType(card.type)}
-              className="border border-gray-200 rounded-xl p-4 text-left hover:shadow-md transition-shadow"
+              className="border border-[#F0EAE0] bg-white rounded-2xl p-4 text-left hover:shadow-md transition-shadow"
             >
               <div className="text-2xl mb-2">{card.icon}</div>
-              <p className="font-medium text-gray-900">{card.title}</p>
+              <p className="font-medium text-[#3A3532]">{card.title}</p>
             </button>
           ))}
 
@@ -83,34 +82,34 @@ export default function Contact() {
               href={`https://wa.me/${settings.whatsapp_number}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="border border-green-200 bg-green-50 rounded-xl p-4 text-left hover:shadow-md transition-shadow no-underline"
+              className="border border-[#E3ECDD] bg-[#E3ECDD]/40 rounded-2xl p-4 text-left hover:shadow-md transition-shadow no-underline"
             >
               <div className="text-2xl mb-2">💬</div>
-              <p className="font-medium text-green-800">Me contacter sur WhatsApp</p>
+              <p className="font-medium text-[#3A3532]">Me contacter sur WhatsApp</p>
             </a>
           )}
 
           {settings?.contact_email && (
             <a
               href={`mailto:${settings.contact_email}`}
-              className="border border-gray-200 rounded-xl p-4 text-left hover:shadow-md transition-shadow no-underline"
+              className="border border-[#F0EAE0] bg-white rounded-2xl p-4 text-left hover:shadow-md transition-shadow no-underline"
             >
               <div className="text-2xl mb-2">✉️</div>
-              <p className="font-medium text-gray-900">M'envoyer un e-mail</p>
+              <p className="font-medium text-[#3A3532]">M'envoyer un e-mail</p>
             </a>
           )}
         </div>
       ) : (
-        <div className="border border-gray-200 rounded-xl p-5">
+        <div className="border border-[#F0EAE0] bg-white rounded-2xl p-5">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">{activeCard?.title}</h2>
-            <button onClick={resetForm} className="text-sm text-gray-500 underline">
+            <h2 className="font-display text-lg text-[#3A3532]">{activeCard?.title}</h2>
+            <button onClick={resetForm} className="text-sm text-[#3A3532]/50 underline">
               ← Retour
             </button>
           </div>
 
           {sent ? (
-            <p className="text-gray-600">Merci, ton message a bien été envoyé ! Je te répondrai rapidement.</p>
+            <p className="text-[#3A3532]/70">Merci, ton message a bien été envoyé ! Je te répondrai rapidement.</p>
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               <input
@@ -118,7 +117,7 @@ export default function Contact() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="px-4 py-2 border border-gray-300 rounded-lg"
+                className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
               />
               <input
                 type="email"
@@ -126,7 +125,7 @@ export default function Contact() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="px-4 py-2 border border-gray-300 rounded-lg"
+                className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
               />
               <textarea
                 placeholder="Ton message"
@@ -134,12 +133,12 @@ export default function Contact() {
                 onChange={(e) => setMessage(e.target.value)}
                 required
                 rows={4}
-                className="px-4 py-2 border border-gray-300 rounded-lg"
+                className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
               />
               {error && <p className="text-red-600 text-sm">{error}</p>}
               <button
                 type="submit"
-                className="py-2.5 bg-gray-900 text-white rounded-lg font-medium hover:bg-black transition-colors"
+                className="py-2.5 bg-[#3A3532] text-[#FDFBF6] rounded-full font-medium hover:bg-[#2A2622] transition-colors border border-[#C9A44C]"
               >
                 Envoyer
               </button>
@@ -147,8 +146,6 @@ export default function Contact() {
           )}
         </div>
       )}
-
-      <AdminEditButton href="/admin/contact-settings" />
     </div>
   )
 }

@@ -90,7 +90,7 @@ export default function ChallengePage() {
 
   const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = Array.from(e.target.files ?? [])
-    setFiles(selected.slice(0, 5)) // max 5 photos par participation
+    setFiles(selected.slice(0, 5))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -142,11 +142,11 @@ export default function ChallengePage() {
     }
   }
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Chargement...</div>
+  if (loading) return <div className="p-8 text-center text-[#3A3532]/60">Chargement...</div>
 
   if (!user) {
     return (
-      <div className="p-8 max-w-md mx-auto text-center text-gray-600">
+      <div className="p-8 max-w-md mx-auto text-center text-[#3A3532]/70">
         Connecte-toi pour découvrir le challenge du mois.{' '}
         <Link href="/login" className="underline">
           Se connecter
@@ -157,7 +157,7 @@ export default function ChallengePage() {
 
   if (!approved) {
     return (
-      <div className="p-8 max-w-md mx-auto text-center text-gray-600">
+      <div className="p-8 max-w-md mx-auto text-center text-[#3A3532]/70">
         Ton compte est en attente de validation. Tu pourras participer au challenge une fois ton compte approuvé.
       </div>
     )
@@ -165,7 +165,7 @@ export default function ChallengePage() {
 
   if (!challenge?.active) {
     return (
-      <div className="p-8 max-w-md mx-auto text-center text-gray-600">
+      <div className="p-8 max-w-md mx-auto text-center text-[#3A3532]/70">
         Pas de challenge en cours pour le moment — reviens bientôt !
         <AdminEditButton href="/admin/challenge" />
       </div>
@@ -174,20 +174,20 @@ export default function ChallengePage() {
 
   return (
     <div className="px-6 sm:px-8 py-12 max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2 text-center">🏆 Challenge du mois</h1>
-      <p className="text-gray-600 text-center mb-1">{challenge.title}</p>
-      <p className="text-gray-600 text-center mb-8">{challenge.description}</p>
+      <h1 className="font-display text-3xl text-[#3A3532] mb-2 text-center">🏆 Challenge du mois</h1>
+      <p className="text-[#3A3532]/70 text-center mb-1">{challenge.title}</p>
+      <p className="text-[#3A3532]/70 text-center mb-8">{challenge.description}</p>
 
       {challenge.recipe_id && (
         <div className="text-center mb-10">
-          <Link href={`/recipes/${challenge.recipe_id}`} className="text-gray-900 underline text-sm">
+          <Link href={`/recipes/${challenge.recipe_id}`} className="text-[#3A3532] underline text-sm">
             Voir la recette du challenge
           </Link>
         </div>
       )}
 
-      <div className="border border-gray-200 rounded-xl p-5 mb-10">
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">
+      <div className="border border-[#F0EAE0] bg-white rounded-2xl p-5 mb-10">
+        <h2 className="font-display text-lg text-[#3A3532] mb-3">
           {myEntry ? 'Ta participation' : 'Partage ta réalisation'}
         </h2>
 
@@ -195,23 +195,23 @@ export default function ChallengePage() {
           <div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2">
               {myEntry.image_urls?.map((url, i) => (
-                <img key={i} src={url} alt={`Photo ${i + 1}`} className="w-full h-32 object-cover rounded-lg" />
+                <img key={i} src={url} alt={`Photo ${i + 1}`} className="w-full h-32 object-cover rounded-xl" />
               ))}
             </div>
-            {myEntry.comment && <p className="text-gray-600 text-sm">{myEntry.comment}</p>}
-            <p className="text-xs text-gray-400 mt-2">
+            {myEntry.comment && <p className="text-[#3A3532]/70 text-sm">{myEntry.comment}</p>}
+            <p className="text-xs text-[#3A3532]/40 mt-2">
               Tu as déjà participé ce mois-ci, merci ! 🎉
             </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <div>
-              <label className="block mb-2 text-sm text-gray-600">
+              <label className="block mb-2 text-sm text-[#3A3532]/60">
                 Jusqu'à 5 photos de ta réalisation
               </label>
               <input type="file" accept="image/*" multiple onChange={handleFilesChange} />
               {files.length > 0 && (
-                <p className="text-xs text-gray-500 mt-1">{files.length} photo(s) sélectionnée(s)</p>
+                <p className="text-xs text-[#3A3532]/50 mt-1">{files.length} photo(s) sélectionnée(s)</p>
               )}
             </div>
             <textarea
@@ -219,14 +219,14 @@ export default function ChallengePage() {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={2}
-              className="px-4 py-2 border border-gray-300 rounded-lg"
+              className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
             />
-            {uploadProgress && <p className="text-sm text-gray-500">{uploadProgress}</p>}
+            {uploadProgress && <p className="text-sm text-[#3A3532]/60">{uploadProgress}</p>}
             {error && <p className="text-red-600 text-sm">{error}</p>}
             <button
               type="submit"
               disabled={uploading || files.length === 0}
-              className="py-2.5 bg-gray-900 text-white rounded-lg font-medium hover:bg-black transition-colors disabled:opacity-50"
+              className="py-2.5 bg-[#3A3532] text-[#FDFBF6] rounded-full font-medium hover:bg-[#2A2622] transition-colors border border-[#C9A44C] disabled:opacity-50"
             >
               {uploading ? 'Envoi...' : 'Partager ma réalisation'}
             </button>
@@ -234,21 +234,21 @@ export default function ChallengePage() {
         )}
       </div>
 
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">
+      <h2 className="font-display text-lg text-[#3A3532] mb-4">
         Les réalisations de ce mois ({entries.length})
       </h2>
       {entries.length === 0 ? (
-        <p className="text-gray-500">Sois la première à partager ta réalisation !</p>
+        <p className="text-[#3A3532]/60">Sois la première à partager ta réalisation !</p>
       ) : (
         <div className="grid gap-6">
           {entries.map((e) => (
             <div key={e.id}>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {e.image_urls?.map((url, i) => (
-                  <img key={i} src={url} alt="Participation" className="w-full h-32 object-cover rounded-lg" />
+                  <img key={i} src={url} alt="Participation" className="w-full h-32 object-cover rounded-xl" />
                 ))}
               </div>
-              {e.comment && <p className="text-xs text-gray-500 mt-1">{e.comment}</p>}
+              {e.comment && <p className="text-xs text-[#3A3532]/50 mt-1">{e.comment}</p>}
             </div>
           ))}
         </div>
