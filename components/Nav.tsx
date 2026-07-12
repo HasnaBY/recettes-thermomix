@@ -58,50 +58,48 @@ export default function Nav() {
   }
 
   return (
-    <nav className="px-6 py-4 border-b border-gray-200 flex flex-wrap justify-between items-center gap-3 bg-white">
-      <Link href="/" className="font-bold text-lg text-gray-900 no-underline">
-       Thermomix With Love, Hasna
+    <nav className="px-6 py-4 border-b border-[#F0EAE0] flex flex-wrap justify-between items-center gap-3 bg-[#FDFBF6]">
+      <Link href="/" className="font-display text-lg text-[#3A3532] no-underline">
+        Thermomix With Love, Hasna
       </Link>
 
       <div className="flex flex-wrap gap-4 items-center text-sm">
-        <Link href="/qui-suis-je" className="text-gray-700 hover:text-black">
+        <Link href="/qui-suis-je" className="text-[#3A3532]/80 hover:text-[#3A3532]">
           Qui suis-je
         </Link>
-        <Link href="/pourquoi-commander" className="text-gray-700 hover:text-black">
+        <Link href="/pourquoi-commander" className="text-[#3A3532]/80 hover:text-[#3A3532]">
           Pourquoi commander
         </Link>
-
-        {user && (
-  <Link href="/challenge" className="text-gray-700 hover:text-black">
-    Challenge du mois
-  </Link>
-)}
-
         {settings.show_club && (
-          <Link href="/club-fondatrices" className="text-gray-700 hover:text-black">
-             Le Cercle With Love
+          <Link href="/club-fondatrices" className="text-[#3A3532]/80 hover:text-[#3A3532]">
+            Le Cercle With Love
           </Link>
         )}
-        <Link href="/recettes" className="text-gray-700 hover:text-black">
+        <Link href="/recettes" className="text-[#3A3532]/80 hover:text-[#3A3532]">
           Recettes
         </Link>
-        <Link href="/confiance" className="text-gray-700 hover:text-black">
+        <Link href="/confiance" className="text-[#3A3532]/80 hover:text-[#3A3532]">
           Elles m'ont fait confiance
         </Link>
         {settings.show_parrainage && (
-          <Link href="/parrainage" className="text-gray-700 hover:text-black">
+          <Link href="/parrainage" className="text-[#3A3532]/80 hover:text-[#3A3532]">
             Parrainage
           </Link>
         )}
         {settings.show_concours && (
-          <Link href="/grand-concours" className="text-gray-700 hover:text-black">
+          <Link href="/grand-concours" className="text-[#3A3532]/80 hover:text-[#3A3532]">
             Grand Concours
+          </Link>
+        )}
+        {user && (
+          <Link href="/challenge" className="text-[#3A3532]/80 hover:text-[#3A3532]">
+            Challenge du mois
           </Link>
         )}
 
         <Link
           href="/contact"
-          className="px-3 py-1.5 bg-gray-900 text-white rounded-lg font-medium hover:bg-black transition-colors no-underline"
+          className="px-3 py-1.5 bg-[#3A3532] text-[#FDFBF6] rounded-full font-medium hover:bg-[#2A2622] transition-colors no-underline border border-[#C9A44C]"
         >
           Me contacter
         </Link>
@@ -109,20 +107,20 @@ export default function Nav() {
         {user ? (
           <>
             {isAdmin && (
-              <Link href="/admin" className="text-gray-700 hover:text-black">
+              <Link href="/admin" className="text-[#3A3532]/80 hover:text-[#3A3532]">
                 Admin
               </Link>
             )}
-            <Link href="/favorites" className="text-gray-700 hover:text-black">
+            <Link href="/favorites" className="text-[#3A3532]/80 hover:text-[#3A3532]">
               Mes favoris
             </Link>
-            <span className="text-gray-500 hidden sm:inline">{user.email}</span>
-            <button onClick={handleLogout} className="text-gray-700 hover:text-black cursor-pointer">
+            <span className="text-[#3A3532]/50 hidden sm:inline">{user.email}</span>
+            <button onClick={handleLogout} className="text-[#3A3532]/80 hover:text-[#3A3532] cursor-pointer">
               Se déconnecter
             </button>
           </>
         ) : (
-          <Link href="/login" className="text-gray-700 hover:text-black">
+          <Link href="/login" className="text-[#3A3532]/80 hover:text-[#3A3532]">
             Se connecter
           </Link>
         )}

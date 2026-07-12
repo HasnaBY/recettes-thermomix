@@ -1,16 +1,16 @@
+import type { Metadata } from "next";
+import { Fraunces, Work_Sans } from "next/font/google";
+import "./globals.css";
 import Nav from '@/components/Nav'
 
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const fraunces = Fraunces({
+  variable: "--font-display",
   subsets: ["latin"],
+  weight: ["500", "600"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const workSans = Work_Sans({
+  variable: "--font-body",
   subsets: ["latin"],
 });
 
@@ -18,7 +18,6 @@ export const metadata: Metadata = {
   title: "Thermomix With Love, Hasna",
   description: "Recettes, accompagnement et conseils Thermomix par Hasna",
 };
-
 
 export default function RootLayout({
   children,
@@ -28,9 +27,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${workSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col  bg-white text-gray-900"> <Nav />{children}</body>
+      <body className="min-h-full flex flex-col bg-[#FDFBF6] text-[#3A3532]">
+        <Nav />
+        {children}
+      </body>
     </html>
   );
 }
