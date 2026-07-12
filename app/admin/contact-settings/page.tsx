@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 export default function AdminContactSettings() {
   const [whatsapp, setWhatsapp] = useState('')
   const [email, setEmail] = useState('')
+  const [introText, setIntroText] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
@@ -21,6 +22,7 @@ export default function AdminContactSettings() {
         if (data) {
           setWhatsapp(data.whatsapp_number ?? '')
           setEmail(data.contact_email ?? '')
+          setIntroText(data.intro_text ?? '')
         }
         setLoading(false)
       })
@@ -33,7 +35,7 @@ export default function AdminContactSettings() {
 
     const { error } = await supabase
       .from('contact_settings')
-      .update({ whatsapp_number: whatsapp, contact_email: email })
+      .update({ whatsapp_number: whatsapp, contact_email: email, intro_text: introText })
       .eq('id', 1)
 
     setSaving(false)
@@ -47,6 +49,17 @@ export default function AdminContactSettings() {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Réglages de contact</h1>
 
       <form onSubmit={handleSave} className="flex flex-col gap-4">
+        <div>
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            Texte d'introduction (au-dessus des boutons)
+          </label>
+          <textarea
+            value={introText}
+            onChange={(e) => setIntroText(e.target.value)}
+            rows={2}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+          />
+        </div>
         <div>
           <label className="block mb-2 text-sm font-medium text-gray-700">
             Numéro WhatsApp (format international, sans + ni espace, ex: 33612345678)

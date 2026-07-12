@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import AdminEditButton from '@/components/AdminEditButton'
 
 type RequestType = 'atelier' | 'demo' | 'rappel' | 'question' | 'offres'
 
@@ -14,7 +15,11 @@ const CARDS: { type: RequestType; icon: string; title: string }[] = [
 ]
 
 export default function Contact() {
-  const [settings, setSettings] = useState<{ whatsapp_number: string; contact_email: string } | null>(null)
+  const [settings, setSettings] = useState<{
+    whatsapp_number: string
+    contact_email: string
+    intro_text: string | null
+  } | null>(null)
   const [activeType, setActiveType] = useState<RequestType | null>(null)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -62,7 +67,11 @@ export default function Contact() {
 
   return (
     <div className="px-6 sm:px-8 py-12 max-w-2xl mx-auto">
-      <h1 className="font-display text-3xl text-[#3A3532] mb-8 text-center">📩 Me contacter</h1>
+      <h1 className="font-display text-3xl text-[#3A3532] mb-4 text-center">📩 Me contacter</h1>
+
+      {settings?.intro_text && (
+        <p className="text-[#3A3532]/70 text-center mb-8 max-w-md mx-auto">{settings.intro_text}</p>
+      )}
 
       {!activeType ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -146,6 +155,8 @@ export default function Contact() {
           )}
         </div>
       )}
+
+      <AdminEditButton href="/admin/contact-settings" />
     </div>
   )
 }
