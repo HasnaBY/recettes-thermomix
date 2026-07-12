@@ -12,6 +12,7 @@ export default function Home() {
   const [content, setContent] = useState<{
     hero_title: string
     hero_subtitle: string
+    hero_paragraph_3: string | null
     hero_image_url: string | null
     advantages: Advantage[]
     story_teaser: string
@@ -58,7 +59,10 @@ export default function Home() {
           <h1 className="font-display text-3xl sm:text-4xl text-[#3A3532] mb-4 leading-snug">
             {content.hero_title}
           </h1>
-          <p className="text-[#3A3532]/70 text-lg mb-8 max-w-2xl mx-auto">{content.hero_subtitle}</p>
+          <p className="text-[#3A3532]/70 text-lg mb-4 max-w-2xl mx-auto">{content.hero_subtitle}</p>
+          {content.hero_paragraph_3 && (
+            <p className="text-[#3A3532]/70 text-lg mb-8 max-w-2xl mx-auto">{content.hero_paragraph_3}</p>
+          )}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/qui-suis-je"

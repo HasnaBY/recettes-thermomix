@@ -9,6 +9,7 @@ type Advantage = { icon: string; title: string; text: string }
 export default function AdminHomepage() {
   const [heroTitle, setHeroTitle] = useState('')
   const [heroSubtitle, setHeroSubtitle] = useState('')
+  const [heroParagraph3, setHeroParagraph3] = useState('')
   const [heroImageUrl, setHeroImageUrl] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [advantages, setAdvantages] = useState<Advantage[]>([])
@@ -28,6 +29,7 @@ export default function AdminHomepage() {
         if (data) {
           setHeroTitle(data.hero_title ?? '')
           setHeroSubtitle(data.hero_subtitle ?? '')
+          setHeroParagraph3(data.hero_paragraph_3 ?? '')
           setHeroImageUrl(data.hero_image_url)
           setAdvantages(data.advantages ?? [])
           setStoryTeaser(data.story_teaser ?? '')
@@ -81,6 +83,7 @@ export default function AdminHomepage() {
       .update({
         hero_title: heroTitle,
         hero_subtitle: heroSubtitle,
+        hero_paragraph_3: heroParagraph3,
         hero_image_url: finalImageUrl,
         advantages,
         story_teaser: storyTeaser,
@@ -121,6 +124,18 @@ export default function AdminHomepage() {
           <textarea
             value={heroSubtitle}
             onChange={(e) => setHeroSubtitle(e.target.value)}
+            rows={3}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            3ème paragraphe (avant les boutons)
+          </label>
+          <textarea
+            value={heroParagraph3}
+            onChange={(e) => setHeroParagraph3(e.target.value)}
             rows={3}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg"
           />
