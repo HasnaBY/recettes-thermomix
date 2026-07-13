@@ -342,7 +342,16 @@ export default function AdminChallenge() {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-2"
           />
           {rewardImageUrl && (
-            <img src={rewardImageUrl} className="w-full h-32 object-cover rounded-lg mb-2" />
+            <div className="mb-2">
+              <img src={rewardImageUrl} className="w-full h-32 object-cover rounded-lg mb-2" />
+              <button
+                type="button"
+                onClick={() => setRewardImageUrl(null)}
+                className="text-sm text-red-600"
+              >
+                Supprimer cette photo
+              </button>
+            </div>
           )}
           <input
             type="file"
@@ -353,13 +362,35 @@ export default function AdminChallenge() {
 
         <div className="border border-gray-200 rounded-xl p-4">
           <h3 className="font-medium text-gray-900 mb-3">Bannière du haut</h3>
-          {bannerTopUrl && <img src={bannerTopUrl} className="w-full h-24 object-cover rounded-lg mb-2" />}
+          {bannerTopUrl && (
+            <div className="mb-2">
+              <img src={bannerTopUrl} className="w-full h-24 object-cover rounded-lg mb-2" />
+              <button
+                type="button"
+                onClick={() => setBannerTopUrl(null)}
+                className="text-sm text-red-600"
+              >
+                Supprimer cette bannière
+              </button>
+            </div>
+          )}
           <input type="file" accept="image/*" onChange={(e) => setBannerTopFile(e.target.files?.[0] ?? null)} />
         </div>
 
         <div className="border border-gray-200 rounded-xl p-4">
           <h3 className="font-medium text-gray-900 mb-3">Bannière du bas</h3>
-          {bannerBottomUrl && <img src={bannerBottomUrl} className="w-full h-24 object-cover rounded-lg mb-2" />}
+          {bannerBottomUrl && (
+            <div className="mb-2">
+              <img src={bannerBottomUrl} className="w-full h-24 object-cover rounded-lg mb-2" />
+              <button
+                type="button"
+                onClick={() => setBannerBottomUrl(null)}
+                className="text-sm text-red-600"
+              >
+                Supprimer cette bannière
+              </button>
+            </div>
+          )}
           <input type="file" accept="image/*" onChange={(e) => setBannerBottomFile(e.target.files?.[0] ?? null)} />
         </div>
 

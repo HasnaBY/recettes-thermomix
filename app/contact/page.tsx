@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import AdminEditButton from '@/components/AdminEditButton'
+import BrandPhoto from '@/components/BrandPhoto'
 
 type RequestType = 'atelier' | 'demo' | 'rappel' | 'question' | 'offres'
 
@@ -68,6 +69,14 @@ export default function Contact() {
   return (
     <div className="px-6 sm:px-8 py-12 max-w-2xl mx-auto">
       <h1 className="font-display text-3xl text-[#3A3532] mb-4 text-center">📩 Me contacter</h1>
+
+      <div className="flex justify-center mb-6">
+        <BrandPhoto
+          photoKey="portrait_thermomix"
+          alt="Hasna"
+          className="w-32 h-32 rounded-full object-cover border-2 border-[#C9A44C]"
+        />
+      </div>
 
       {settings?.intro_text && (
         <p className="text-[#3A3532]/70 text-center mb-8 max-w-md mx-auto">{settings.intro_text}</p>

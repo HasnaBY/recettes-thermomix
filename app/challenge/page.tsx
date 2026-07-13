@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import AdminEditButton from '@/components/AdminEditButton'
+import BrandPhoto from '@/components/BrandPhoto'
 import imageCompression from 'browser-image-compression'
 import type { User } from '@supabase/supabase-js'
 
@@ -206,6 +207,14 @@ export default function ChallengePage() {
         <h1 className="font-display text-3xl text-[#3A3532] mb-2 text-center">🏆 Challenge du mois</h1>
         <p className="text-[#3A3532]/70 text-center mb-1">{challenge.title}</p>
         <p className="text-[#3A3532]/70 text-center mb-6">{challenge.description}</p>
+
+        <div className="flex justify-center mb-6">
+          <BrandPhoto
+            photoKey="table_ete"
+            alt="Table de recettes d'été"
+            className="w-full max-w-md h-48 object-cover rounded-2xl"
+          />
+        </div>
 
         {challenge.description_images && challenge.description_images.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-8">

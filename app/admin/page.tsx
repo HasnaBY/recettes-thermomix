@@ -118,6 +118,11 @@ export default function AdminPage() {
   Gérer les listes de recettes
 </Link>
 
+
+<Link href="/admin/brand-photos" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
+  Photos de marque
+</Link>
+
       <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>
         Demandes en attente ({pending.length})
       </h2>

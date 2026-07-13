@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import AdminEditButton from '@/components/AdminEditButton'
+import BrandPhoto from '@/components/BrandPhoto'
 
 type ClubContent = {
   intro: string
@@ -70,6 +71,15 @@ export default function ClubFondatrices() {
   return (
     <div className="px-6 sm:px-8 py-12 max-w-2xl mx-auto">
       <h1 className="font-display text-3xl text-[#3A3532] mb-4 text-center">💛 Le Cercle With Love</h1>
+
+      <div className="flex justify-center mb-6">
+        <BrandPhoto
+          photoKey="atelier_photo"
+          alt="Hasna en atelier"
+          className="w-full max-w-sm h-48 object-cover rounded-2xl"
+        />
+      </div>
+
       <p className="text-[#3A3532]/70 text-center mb-2">{content.intro}</p>
       {content.show_spots_remaining && content.spots_remaining > 0 && (
         <p className="text-center text-[#C9A44C] font-medium mb-8">

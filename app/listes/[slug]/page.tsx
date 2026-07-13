@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import BrandPhoto from '@/components/BrandPhoto'
 
 type Recipe = {
   id: string
@@ -13,7 +14,7 @@ type Recipe = {
   image_url: string | null
 }
 
-type ListInfo = { id: string; title: string; description: string | null }
+type ListInfo = { id: string; slug: string; title: string; description: string | null }
 
 export default function ListeDetail({ params }: { params: Promise<{ slug: string }> }) {
   const [list, setList] = useState<ListInfo | null>(null)
@@ -63,7 +64,17 @@ export default function ListeDetail({ params }: { params: Promise<{ slug: string
       </Link>
 
       <h1 className="font-display text-3xl text-[#3A3532] mb-2">{list?.title}</h1>
-      {list?.description && <p className="text-[#3A3532]/70 mb-8">{list.description}</p>}
+      {list?.description && <p className="text-[#3A3532]/70 mb-4">{list.description}</p>}
+
+      {list?.slug === 'anti-canicule' && (
+        <div className="mb-8">
+          <BrandPhoto
+            photoKey="table_ete"
+            alt="Table de recettes d'été"
+            className="w-full h-56 object-cover rounded-2xl"
+          />
+        </div>
+      )}
 
       {recipes.length === 0 ? (
         <p className="text-[#3A3532]/60">Aucune recette dans cette liste pour le moment.</p>

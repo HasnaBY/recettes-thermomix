@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import AdminEditButton from '@/components/AdminEditButton'
+import BrandPhoto from '@/components/BrandPhoto'
 
 type Advantage = { icon: string; title: string; text: string }
 type Testimonial = { id: string; client_name: string | null; content: string; rating: number | null }
@@ -13,7 +14,6 @@ export default function Home() {
     hero_title: string
     hero_subtitle: string
     hero_paragraph_3: string | null
-    hero_image_url: string | null
     advantages: Advantage[]
     story_teaser: string
   } | null>(null)
@@ -47,15 +47,13 @@ export default function Home() {
         <div className="watercolor-blob blob-blue w-64 h-64 top-20 -right-10" />
 
         <div className="relative">
-          {content.hero_image_url && (
-            <div className="inline-block p-1.5 rounded-full border-2 border-[#C9A44C] mb-6">
-              <img
-                src={content.hero_image_url}
-                alt="Hasna, conseillère Thermomix"
-                className="w-40 h-40 rounded-full object-cover"
-              />
-            </div>
-          )}
+          <div className="inline-block p-1.5 rounded-full border-2 border-[#C9A44C] mb-6">
+            <BrandPhoto
+              photoKey="portrait_thermomix"
+              alt="Hasna, conseillère Thermomix"
+              className="w-40 h-40 rounded-full object-cover"
+            />
+          </div>
           <h1 className="font-display text-3xl sm:text-4xl text-[#3A3532] mb-4 leading-snug">
             {content.hero_title}
           </h1>

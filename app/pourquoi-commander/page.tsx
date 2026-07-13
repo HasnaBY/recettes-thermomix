@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import AdminEditButton from '@/components/AdminEditButton'
+import BrandPhoto from '@/components/BrandPhoto'
 
 type WhyOrderContent = {
   before_purchase: string[]
@@ -45,6 +46,14 @@ export default function PourquoiCommander() {
       <h1 className="font-display text-3xl text-[#3A3532] mb-10 text-center">
         Pourquoi commander avec moi ?
       </h1>
+
+      <div className="flex justify-center mb-10">
+        <BrandPhoto
+          photoKey="cuisine_action"
+          alt="Thermomix en action"
+          className="w-full h-56 object-cover rounded-2xl"
+        />
+      </div>
 
       <Block title="Avant votre achat" items={content.before_purchase} />
       <Block title="Le jour de la livraison" items={content.delivery_day} />

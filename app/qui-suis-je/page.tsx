@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import AdminEditButton from '@/components/AdminEditButton'
+import BrandPhoto from '@/components/BrandPhoto'
 
 type ValueItem = { icon: string; label: string }
 
@@ -53,8 +54,16 @@ export default function QuiSuisJe() {
     <div className="px-6 sm:px-8 py-12 max-w-2xl mx-auto">
       <h1 className="font-display text-3xl text-[#3A3532] mb-3 text-center">Qui suis-je ?</h1>
       {content.subtitle && (
-        <p className="text-[#3A3532]/70 text-center mb-10 max-w-lg mx-auto">{content.subtitle}</p>
+        <p className="text-[#3A3532]/70 text-center mb-8 max-w-lg mx-auto">{content.subtitle}</p>
       )}
+
+      <div className="flex justify-center mb-10">
+        <BrandPhoto
+          photoKey="atelier_photo"
+          alt="Hasna en atelier"
+          className="w-full max-w-md h-64 object-cover rounded-2xl"
+        />
+      </div>
 
       <section className="mb-10">
         <h2 className="font-display text-xl text-[#3A3532] mb-3">Mon quotidien avant Thermomix</h2>
@@ -76,7 +85,7 @@ export default function QuiSuisJe() {
           ))}
         </ul>
         {content.club_sharing_text && (
-          <p className="text-[#3A3532]/70">
+          <p className="text-[#3A3532]/70 mb-4">
             Au sein du Club, je partage à mes clientes une sélection de recettes testées et validées par mes soins — comme{' '}
             {ramenId ? (
               <Link href={`/recipes/${ramenId}`} className="text-[#3A3532] underline">
@@ -96,6 +105,11 @@ export default function QuiSuisJe() {
             .
           </p>
         )}
+        <BrandPhoto
+          photoKey="bouza_photo"
+          alt="Bouza noisettes"
+          className="w-full h-56 object-cover rounded-2xl"
+        />
       </section>
 
       <section className="mb-10">
