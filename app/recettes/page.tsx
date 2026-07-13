@@ -52,7 +52,7 @@ export default function Recettes() {
     load()
   }, [])
 
-  const categories = ['toutes', ...new Set(recipes.map((r) => r.category).filter(Boolean))]
+  const categories = ['toutes', ...new Set(recipes.map((r) => r.category).filter((c): c is string => Boolean(c)))]
   const origins = ['toutes', ...new Set(recipes.map((r) => r.origin).filter((o): o is string => Boolean(o)))]
 
   const filtered = recipes.filter((recipe) => {

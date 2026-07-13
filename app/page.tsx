@@ -140,6 +140,8 @@ export default function Home() {
             className="inline-block px-6 py-3 bg-[#3A3532] text-[#FDFBF6] rounded-full font-medium hover:bg-[#2A2622] transition-colors no-underline border border-[#C9A44C]"
           >
             Qui suis-je ?
+
+            Maman de trois enfants, salariée à temps plein et passionnée de cuisine, j’accompagne aujourd’hui les familles actives à retrouver le plaisir de cuisiner grâce au Thermomix.
           </Link>
         </div>
       </section>
