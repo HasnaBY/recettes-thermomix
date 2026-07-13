@@ -84,27 +84,7 @@ export default function QuiSuisJe() {
             </li>
           ))}
         </ul>
-        {content.club_sharing_text && (
-          <p className="text-[#3A3532]/70 mb-4">
-            Au sein du Club, je partage à mes clientes une sélection de recettes testées et validées par mes soins — comme{' '}
-            {ramenId ? (
-              <Link href={`/recipes/${ramenId}`} className="text-[#3A3532] underline">
-                ce ramen au curry rouge et poulet
-              </Link>
-            ) : (
-              'ce ramen au curry rouge et poulet'
-            )}
-            {' '}— en plus de mes propres créations personnelles, comme{' '}
-            {bouzaId ? (
-              <Link href={`/recipes/${bouzaId}`} className="text-[#3A3532] underline">
-                la bouza noisettes
-              </Link>
-            ) : (
-              'la bouza noisettes'
-            )}
-            .
-          </p>
-        )}
+        
         <BrandPhoto
           photoKey="bouza_photo"
           alt="Bouza noisettes"
