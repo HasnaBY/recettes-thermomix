@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 type ValueItem = { icon: string; label: string }
 
 export default function AdminAbout() {
+  const [subtitle, setSubtitle] = useState('')
   const [beforeThermomix, setBeforeThermomix] = useState('')
   const [discovery, setDiscovery] = useState('')
   const [whatChanged, setWhatChanged] = useState<string[]>([])
@@ -25,6 +26,7 @@ export default function AdminAbout() {
       .single()
       .then(({ data }) => {
         if (data) {
+          setSubtitle(data.subtitle ?? '')
           setBeforeThermomix(data.before_thermomix ?? '')
           setDiscovery(data.discovery ?? '')
           setWhatChanged(data.what_changed ?? [])
@@ -64,6 +66,7 @@ export default function AdminAbout() {
     const { error } = await supabase
       .from('about_page_content')
       .update({
+        subtitle,
         before_thermomix: beforeThermomix,
         discovery,
         what_changed: whatChanged,
@@ -84,6 +87,18 @@ export default function AdminAbout() {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Modifier "Qui suis-je ?"</h1>
 
       <form onSubmit={handleSave} className="flex flex-col gap-6">
+        <div>
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            Sous-titre (sous "Qui suis-je ?")
+          </label>
+          <textarea
+            value={subtitle}
+            onChange={(e) => setSubtitle(e.target.value)}
+            rows={2}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+          />
+        </div>
+
         <div>
           <label className="block mb-2 text-sm font-medium text-gray-700">
             Mon quotidien avant Thermomix

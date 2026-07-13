@@ -8,6 +8,7 @@ import AdminEditButton from '@/components/AdminEditButton'
 type ValueItem = { icon: string; label: string }
 
 type AboutContent = {
+  subtitle: string | null
   before_thermomix: string
   discovery: string
   what_changed: string[]
@@ -50,7 +51,10 @@ export default function QuiSuisJe() {
 
   return (
     <div className="px-6 sm:px-8 py-12 max-w-2xl mx-auto">
-      <h1 className="font-display text-3xl text-[#3A3532] mb-10 text-center">Qui suis-je ?</h1>
+      <h1 className="font-display text-3xl text-[#3A3532] mb-3 text-center">Qui suis-je ?</h1>
+      {content.subtitle && (
+        <p className="text-[#3A3532]/70 text-center mb-10 max-w-lg mx-auto">{content.subtitle}</p>
+      )}
 
       <section className="mb-10">
         <h2 className="font-display text-xl text-[#3A3532] mb-3">Mon quotidien avant Thermomix</h2>
