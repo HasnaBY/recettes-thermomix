@@ -10,9 +10,17 @@ import type { User } from '@supabase/supabase-js'
 type Challenge = {
   title: string
   description: string
-  recipe_id: string | null
   active: boolean
+  recipe_list_id: string | null
+  recipe_ids: string[] | null
+  description_images: string[] | null
+  reward_text: string | null
+  reward_image_url: string | null
+  banner_top_url: string | null
+  banner_bottom_url: string | null
 }
+
+type Recipe = { id: string; title: string; image_url: string | null }
 
 type Entry = {
   id: string
@@ -30,6 +38,7 @@ export default function ChallengePage() {
   const [user, setUser] = useState<User | null>(null)
   const [approved, setApproved] = useState(false)
   const [challenge, setChallenge] = useState<Challenge | null>(null)
+  const [linkedRecipes, setLinkedRecipes] = useState<Recipe[]>([])
   const [entries, setEntries] = useState<Entry[]>([])
   const [myEntry, setMyEntry] = useState<Entry | null>(null)
   const [files, setFiles] = useState<File[]>([])
@@ -79,6 +88,21 @@ export default function ChallengePage() {
           .eq('id', 1)
           .single()
         setChallenge(challengeData as any)
+
+        if (challengeData?.recipe_list_id) {
+          const { data: items } = await supabase
+            .from('recipe_list_items')
+            .select('recipes(id, title, image_url)')
+            .eq('list_id', challengeData.recipe_list_id)
+            .order('position')
+          setLinkedRecipes((items ?? []).map((i: any) => i.recipes).filter(Boolean))
+        } else if (challengeData?.recipe_ids?.length) {
+          const { data: recipesData } = await supabase
+            .from('recipes')
+            .select('id, title, image_url')
+            .in('id', challengeData.recipe_ids)
+          setLinkedRecipes(recipesData ?? [])
+        }
 
         await loadEntries(userData.user.id)
       }
@@ -173,88 +197,134 @@ export default function ChallengePage() {
   }
 
   return (
-    <div className="px-6 sm:px-8 py-12 max-w-3xl mx-auto">
-      <h1 className="font-display text-3xl text-[#3A3532] mb-2 text-center">🏆 Challenge du mois</h1>
-      <p className="text-[#3A3532]/70 text-center mb-1">{challenge.title}</p>
-      <p className="text-[#3A3532]/70 text-center mb-8">{challenge.description}</p>
-
-      {challenge.recipe_id && (
-        <div className="text-center mb-10">
-          <Link href={`/recipes/${challenge.recipe_id}`} className="text-[#3A3532] underline text-sm">
-            Voir la recette du challenge
-          </Link>
-        </div>
+    <div className="max-w-3xl mx-auto">
+      {challenge.banner_top_url && (
+        <img src={challenge.banner_top_url} alt="" className="w-full h-48 sm:h-64 object-cover" />
       )}
 
-      <div className="border border-[#F0EAE0] bg-white rounded-2xl p-5 mb-10">
-        <h2 className="font-display text-lg text-[#3A3532] mb-3">
-          {myEntry ? 'Ta participation' : 'Partage ta réalisation'}
-        </h2>
+      <div className="px-6 sm:px-8 py-12">
+        <h1 className="font-display text-3xl text-[#3A3532] mb-2 text-center">🏆 Challenge du mois</h1>
+        <p className="text-[#3A3532]/70 text-center mb-1">{challenge.title}</p>
+        <p className="text-[#3A3532]/70 text-center mb-6">{challenge.description}</p>
 
-        {myEntry ? (
-          <div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2">
-              {myEntry.image_urls?.map((url, i) => (
-                <img key={i} src={url} alt={`Photo ${i + 1}`} className="w-full h-32 object-cover rounded-xl" />
+        {challenge.description_images && challenge.description_images.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-8">
+            {challenge.description_images.map((url, i) => (
+              <img key={i} src={url} alt="" className="w-full h-32 object-cover rounded-xl" />
+            ))}
+          </div>
+        )}
+
+        {linkedRecipes.length > 0 && (
+          <div className="mb-10">
+            <h2 className="font-display text-lg text-[#3A3532] mb-3 text-center">Recettes du challenge</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {linkedRecipes.map((r) => (
+                <Link
+                  key={r.id}
+                  href={`/recipes/${r.id}`}
+                  className="block rounded-xl border border-[#F0EAE0] bg-white overflow-hidden no-underline text-inherit"
+                >
+                  {r.image_url ? (
+                    <img src={r.image_url} alt={r.title} className="w-full h-24 object-cover" />
+                  ) : (
+                    <div className="w-full h-24 bg-[#F6DEE1]/30" />
+                  )}
+                  <p className="text-xs text-[#3A3532] p-2">{r.title}</p>
+                </Link>
               ))}
             </div>
-            {myEntry.comment && <p className="text-[#3A3532]/70 text-sm">{myEntry.comment}</p>}
-            <p className="text-xs text-[#3A3532]/40 mt-2">
-              Tu as déjà participé ce mois-ci, merci ! 🎉
-            </p>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-            <div>
-              <label className="block mb-2 text-sm text-[#3A3532]/60">
-                Jusqu'à 5 photos de ta réalisation
-              </label>
-              <input type="file" accept="image/*" multiple onChange={handleFilesChange} />
-              {files.length > 0 && (
-                <p className="text-xs text-[#3A3532]/50 mt-1">{files.length} photo(s) sélectionnée(s)</p>
-              )}
-            </div>
-            <textarea
-              placeholder="Un commentaire sur ta réalisation (optionnel)"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              rows={2}
-              className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
-            />
-            {uploadProgress && <p className="text-sm text-[#3A3532]/60">{uploadProgress}</p>}
-            {error && <p className="text-red-600 text-sm">{error}</p>}
-            <button
-              type="submit"
-              disabled={uploading || files.length === 0}
-              className="py-2.5 bg-[#3A3532] text-[#FDFBF6] rounded-full font-medium hover:bg-[#2A2622] transition-colors border border-[#C9A44C] disabled:opacity-50"
-            >
-              {uploading ? 'Envoi...' : 'Partager ma réalisation'}
-            </button>
-          </form>
         )}
-      </div>
 
-      <h2 className="font-display text-lg text-[#3A3532] mb-4">
-        Les réalisations de ce mois ({entries.length})
-      </h2>
-      {entries.length === 0 ? (
-        <p className="text-[#3A3532]/60">Sois la première à partager ta réalisation !</p>
-      ) : (
-        <div className="grid gap-6">
-          {entries.map((e) => (
-            <div key={e.id}>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {e.image_urls?.map((url, i) => (
-                  <img key={i} src={url} alt="Participation" className="w-full h-32 object-cover rounded-xl" />
+        {challenge.reward_text && (
+          <div className="border border-[#C9A44C] bg-[#F6DEE1]/20 rounded-2xl p-5 mb-10 text-center">
+            <h2 className="font-display text-lg text-[#3A3532] mb-2">🎁 À gagner</h2>
+            {challenge.reward_image_url && (
+              <img
+                src={challenge.reward_image_url}
+                alt="Récompense"
+                className="w-full h-40 object-cover rounded-xl mb-3"
+              />
+            )}
+            <p className="text-[#3A3532]/80">{challenge.reward_text}</p>
+          </div>
+        )}
+
+        <div className="border border-[#F0EAE0] bg-white rounded-2xl p-5 mb-10">
+          <h2 className="font-display text-lg text-[#3A3532] mb-3">
+            {myEntry ? 'Ta participation' : 'Partage ta réalisation'}
+          </h2>
+
+          {myEntry ? (
+            <div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2">
+                {myEntry.image_urls?.map((url, i) => (
+                  <img key={i} src={url} alt={`Photo ${i + 1}`} className="w-full h-32 object-cover rounded-xl" />
                 ))}
               </div>
-              {e.comment && <p className="text-xs text-[#3A3532]/50 mt-1">{e.comment}</p>}
+              {myEntry.comment && <p className="text-[#3A3532]/70 text-sm">{myEntry.comment}</p>}
+              <p className="text-xs text-[#3A3532]/40 mt-2">
+                Tu as déjà participé ce mois-ci, merci ! 🎉
+              </p>
             </div>
-          ))}
+          ) : (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+              <div>
+                <label className="block mb-2 text-sm text-[#3A3532]/60">
+                  Jusqu'à 5 photos de ta réalisation
+                </label>
+                <input type="file" accept="image/*" multiple onChange={handleFilesChange} />
+                {files.length > 0 && (
+                  <p className="text-xs text-[#3A3532]/50 mt-1">{files.length} photo(s) sélectionnée(s)</p>
+                )}
+              </div>
+              <textarea
+                placeholder="Un commentaire sur ta réalisation (optionnel)"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                rows={2}
+                className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
+              />
+              {uploadProgress && <p className="text-sm text-[#3A3532]/60">{uploadProgress}</p>}
+              {error && <p className="text-red-600 text-sm">{error}</p>}
+              <button
+                type="submit"
+                disabled={uploading || files.length === 0}
+                className="py-2.5 bg-[#3A3532] text-[#FDFBF6] rounded-full font-medium hover:bg-[#2A2622] transition-colors border border-[#C9A44C] disabled:opacity-50"
+              >
+                {uploading ? 'Envoi...' : 'Partager ma réalisation'}
+              </button>
+            </form>
+          )}
         </div>
-      )}
 
-      <AdminEditButton href="/admin/challenge" />
+        <h2 className="font-display text-lg text-[#3A3532] mb-4">
+          Les réalisations de ce mois ({entries.length})
+        </h2>
+        {entries.length === 0 ? (
+          <p className="text-[#3A3532]/60">Sois la première à partager ta réalisation !</p>
+        ) : (
+          <div className="grid gap-6">
+            {entries.map((e) => (
+              <div key={e.id}>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {e.image_urls?.map((url, i) => (
+                    <img key={i} src={url} alt="Participation" className="w-full h-32 object-cover rounded-xl" />
+                  ))}
+                </div>
+                {e.comment && <p className="text-xs text-[#3A3532]/50 mt-1">{e.comment}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <AdminEditButton href="/admin/challenge" />
+      </div>
+
+      {challenge.banner_bottom_url && (
+        <img src={challenge.banner_bottom_url} alt="" className="w-full h-48 sm:h-64 object-cover" />
+      )}
     </div>
   )
 }
