@@ -7,6 +7,7 @@ export default function AdminSiteSettings() {
   const [showParrainage, setShowParrainage] = useState(true)
   const [showClub, setShowClub] = useState(true)
   const [showConcours, setShowConcours] = useState(true)
+  const [showPublicTestimonials, setShowPublicTestimonials] = useState(true)
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
   const supabase = createClient()
@@ -22,6 +23,7 @@ export default function AdminSiteSettings() {
           setShowParrainage(data.show_parrainage)
           setShowClub(data.show_club)
           setShowConcours(data.show_concours)
+          setShowPublicTestimonials(data.show_public_testimonials ?? true)
         }
         setLoading(false)
       })
@@ -80,6 +82,11 @@ export default function AdminSiteSettings() {
           label="Grand Concours"
           checked={showConcours}
           onChange={(v) => toggle('show_concours', v, setShowConcours)}
+        />
+        <Row
+          label="Page publique 'Laisser un avis'"
+          checked={showPublicTestimonials}
+          onChange={(v) => toggle('show_public_testimonials', v, setShowPublicTestimonials)}
         />
       </div>
 

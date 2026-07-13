@@ -9,6 +9,7 @@ type SiteSettings = {
   show_parrainage: boolean
   show_club: boolean
   show_concours: boolean
+  show_public_testimonials: boolean
 }
 
 export default function Nav() {
@@ -18,6 +19,7 @@ export default function Nav() {
     show_parrainage: true,
     show_club: true,
     show_concours: true,
+    show_public_testimonials: true,
   })
   const supabase = createClient()
 
@@ -79,12 +81,16 @@ export default function Nav() {
           Recettes
         </Link>
         <Link href="/listes" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-  Listes
-</Link>
-
-        <Link href="/confiance" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-          Elles me font confiance
+          Listes
         </Link>
+        <Link href="/confiance" className="text-[#3A3532]/80 hover:text-[#3A3532]">
+          Elles m'ont fait confiance
+        </Link>
+        {settings.show_public_testimonials && (
+          <Link href="/laisser-un-avis" className="text-[#3A3532]/80 hover:text-[#3A3532]">
+            Laisser un avis
+          </Link>
+        )}
         {settings.show_parrainage && (
           <Link href="/parrainage" className="text-[#3A3532]/80 hover:text-[#3A3532]">
             Parrainage

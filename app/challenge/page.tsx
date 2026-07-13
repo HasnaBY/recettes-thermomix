@@ -156,6 +156,23 @@ export default function ChallengePage() {
 
       if (insertError) throw insertError
 
+      // Alimente aussi "Elles m'ont fait confiance" (catégorie réalisations)
+      const { count } = await supabase
+        .from('social_proof')
+        .select('*', { count: 'exact', head: true })
+        .eq('category', 'realisation')
+
+      const startPosition = count ?? 0
+
+      for (let i = 0; i < uploadedUrls.length; i++) {
+        await supabase.from('social_proof').insert({
+          category: 'realisation',
+          image_url: uploadedUrls[i],
+          caption: comment || null,
+          position: startPosition + i,
+        })
+      }
+
       setFiles([])
       setComment('')
       await loadEntries(user.id)

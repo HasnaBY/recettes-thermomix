@@ -47,6 +47,11 @@ export default function Home() {
         <div className="watercolor-blob blob-blue w-64 h-64 top-20 -right-10" />
 
         <div className="relative">
+          <h1 className="font-display text-3xl sm:text-4xl text-[#3A3532] mb-4 leading-snug">
+            {content.hero_title}
+          </h1>
+          <p className="text-[#3A3532]/70 text-lg mb-6 max-w-2xl mx-auto">{content.hero_subtitle}</p>
+
           <div className="inline-block p-1.5 rounded-full border-2 border-[#C9A44C] mb-6">
             <BrandPhoto
               photoKey="portrait_thermomix"
@@ -54,10 +59,7 @@ export default function Home() {
               className="w-40 h-40 rounded-full object-cover"
             />
           </div>
-          <h1 className="font-display text-3xl sm:text-4xl text-[#3A3532] mb-4 leading-snug">
-            {content.hero_title}
-          </h1>
-          <p className="text-[#3A3532]/70 text-lg mb-4 max-w-2xl mx-auto">{content.hero_subtitle}</p>
+
           {content.hero_paragraph_3 && (
             <p className="text-[#3A3532]/70 text-lg mb-8 max-w-2xl mx-auto">{content.hero_paragraph_3}</p>
           )}
