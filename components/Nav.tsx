@@ -60,8 +60,6 @@ export default function Nav() {
     window.location.href = '/'
   }
 
-  const hasMoreItems = settings.show_club || settings.show_parrainage || settings.show_concours
-
   return (
     <nav className="px-6 py-4 border-b border-[#F0EAE0] flex flex-wrap justify-between items-center gap-3 bg-[#FDFBF6] relative">
       <Link href="/" className="font-display text-lg text-[#3A3532] no-underline">
@@ -69,76 +67,143 @@ export default function Nav() {
       </Link>
 
       <div className="flex flex-wrap gap-4 items-center text-sm">
-        <Link href="/qui-suis-je" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-          Qui suis-je
-        </Link>
-        <Link href="/pourquoi-commander" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-          Pourquoi commander
-        </Link>
-        {settings.show_club && (
-          <Link href="/club-fondatrices" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-            Le Cercle With Love
-          </Link>
-        )}
-        <Link href="/recettes" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-          Recettes
-        </Link>
-        <Link href="/confiance" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-          Elles m'ont fait confiance
-        </Link>
-        {settings.show_public_testimonials && (
-          <Link href="/laisser-un-avis" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-            Laisser un avis
-          </Link>
-        )}
-
-        {(hasMoreItems || true) && (
-          <div className="relative">
-            <button
-              onClick={() => setMoreOpen(!moreOpen)}
-              className="text-[#3A3532]/80 hover:text-[#3A3532] flex items-center gap-1"
-            >
-              Plus {moreOpen ? '▲' : '▼'}
-            </button>
-            {moreOpen && (
-              <div className="absolute top-full mt-2 left-0 bg-white border border-[#F0EAE0] rounded-xl shadow-lg py-2 min-w-[180px] z-50">
-                <Link
-                  href="/listes"
-                  onClick={() => setMoreOpen(false)}
-                  className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
-                >
-                  Listes
-                </Link>
-                {settings.show_parrainage && (
-                  <Link
-                    href="/parrainage"
-                    onClick={() => setMoreOpen(false)}
-                    className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
-                  >
-                    Parrainage
-                  </Link>
-                )}
-                {settings.show_concours && (
-                  <Link
-                    href="/grand-concours"
-                    onClick={() => setMoreOpen(false)}
-                    className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
-                  >
-                    Grand Concours
-                  </Link>
-                )}
-                {user && (
-                  <Link
-                    href="/challenge"
-                    onClick={() => setMoreOpen(false)}
-                    className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
-                  >
-                    Challenge du mois
-                  </Link>
-                )}
-              </div>
+        {user ? (
+          <>
+            <Link href="/recettes" className="text-[#3A3532]/80 hover:text-[#3A3532]">
+              Recettes
+            </Link>
+            <Link href="/listes" className="text-[#3A3532]/80 hover:text-[#3A3532]">
+              Listes
+            </Link>
+            <Link href="/challenge" className="text-[#3A3532]/80 hover:text-[#3A3532]">
+              Challenge du mois
+            </Link>
+            {settings.show_club && (
+              <Link href="/club-fondatrices" className="text-[#3A3532]/80 hover:text-[#3A3532]">
+                Le Cercle With Love
+              </Link>
             )}
-          </div>
+            <Link href="/confiance" className="text-[#3A3532]/80 hover:text-[#3A3532]">
+              Elles m'ont fait confiance
+            </Link>
+            {settings.show_public_testimonials && (
+              <Link href="/laisser-un-avis" className="text-[#3A3532]/80 hover:text-[#3A3532]">
+                Laisser un avis
+              </Link>
+            )}
+
+            <div className="relative">
+              <button
+                onClick={() => setMoreOpen(!moreOpen)}
+                className="text-[#3A3532]/80 hover:text-[#3A3532] flex items-center gap-1"
+              >
+                Plus {moreOpen ? '▲' : '▼'}
+              </button>
+              {moreOpen && (
+                <div className="absolute top-full mt-2 left-0 bg-white border border-[#F0EAE0] rounded-xl shadow-lg py-2 min-w-[180px] z-50">
+                  <Link
+                    href="/qui-suis-je"
+                    onClick={() => setMoreOpen(false)}
+                    className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
+                  >
+                    Qui suis-je
+                  </Link>
+                  <Link
+                    href="/pourquoi-commander"
+                    onClick={() => setMoreOpen(false)}
+                    className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
+                  >
+                    Pourquoi commander
+                  </Link>
+                  {settings.show_parrainage && (
+                    <Link
+                      href="/parrainage"
+                      onClick={() => setMoreOpen(false)}
+                      className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
+                    >
+                      Parrainage
+                    </Link>
+                  )}
+                  {settings.show_concours && (
+                    <Link
+                      href="/grand-concours"
+                      onClick={() => setMoreOpen(false)}
+                      className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
+                    >
+                      Grand Concours
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <Link href="/qui-suis-je" className="text-[#3A3532]/80 hover:text-[#3A3532]">
+              Qui suis-je
+            </Link>
+            <Link href="/pourquoi-commander" className="text-[#3A3532]/80 hover:text-[#3A3532]">
+              Pourquoi commander
+            </Link>
+            {settings.show_club && (
+              <Link href="/club-fondatrices" className="text-[#3A3532]/80 hover:text-[#3A3532]">
+                Le Cercle With Love
+              </Link>
+            )}
+            <Link href="/confiance" className="text-[#3A3532]/80 hover:text-[#3A3532]">
+              Elles m'ont fait confiance
+            </Link>
+            {settings.show_public_testimonials && (
+              <Link href="/laisser-un-avis" className="text-[#3A3532]/80 hover:text-[#3A3532]">
+                Laisser un avis
+              </Link>
+            )}
+
+            <div className="relative">
+              <button
+                onClick={() => setMoreOpen(!moreOpen)}
+                className="text-[#3A3532]/80 hover:text-[#3A3532] flex items-center gap-1"
+              >
+                Plus {moreOpen ? '▲' : '▼'}
+              </button>
+              {moreOpen && (
+                <div className="absolute top-full mt-2 left-0 bg-white border border-[#F0EAE0] rounded-xl shadow-lg py-2 min-w-[180px] z-50">
+                  <Link
+                    href="/recettes"
+                    onClick={() => setMoreOpen(false)}
+                    className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
+                  >
+                    Recettes
+                  </Link>
+                  <Link
+                    href="/listes"
+                    onClick={() => setMoreOpen(false)}
+                    className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
+                  >
+                    Listes
+                  </Link>
+                  {settings.show_parrainage && (
+                    <Link
+                      href="/parrainage"
+                      onClick={() => setMoreOpen(false)}
+                      className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
+                    >
+                      Parrainage
+                    </Link>
+                  )}
+                  {settings.show_concours && (
+                    <Link
+                      href="/grand-concours"
+                      onClick={() => setMoreOpen(false)}
+                      className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
+                    >
+                      Grand Concours
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
         )}
 
         <Link
