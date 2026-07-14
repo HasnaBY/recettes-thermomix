@@ -15,6 +15,7 @@ type SiteSettings = {
 export default function Nav() {
   const [user, setUser] = useState<User | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
   const [settings, setSettings] = useState<SiteSettings>({
     show_parrainage: true,
     show_club: true,
@@ -59,8 +60,10 @@ export default function Nav() {
     window.location.href = '/'
   }
 
+  const hasMoreItems = settings.show_club || settings.show_parrainage || settings.show_concours
+
   return (
-    <nav className="px-6 py-4 border-b border-[#F0EAE0] flex flex-wrap justify-between items-center gap-3 bg-[#FDFBF6]">
+    <nav className="px-6 py-4 border-b border-[#F0EAE0] flex flex-wrap justify-between items-center gap-3 bg-[#FDFBF6] relative">
       <Link href="/" className="font-display text-lg text-[#3A3532] no-underline">
         Thermomix With Love, Hasna
       </Link>
@@ -80,9 +83,6 @@ export default function Nav() {
         <Link href="/recettes" className="text-[#3A3532]/80 hover:text-[#3A3532]">
           Recettes
         </Link>
-        <Link href="/listes" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-          Listes
-        </Link>
         <Link href="/confiance" className="text-[#3A3532]/80 hover:text-[#3A3532]">
           Elles m'ont fait confiance
         </Link>
@@ -91,25 +91,59 @@ export default function Nav() {
             Laisser un avis
           </Link>
         )}
-        {settings.show_parrainage && (
-          <Link href="/parrainage" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-            Parrainage
-          </Link>
-        )}
-        {settings.show_concours && (
-          <Link href="/grand-concours" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-            Grand Concours
-          </Link>
-        )}
-        {user && (
-          <Link href="/challenge" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-            Challenge du mois
-          </Link>
+
+        {(hasMoreItems || true) && (
+          <div className="relative">
+            <button
+              onClick={() => setMoreOpen(!moreOpen)}
+              className="text-[#3A3532]/80 hover:text-[#3A3532] flex items-center gap-1"
+            >
+              Plus {moreOpen ? '▲' : '▼'}
+            </button>
+            {moreOpen && (
+              <div className="absolute top-full mt-2 left-0 bg-white border border-[#F0EAE0] rounded-xl shadow-lg py-2 min-w-[180px] z-50">
+                <Link
+                  href="/listes"
+                  onClick={() => setMoreOpen(false)}
+                  className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
+                >
+                  Listes
+                </Link>
+                {settings.show_parrainage && (
+                  <Link
+                    href="/parrainage"
+                    onClick={() => setMoreOpen(false)}
+                    className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
+                  >
+                    Parrainage
+                  </Link>
+                )}
+                {settings.show_concours && (
+                  <Link
+                    href="/grand-concours"
+                    onClick={() => setMoreOpen(false)}
+                    className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
+                  >
+                    Grand Concours
+                  </Link>
+                )}
+                {user && (
+                  <Link
+                    href="/challenge"
+                    onClick={() => setMoreOpen(false)}
+                    className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
+                  >
+                    Challenge du mois
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
         )}
 
         <Link
           href="/contact"
-          className="px-3 py-1.5 bg-[#3A3532] text-[#FDFBF6] rounded-full font-medium hover:bg-[#2A2622] transition-colors no-underline border border-[#C9A44C]"
+          className="px-3 py-1.5 bg-[#3A3532] text-[#FDFBF6] rounded-full font-medium hover:bg-[#2A2622] transition-colors no-underline"
         >
           Me contacter
         </Link>
