@@ -75,16 +75,11 @@ export default function Nav() {
             <Link href="/listes" className="text-[#3A3532]/80 hover:text-[#3A3532]">
               Listes
             </Link>
+            <Link href="/favorites" className="text-[#3A3532]/80 hover:text-[#3A3532]">
+              Mes favoris
+            </Link>
             <Link href="/challenge" className="text-[#3A3532]/80 hover:text-[#3A3532]">
               Challenge du mois
-            </Link>
-            {settings.show_club && (
-              <Link href="/club-fondatrices" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-                Le Cercle With Love
-              </Link>
-            )}
-            <Link href="/confiance" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-              Elles m'ont fait confiance
             </Link>
             {settings.show_public_testimonials && (
               <Link href="/laisser-un-avis" className="text-[#3A3532]/80 hover:text-[#3A3532]">
@@ -114,6 +109,22 @@ export default function Nav() {
                     className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
                   >
                     Pourquoi commander
+                  </Link>
+                  {settings.show_club && (
+                    <Link
+                      href="/club-fondatrices"
+                      onClick={() => setMoreOpen(false)}
+                      className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
+                    >
+                      Le Cercle With Love
+                    </Link>
+                  )}
+                  <Link
+                    href="/confiance"
+                    onClick={() => setMoreOpen(false)}
+                    className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
+                  >
+                    Elles m'ont fait confiance
                   </Link>
                   {settings.show_parrainage && (
                     <Link
@@ -220,9 +231,6 @@ export default function Nav() {
                 Admin
               </Link>
             )}
-            <Link href="/favorites" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-              Mes favoris
-            </Link>
             <span className="text-[#3A3532]/50 hidden sm:inline">{user.email}</span>
             <button onClick={handleLogout} className="text-[#3A3532]/80 hover:text-[#3A3532] cursor-pointer">
               Se déconnecter
