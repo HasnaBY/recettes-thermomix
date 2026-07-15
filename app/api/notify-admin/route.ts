@@ -19,7 +19,10 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json()
-  const type = body.type as string
+
+
+  const type = request.nextUrl.searchParams.get('type') as string
+
   const record = body.record
 
   const config = LABELS[type]
