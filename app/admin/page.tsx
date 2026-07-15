@@ -73,6 +73,11 @@ export default function AdminPage() {
       <Link href="/admin/new-recipe" style={{ display: 'inline-block', marginBottom: '1.5rem' }}>
   + Ajouter une recette
 </Link>
+
+<Link href="/admin/offers" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
+  Offres du moment
+</Link>
+
 <Link href="/admin/testimonials" style={{ display: 'inline-block', marginLeft: '1rem', marginBottom: '1.5rem' }}>
   Gérer les témoignages
 </Link>
