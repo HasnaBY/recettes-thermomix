@@ -43,10 +43,12 @@ export default function AdminOffers() {
         setUploadProgress(`Envoi de la photo ${i + 1}/${newFiles.length}...`)
 
         const compressed = await imageCompression(newFiles[i], {
-          maxWidthOrHeight: 1200,
-          maxSizeMB: 0.3,
-          fileType: 'image/webp',
-        })
+  maxWidthOrHeight: 1920,
+  maxSizeMB: 1,
+  fileType: 'image/webp',
+  initialQuality: 0.9,
+})
+
         const fileName = `offer-${Date.now()}-${i}.webp`
         const { error } = await supabase.storage.from('site-images').upload(fileName, compressed)
         if (error) throw error

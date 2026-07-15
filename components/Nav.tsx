@@ -15,7 +15,7 @@ type SiteSettings = {
 export default function Nav() {
   const [user, setUser] = useState<User | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [moreOpen, setMoreOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const [settings, setSettings] = useState<SiteSettings>({
     show_parrainage: true,
     show_club: true,
@@ -60,188 +60,166 @@ export default function Nav() {
     window.location.href = '/'
   }
 
+  const close = () => setMenuOpen(false)
+
+  const linkClass =
+    'block px-6 py-3 text-[#3A3532] hover:bg-[#F6DEE1]/20 no-underline text-base'
+
   return (
-    <nav className="px-6 py-4 border-b border-[#F0EAE0] flex flex-wrap justify-between items-center gap-3 bg-[#FDFBF6] relative">
-      <Link href="/" className="font-display text-lg text-[#3A3532] no-underline">
-        Thermomix With Love, Hasna
-      </Link>
+    <>
+      <nav className="px-6 py-4 border-b border-[#F0EAE0] flex justify-between items-center bg-[#FDFBF6]">
+        <Link href="/" className="font-display text-lg text-[#3A3532] no-underline" onClick={close}>
+          Thermomix With Love, Hasna
+        </Link>
 
-      <div className="flex flex-wrap gap-4 items-center text-sm">
-        {user ? (
-          <>
-            <Link href="/recettes" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-              Recettes
-            </Link>
-            <Link href="/listes" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-              Listes
-            </Link>
-            <Link href="/favorites" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-              Mes favoris
-            </Link>
-            <Link href="/challenge" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-              Challenge du mois
-            </Link>
-            {settings.show_public_testimonials && (
-              <Link href="/laisser-un-avis" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-                Laisser un avis
-              </Link>
-            )}
+        <button
+          onClick={() => setMenuOpen(true)}
+          aria-label="Ouvrir le menu"
+          className="text-2xl text-[#3A3532] px-2"
+        >
+          ☰
+        </button>
+      </nav>
 
-            <div className="relative">
-              <button
-                onClick={() => setMoreOpen(!moreOpen)}
-                className="text-[#3A3532]/80 hover:text-[#3A3532] flex items-center gap-1"
-              >
-                Plus {moreOpen ? '▲' : '▼'}
+      {menuOpen && (
+        <div className="fixed inset-0 z-[100]">
+          <div className="absolute inset-0 bg-black/40" onClick={close} />
+
+          <div className="absolute top-0 right-0 h-full w-[80%] max-w-xs bg-[#FDFBF6] shadow-xl overflow-y-auto">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-[#F0EAE0]">
+              <span className="font-display text-lg text-[#3A3532]">Menu</span>
+              <button onClick={close} className="text-2xl text-[#3A3532] px-2" aria-label="Fermer le menu">
+                ✕
               </button>
-              {moreOpen && (
-                <div className="absolute top-full mt-2 left-0 bg-white border border-[#F0EAE0] rounded-xl shadow-lg py-2 min-w-[180px] z-50">
-                  <Link
-                    href="/qui-suis-je"
-                    onClick={() => setMoreOpen(false)}
-                    className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
-                  >
+            </div>
+
+            <div className="py-2">
+              {user ? (
+                <>
+                  <Link href="/recettes" onClick={close} className={linkClass}>
+                    Recettes
+                  </Link>
+                  <Link href="/listes" onClick={close} className={linkClass}>
+                    Listes
+                  </Link>
+                  <Link href="/favorites" onClick={close} className={linkClass}>
+                    Mes favoris
+                  </Link>
+                  <Link href="/challenge" onClick={close} className={linkClass}>
+                    Challenge du mois
+                  </Link>
+                  {settings.show_public_testimonials && (
+                    <Link href="/laisser-un-avis" onClick={close} className={linkClass}>
+                      Laisser un avis
+                    </Link>
+                  )}
+
+                  <div className="my-2 border-t border-[#F0EAE0]" />
+
+                  <Link href="/qui-suis-je" onClick={close} className={linkClass}>
                     Qui suis-je
                   </Link>
-                  <Link
-                    href="/pourquoi-commander"
-                    onClick={() => setMoreOpen(false)}
-                    className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
-                  >
+                  <Link href="/pourquoi-commander" onClick={close} className={linkClass}>
                     Pourquoi commander
                   </Link>
                   {settings.show_club && (
-                    <Link
-                      href="/club-fondatrices"
-                      onClick={() => setMoreOpen(false)}
-                      className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
-                    >
+                    <Link href="/club-fondatrices" onClick={close} className={linkClass}>
                       Le Cercle With Love
                     </Link>
                   )}
-                  <Link
-                    href="/confiance"
-                    onClick={() => setMoreOpen(false)}
-                    className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
-                  >
+                  <Link href="/confiance" onClick={close} className={linkClass}>
                     Elles m'ont fait confiance
                   </Link>
                   {settings.show_parrainage && (
-                    <Link
-                      href="/parrainage"
-                      onClick={() => setMoreOpen(false)}
-                      className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
-                    >
+                    <Link href="/parrainage" onClick={close} className={linkClass}>
                       Parrainage
                     </Link>
                   )}
                   {settings.show_concours && (
-                    <Link
-                      href="/grand-concours"
-                      onClick={() => setMoreOpen(false)}
-                      className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
-                    >
+                    <Link href="/grand-concours" onClick={close} className={linkClass}>
                       Grand Concours
                     </Link>
                   )}
-                </div>
-              )}
-            </div>
-          </>
-        ) : (
-          <>
-            <Link href="/qui-suis-je" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-              Qui suis-je
-            </Link>
-            <Link href="/pourquoi-commander" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-              Pourquoi commander
-            </Link>
-            {settings.show_club && (
-              <Link href="/club-fondatrices" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-                Le Cercle With Love
-              </Link>
-            )}
-            <Link href="/confiance" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-              Elles m'ont fait confiance
-            </Link>
-            {settings.show_public_testimonials && (
-              <Link href="/laisser-un-avis" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-                Laisser un avis
-              </Link>
-            )}
 
-            <div className="relative">
-              <button
-                onClick={() => setMoreOpen(!moreOpen)}
-                className="text-[#3A3532]/80 hover:text-[#3A3532] flex items-center gap-1"
-              >
-                Plus {moreOpen ? '▲' : '▼'}
-              </button>
-              {moreOpen && (
-                <div className="absolute top-full mt-2 left-0 bg-white border border-[#F0EAE0] rounded-xl shadow-lg py-2 min-w-[180px] z-50">
-                  <Link
-                    href="/recettes"
-                    onClick={() => setMoreOpen(false)}
-                    className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
+                  <div className="my-2 border-t border-[#F0EAE0]" />
+
+                  <Link href="/contact" onClick={close} className={linkClass}>
+                    Me contacter
+                  </Link>
+                  {isAdmin && (
+                    <Link href="/admin" onClick={close} className={linkClass}>
+                      Admin
+                    </Link>
+                  )}
+
+                  <div className="my-2 border-t border-[#F0EAE0]" />
+
+                  <div className="px-6 py-2 text-sm text-[#3A3532]/50">{user.email}</div>
+                  <button
+                    onClick={() => {
+                      close()
+                      handleLogout()
+                    }}
+                    className="block w-full text-left px-6 py-3 text-[#3A3532] hover:bg-[#F6DEE1]/20"
                   >
+                    Se déconnecter
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link href="/qui-suis-je" onClick={close} className={linkClass}>
+                    Qui suis-je
+                  </Link>
+                  <Link href="/pourquoi-commander" onClick={close} className={linkClass}>
+                    Pourquoi commander
+                  </Link>
+                  {settings.show_club && (
+                    <Link href="/club-fondatrices" onClick={close} className={linkClass}>
+                      Le Cercle With Love
+                    </Link>
+                  )}
+                  <Link href="/confiance" onClick={close} className={linkClass}>
+                    Elles m'ont fait confiance
+                  </Link>
+                  {settings.show_public_testimonials && (
+                    <Link href="/laisser-un-avis" onClick={close} className={linkClass}>
+                      Laisser un avis
+                    </Link>
+                  )}
+
+                  <div className="my-2 border-t border-[#F0EAE0]" />
+
+                  <Link href="/recettes" onClick={close} className={linkClass}>
                     Recettes
                   </Link>
-                  <Link
-                    href="/listes"
-                    onClick={() => setMoreOpen(false)}
-                    className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
-                  >
+                  <Link href="/listes" onClick={close} className={linkClass}>
                     Listes
                   </Link>
                   {settings.show_parrainage && (
-                    <Link
-                      href="/parrainage"
-                      onClick={() => setMoreOpen(false)}
-                      className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
-                    >
+                    <Link href="/parrainage" onClick={close} className={linkClass}>
                       Parrainage
                     </Link>
                   )}
                   {settings.show_concours && (
-                    <Link
-                      href="/grand-concours"
-                      onClick={() => setMoreOpen(false)}
-                      className="block px-4 py-2 text-[#3A3532]/80 hover:bg-[#F6DEE1]/20 no-underline"
-                    >
+                    <Link href="/grand-concours" onClick={close} className={linkClass}>
                       Grand Concours
                     </Link>
                   )}
-                </div>
+
+                  <div className="my-2 border-t border-[#F0EAE0]" />
+
+                  <Link href="/contact" onClick={close} className={linkClass}>
+                    Me contacter
+                  </Link>
+                  <Link href="/login" onClick={close} className={linkClass}>
+                    Se connecter
+                  </Link>
+                </>
               )}
             </div>
-          </>
-        )}
-
-        <Link
-          href="/contact"
-          className="px-3 py-1.5 bg-[#3A3532] text-[#FDFBF6] rounded-full font-medium hover:bg-[#2A2622] transition-colors no-underline"
-        >
-          Me contacter
-        </Link>
-
-        {user ? (
-          <>
-            {isAdmin && (
-              <Link href="/admin" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-                Admin
-              </Link>
-            )}
-            <span className="text-[#3A3532]/50 hidden sm:inline">{user.email}</span>
-            <button onClick={handleLogout} className="text-[#3A3532]/80 hover:text-[#3A3532] cursor-pointer">
-              Se déconnecter
-            </button>
-          </>
-        ) : (
-          <Link href="/login" className="text-[#3A3532]/80 hover:text-[#3A3532]">
-            Se connecter
-          </Link>
-        )}
-      </div>
-    </nav>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
