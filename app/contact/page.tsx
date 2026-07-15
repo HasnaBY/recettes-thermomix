@@ -24,6 +24,7 @@ export default function Contact() {
   const [activeType, setActiveType] = useState<RequestType | null>(null)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [message, setMessage] = useState('')
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
@@ -45,6 +46,7 @@ export default function Contact() {
     const { error } = await supabase.from('contact_messages').insert({
       name,
       email,
+      phone: phone || null,
       message,
       request_type: activeType,
     })
@@ -61,6 +63,7 @@ export default function Contact() {
     setSent(false)
     setName('')
     setEmail('')
+    setPhone('')
     setMessage('')
   }
 
@@ -127,7 +130,11 @@ export default function Contact() {
           </div>
 
           {sent ? (
-            <p className="text-[#3A3532]/70">Merci, ton message a bien été envoyé ! Je te répondrai rapidement.</p>
+            <p className="text-[#3A3532]/70">
+              {activeType === 'offres'
+                ? 'Merci ! Tu vas recevoir les offres du moment par email dans quelques instants.'
+                : 'Merci, ton message a bien été envoyé ! Je te répondrai rapidement.'}
+            </p>
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               <input
@@ -145,14 +152,26 @@ export default function Contact() {
                 required
                 className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
               />
-              <textarea
-                placeholder="Ton message"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                required
-                rows={4}
-                className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
-              />
+              {activeType === 'rappel' && (
+                <input
+                  type="tel"
+                  placeholder="Ton numéro de téléphone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                  className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
+                />
+              )}
+              {activeType !== 'offres' && (
+                <textarea
+                  placeholder="Ton message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  required={activeType !== 'offres'}
+                  rows={4}
+                  className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
+                />
+              )}
               {error && <p className="text-red-600 text-sm">{error}</p>}
               <button
                 type="submit"
