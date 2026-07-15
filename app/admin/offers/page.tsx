@@ -7,8 +7,9 @@ import imageCompression from 'browser-image-compression'
 export default function AdminOffers() {
   const [description, setDescription] = useState('')
   const [imageUrls, setImageUrls] = useState<string[]>([])
-  const [newFile, setNewFile] = useState<File | null>(null)
+  const [newFiles, setNewFiles] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState('')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
   const supabase = createClient()
@@ -25,25 +26,41 @@ export default function AdminOffers() {
     load()
   }, [])
 
-  const addImage = async () => {
-    if (!newFile) return
+  const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(e.target.files ?? [])
+    setNewFiles(selected)
+  }
+
+  const addImages = async () => {
+    if (newFiles.length === 0) return
     setUploading(true)
+    setMessage('')
+
     try {
-      const compressed = await imageCompression(newFile, {
-        maxWidthOrHeight: 1200,
-        maxSizeMB: 0.3,
-        fileType: 'image/webp',
-      })
-      const fileName = `offer-${Date.now()}.webp`
-      const { error } = await supabase.storage.from('site-images').upload(fileName, compressed)
-      if (error) throw error
-      const { data } = supabase.storage.from('site-images').getPublicUrl(fileName)
-      setImageUrls((prev) => [...prev, data.publicUrl])
-      setNewFile(null)
+      const uploadedUrls: string[] = []
+
+      for (let i = 0; i < newFiles.length; i++) {
+        setUploadProgress(`Envoi de la photo ${i + 1}/${newFiles.length}...`)
+
+        const compressed = await imageCompression(newFiles[i], {
+          maxWidthOrHeight: 1200,
+          maxSizeMB: 0.3,
+          fileType: 'image/webp',
+        })
+        const fileName = `offer-${Date.now()}-${i}.webp`
+        const { error } = await supabase.storage.from('site-images').upload(fileName, compressed)
+        if (error) throw error
+        const { data } = supabase.storage.from('site-images').getPublicUrl(fileName)
+        uploadedUrls.push(data.publicUrl)
+      }
+
+      setImageUrls((prev) => [...prev, ...uploadedUrls])
+      setNewFiles([])
     } catch (err: any) {
       setMessage('Erreur : ' + err.message)
     } finally {
       setUploading(false)
+      setUploadProgress('')
     }
   }
 
@@ -90,14 +107,19 @@ export default function AdminOffers() {
         ))}
       </div>
 
-      <div className="flex gap-2 mb-6">
-        <input type="file" accept="image/*" onChange={(e) => setNewFile(e.target.files?.[0] ?? null)} />
+      <div className="flex flex-col gap-2 mb-6">
+        <label className="text-sm text-gray-600">Sélectionne une ou plusieurs photos</label>
+        <input type="file" accept="image/*" multiple onChange={handleFilesChange} />
+        {newFiles.length > 0 && (
+          <p className="text-xs text-gray-500">{newFiles.length} photo(s) sélectionnée(s)</p>
+        )}
+        {uploadProgress && <p className="text-xs text-gray-500">{uploadProgress}</p>}
         <button
-          onClick={addImage}
-          disabled={uploading || !newFile}
-          className="px-3 py-1.5 bg-gray-900 text-white rounded-lg text-sm disabled:opacity-50"
+          onClick={addImages}
+          disabled={uploading || newFiles.length === 0}
+          className="self-start px-3 py-1.5 bg-gray-900 text-white rounded-lg text-sm disabled:opacity-50"
         >
-          {uploading ? 'Envoi...' : 'Ajouter'}
+          {uploading ? 'Envoi...' : 'Ajouter les photos'}
         </button>
       </div>
 
