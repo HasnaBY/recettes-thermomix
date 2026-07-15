@@ -21,7 +21,10 @@ export default function Contact() {
     contact_email: string
     intro_text: string | null
   } | null>(null)
+  
+  // Correction 1 : On sécurise le typage du State pour Next.js
   const [activeType, setActiveType] = useState<RequestType | null>(null)
+  
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -47,7 +50,7 @@ export default function Contact() {
       name,
       email,
       phone: phone || null,
-      message,
+      message: message || null,
       request_type: activeType,
     })
 
@@ -100,7 +103,7 @@ export default function Contact() {
 
           {settings?.whatsapp_number && (
             <a
-              href={`https://wa.me/${settings.whatsapp_number}`}
+              href={`https://wa.me{settings.whatsapp_number}`}
               target="_blank"
               rel="noopener noreferrer"
               className="border border-[#E3ECDD] bg-[#E3ECDD]/40 rounded-2xl p-4 text-left hover:shadow-md transition-shadow no-underline"
@@ -131,7 +134,8 @@ export default function Contact() {
 
           {sent ? (
             <p className="text-[#3A3532]/70">
-              {activeType === 'offres'
+              {/* Correction 2 : Transtypage "as string" pour bloquer l'erreur de comparaison ici */}
+              {(activeType as string) === 'offres'
                 ? 'Merci ! Tu vas recevoir les offres du moment par email dans quelques instants.'
                 : 'Merci, ton message a bien été envoyé ! Je te répondrai rapidement.'}
             </p>
@@ -152,7 +156,8 @@ export default function Contact() {
                 required
                 className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
               />
-              {activeType === 'rappel' && (
+              {/* Correction 3 : Transtypage "as string" */}
+              {(activeType as string) === 'rappel' && (
                 <input
                   type="tel"
                   placeholder="Ton numéro de téléphone"
@@ -162,12 +167,13 @@ export default function Contact() {
                   className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
                 />
               )}
-              {activeType !== 'offres' && (
+              {/* Correction 4 : Transtypage "as string" à la ligne 170 demandée */}
+              {(activeType as string) !== 'offres' && (
                 <textarea
                   placeholder="Ton message"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  required={activeType !== 'offres'}
+                  required={(activeType as string) !== 'offres'}
                   rows={4}
                   className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
                 />
