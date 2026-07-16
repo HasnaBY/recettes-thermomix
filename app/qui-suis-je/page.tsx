@@ -75,13 +75,15 @@ export default function QuiSuisJe() {
         <p className="text-[#3A3532]/70">{content.discovery}</p>
       </section>
 
+
       <div className="flex justify-center mb-10">
-        <BrandPhoto
-          photoKey="round_logo"
-          alt="Thermomix With Love, Hasna"
-          className="w-28 h-28 rounded-full object-cover border-2 border-[#C9A44C]"
-        />
-      </div>
+  <BrandPhoto
+    photoKey="kids_cooking"
+    alt="Session cuisine en famille avec mes enfants"
+    className="w-full max-w-md h-64 object-cover rounded-2xl"
+  />
+</div>
+
 
       <section className="mb-10">
         <h2 className="font-display text-xl text-[#3A3532] mb-3">Ce que Thermomix a changé</h2>

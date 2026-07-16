@@ -28,6 +28,14 @@ type Entry = {
   user_id: string
   image_urls: string[]
   comment: string | null
+  created_at: string
+}
+
+type GalleryPhoto = {
+  key: string
+  url: string
+  name: string
+  date: string
 }
 
 function currentMonthKey() {
@@ -35,12 +43,19 @@ function currentMonthKey() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 }
 
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+  })
+}
+
 export default function ChallengePage() {
   const [user, setUser] = useState<User | null>(null)
   const [approved, setApproved] = useState(false)
   const [challenge, setChallenge] = useState<Challenge | null>(null)
   const [linkedRecipes, setLinkedRecipes] = useState<Recipe[]>([])
-  const [entries, setEntries] = useState<Entry[]>([])
+  const [galleryPhotos, setGalleryPhotos] = useState<GalleryPhoto[]>([])
   const [myEntry, setMyEntry] = useState<Entry | null>(null)
   const [files, setFiles] = useState<File[]>([])
   const [comment, setComment] = useState('')
@@ -58,10 +73,29 @@ export default function ChallengePage() {
       .select('*')
       .eq('challenge_month', monthKey)
       .order('created_at', { ascending: false })
-    setEntries(data ?? [])
+
+    const entries = (data ?? []) as Entry[]
+
     if (uid) {
-      setMyEntry((data ?? []).find((e) => e.user_id === uid) ?? null)
+      setMyEntry(entries.find((e) => e.user_id === uid) ?? null)
     }
+
+    const uniqueUserIds = [...new Set(entries.map((e) => e.user_id))]
+    const { data: names } = await supabase.rpc('get_names', { user_ids: uniqueUserIds })
+    const nameMap = new Map((names ?? []).map((n: any) => [n.id, n.full_name]))
+
+    const photos: GalleryPhoto[] = []
+    entries.forEach((entry) => {
+      entry.image_urls?.forEach((url, i) => {
+        photos.push({
+          key: `${entry.id}-${i}`,
+          url,
+          name: nameMap.get(entry.user_id) ?? 'Une cliente',
+          date: entry.created_at,
+        })
+      })
+    })
+    setGalleryPhotos(photos)
   }
 
   useEffect(() => {
@@ -332,28 +366,22 @@ export default function ChallengePage() {
           />
         </div>
 
-        
         <h2 className="font-display text-lg text-[#3A3532] mb-4">
-  Les réalisations de ce mois ({entries.length})
-</h2>
-{entries.length === 0 ? (
-  <p className="text-[#3A3532]/60">Sois la première à partager ta réalisation !</p>
-) : (
-  <div className="flex flex-col gap-8">
-    {entries.map((e) => (
-      <div key={e.id}>
-        <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 -mx-6 px-6 pb-2 scrollbar-hide">
-          {e.image_urls?.map((url, i) => (
-            <div key={i} className="snap-center shrink-0 w-[75%] sm:w-[45%]">
-              <img src={url} alt="Participation" className="w-full h-56 object-cover rounded-xl" />
-            </div>
-          ))}
-        </div>
-        {e.comment && <p className="text-xs text-[#3A3532]/50 mt-2">{e.comment}</p>}
-      </div>
-    ))}
-  </div>
-)}
+          Les réalisations de ce mois ({galleryPhotos.length})
+        </h2>
+        {galleryPhotos.length === 0 ? (
+          <p className="text-[#3A3532]/60">Sois la première à partager ta réalisation !</p>
+        ) : (
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 -mx-6 px-6 pb-2 scrollbar-hide">
+            {galleryPhotos.map((photo) => (
+              <div key={photo.key} className="snap-center shrink-0 w-[75%] sm:w-[40%]">
+                <img src={photo.url} alt="Participation" className="w-full h-56 object-cover rounded-xl" />
+                <p className="text-sm text-[#3A3532] mt-2 font-medium">{photo.name}</p>
+                <p className="text-xs text-[#3A3532]/50">{formatDate(photo.date)}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
         <AdminEditButton href="/admin/challenge" />
       </div>

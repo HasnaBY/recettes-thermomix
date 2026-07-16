@@ -145,12 +145,15 @@ export default function Confiance() {
             </p>
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-              <input
-                placeholder="Ton nom (optionnel)"
-                value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
-                className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
-              />
+
+                <input
+  placeholder="Ton nom"
+  value={clientName}
+  onChange={(e) => setClientName(e.target.value)}
+  required
+  className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
+/>
+
               <textarea
                 placeholder="Ton témoignage"
                 value={content}

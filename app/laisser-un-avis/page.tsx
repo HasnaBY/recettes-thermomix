@@ -107,12 +107,16 @@ export default function LaisserUnAvis() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-3 border border-[#F0EAE0] bg-white rounded-2xl p-5">
+        
+
           <input
-            placeholder="Ton nom (optionnel)"
-            value={clientName}
-            onChange={(e) => setClientName(e.target.value)}
-            className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
-          />
+  placeholder="Ton nom"
+  value={clientName}
+  onChange={(e) => setClientName(e.target.value)}
+  required
+  className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
+/>
+
           <textarea
             placeholder="Ton témoignage"
             value={content}
