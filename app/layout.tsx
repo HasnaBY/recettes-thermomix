@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Work_Sans } from "next/font/google";
 import "./globals.css";
 import Nav from '@/components/Nav'
-
+import { Analytics } from "@vercel/analytics/next"
 const fraunces = Fraunces({
   variable: "--font-display",
   subsets: ["latin"],
