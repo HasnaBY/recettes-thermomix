@@ -9,6 +9,15 @@ type Testimonial = {
   content: string
   rating: number | null
   approved: boolean
+  created_at: string
+}
+
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
 }
 
 export default function AdminTestimonials() {
@@ -32,7 +41,6 @@ export default function AdminTestimonials() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Ajout manuel par l'admin : publié directement
     await supabase.from('testimonials').insert({
       client_name: clientName || null,
       content,
@@ -72,10 +80,11 @@ export default function AdminTestimonials() {
           {pending.map((t) => (
             <div key={t.id} className="border border-amber-300 bg-amber-50 rounded-xl p-4">
               <p className="text-gray-700">{t.content}</p>
-              <p className="text-sm text-gray-500 mt-1 mb-3">
+              <p className="text-sm text-gray-500 mt-1">
                 — {t.client_name ?? 'Anonyme'} ({t.rating}★)
               </p>
-              <div className="flex gap-3">
+              <p className="text-xs text-gray-400 mt-1">Reçu le {formatDate(t.created_at)}</p>
+              <div className="flex gap-3 mt-3">
                 <button
                   onClick={() => handleApprove(t.id)}
                   className="text-sm px-3 py-1.5 bg-gray-900 text-white rounded-lg"
@@ -135,6 +144,7 @@ export default function AdminTestimonials() {
               <p className="text-sm text-gray-500 mt-1">
                 — {t.client_name ?? 'Anonyme'} ({t.rating}★)
               </p>
+              <p className="text-xs text-gray-400 mt-1">Reçu le {formatDate(t.created_at)}</p>
             </div>
             <button onClick={() => handleDelete(t.id)} className="text-red-600 text-sm shrink-0">
               Supprimer
