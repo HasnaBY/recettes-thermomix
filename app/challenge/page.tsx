@@ -82,7 +82,11 @@ export default function ChallengePage() {
 
     const uniqueUserIds = [...new Set(entries.map((e) => e.user_id))]
     const { data: names } = await supabase.rpc('get_names', { user_ids: uniqueUserIds })
-    const nameMap = new Map((names ?? []).map((n: any) => [n.id, n.full_name]))
+    
+    // CORRECTION : On type explicitement la Map en Map<string, string> pour garantir que le retour soit une string
+    const nameMap = new Map<string, string>(
+      (names ?? []).map((n: any) => [n.id, n.full_name])
+    )
 
     const photos: GalleryPhoto[] = []
     entries.forEach((entry) => {
