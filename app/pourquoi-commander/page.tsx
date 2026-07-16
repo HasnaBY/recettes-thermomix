@@ -61,13 +61,21 @@ export default function PourquoiCommander() {
 
       <p className="text-[#3A3532]/70 text-center italic mb-10">{content.conclusion}</p>
 
-      <div className="text-center">
+      <div className="text-center mb-10">
         <Link
           href="/club-fondatrices"
           className="inline-block px-6 py-3 bg-[#3A3532] text-[#FDFBF6] rounded-full font-medium hover:bg-[#2A2622] transition-colors no-underline border border-[#C9A44C]"
         >
           Rejoindre Le Cercle With Love
         </Link>
+      </div>
+
+      <div className="flex justify-center">
+        <BrandPhoto
+          photoKey="round_logo"
+          alt="Thermomix With Love, Hasna"
+          className="w-28 h-28 rounded-full object-cover border-2 border-[#C9A44C]"
+        />
       </div>
 
       <AdminEditButton href="/admin/why-order" />

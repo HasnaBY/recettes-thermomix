@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import CtaBanner from '@/components/CtaBanner'
 import AdminEditButton from '@/components/AdminEditButton'
+import BrandPhoto from '@/components/BrandPhoto'
 import Lightbox from '@/components/Lightbox'
 import imageCompression from 'browser-image-compression'
 
@@ -126,6 +127,14 @@ export default function Confiance() {
       <p className="text-[#3A3532]/70 text-center mb-10">
         Quelques mots et moments partagés avec mes clientes.
       </p>
+
+      <div className="flex justify-center mb-10">
+        <BrandPhoto
+          photoKey="round_logo"
+          alt="Thermomix With Love, Hasna"
+          className="w-28 h-28 rounded-full object-cover border-2 border-[#C9A44C]"
+        />
+      </div>
 
       {user && (
         <div className="border border-[#F0EAE0] bg-white rounded-2xl p-5 mb-10 max-w-xl mx-auto">

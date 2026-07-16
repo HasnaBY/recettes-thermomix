@@ -10,6 +10,7 @@ const SLOTS = [
   { key: 'bouza_photo', label: '🥉 Ta Bouza noisettes', usage: 'Qui suis-je' },
   { key: 'cuisine_action', label: '🏅 Ta cuisine, Thermomix en action', usage: 'Pourquoi commander' },
   { key: 'table_ete', label: '🎖️ Table de recettes d\'été', usage: 'Challenge + Anti-canicule' },
+  { key: 'round_logo', label: '⭕ Logo rond', usage: 'Accueil, Qui suis-je, Pourquoi commander, Le Cercle, Elles m\'ont fait confiance, Challenge' },
 ]
 
 export default function AdminBrandPhotos() {

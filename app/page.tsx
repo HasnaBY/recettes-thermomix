@@ -97,6 +97,15 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Logo rond */}
+      <div className="flex justify-center py-8">
+        <BrandPhoto
+          photoKey="round_logo"
+          alt="Thermomix With Love, Hasna"
+          className="w-28 h-28 rounded-full object-cover border-2 border-[#C9A44C]"
+        />
+      </div>
+
       {/* Témoignages */}
       <section className="relative overflow-hidden px-6 sm:px-8 py-14 max-w-4xl mx-auto">
         <h2 className="font-display text-2xl text-[#3A3532] mb-10 text-center">

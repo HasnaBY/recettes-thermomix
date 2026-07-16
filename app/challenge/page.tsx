@@ -156,7 +156,6 @@ export default function ChallengePage() {
 
       if (insertError) throw insertError
 
-      // Alimente aussi "Elles m'ont fait confiance" (catégorie réalisations)
       const { count } = await supabase
         .from('social_proof')
         .select('*', { count: 'exact', head: true })
@@ -325,21 +324,31 @@ export default function ChallengePage() {
           )}
         </div>
 
+        <div className="flex justify-center mb-10">
+          <BrandPhoto
+            photoKey="round_logo"
+            alt="Thermomix With Love, Hasna"
+            className="w-28 h-28 rounded-full object-cover border-2 border-[#C9A44C]"
+          />
+        </div>
+
         <h2 className="font-display text-lg text-[#3A3532] mb-4">
           Les réalisations de ce mois ({entries.length})
         </h2>
         {entries.length === 0 ? (
           <p className="text-[#3A3532]/60">Sois la première à partager ta réalisation !</p>
         ) : (
-          <div className="grid gap-6">
+          <div className="flex flex-col gap-8">
             {entries.map((e) => (
               <div key={e.id}>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 -mx-6 px-6 pb-2 scrollbar-hide">
                   {e.image_urls?.map((url, i) => (
-                    <img key={i} src={url} alt="Participation" className="w-full h-32 object-cover rounded-xl" />
+                    <div key={i} className="snap-center shrink-0 w-[75%] sm:w-[45%]">
+                      <img src={url} alt="Participation" className="w-full h-56 object-cover rounded-xl" />
+                    </div>
                   ))}
                 </div>
-                {e.comment && <p className="text-xs text-[#3A3532]/50 mt-1">{e.comment}</p>}
+                {e.comment && <p className="text-xs text-[#3A3532]/50 mt-2">{e.comment}</p>}
               </div>
             ))}
           </div>

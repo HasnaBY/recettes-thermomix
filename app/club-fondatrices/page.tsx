@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
 import AdminEditButton from '@/components/AdminEditButton'
 import BrandPhoto from '@/components/BrandPhoto'
 
@@ -94,6 +95,20 @@ export default function ClubFondatrices() {
             <span className="text-[#3A3532]/80 text-sm">{b}</span>
           </div>
         ))}
+      </div>
+
+      <div className="text-center mb-4">
+        <Link href="/confiance" className="text-sm text-[#3A3532]/70 underline">
+          Découvre "Elles m'ont fait confiance" →
+        </Link>
+      </div>
+
+      <div className="flex justify-center mb-10">
+        <BrandPhoto
+          photoKey="round_logo"
+          alt="Thermomix With Love, Hasna"
+          className="w-28 h-28 rounded-full object-cover border-2 border-[#C9A44C]"
+        />
       </div>
 
       <div className="border border-[#F0EAE0] bg-white rounded-2xl p-5">

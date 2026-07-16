@@ -75,6 +75,14 @@ export default function QuiSuisJe() {
         <p className="text-[#3A3532]/70">{content.discovery}</p>
       </section>
 
+      <div className="flex justify-center mb-10">
+        <BrandPhoto
+          photoKey="round_logo"
+          alt="Thermomix With Love, Hasna"
+          className="w-28 h-28 rounded-full object-cover border-2 border-[#C9A44C]"
+        />
+      </div>
+
       <section className="mb-10">
         <h2 className="font-display text-xl text-[#3A3532] mb-3">Ce que Thermomix a changé</h2>
         <ul className="grid gap-2 mb-4">
@@ -84,7 +92,27 @@ export default function QuiSuisJe() {
             </li>
           ))}
         </ul>
-        
+        {content.club_sharing_text && (
+          <p className="text-[#3A3532]/70 mb-4">
+            Au sein du Club, je partage à mes clientes une sélection de recettes testées et validées par mes soins — comme{' '}
+            {ramenId ? (
+              <Link href={`/recipes/${ramenId}`} className="text-[#3A3532] underline">
+                ce ramen au curry rouge et poulet
+              </Link>
+            ) : (
+              'ce ramen au curry rouge et poulet'
+            )}
+            {' '}— en plus de mes propres créations personnelles, comme{' '}
+            {bouzaId ? (
+              <Link href={`/recipes/${bouzaId}`} className="text-[#3A3532] underline">
+                la bouza noisettes
+              </Link>
+            ) : (
+              'la bouza noisettes'
+            )}
+            .
+          </p>
+        )}
         <BrandPhoto
           photoKey="bouza_photo"
           alt="Bouza noisettes"
