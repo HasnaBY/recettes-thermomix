@@ -332,27 +332,28 @@ export default function ChallengePage() {
           />
         </div>
 
+        
         <h2 className="font-display text-lg text-[#3A3532] mb-4">
-          Les réalisations de ce mois ({entries.length})
-        </h2>
-        {entries.length === 0 ? (
-          <p className="text-[#3A3532]/60">Sois la première à partager ta réalisation !</p>
-        ) : (
-          <div className="flex flex-col gap-8">
-            {entries.map((e) => (
-              <div key={e.id}>
-                <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 -mx-6 px-6 pb-2 scrollbar-hide">
-                  {e.image_urls?.map((url, i) => (
-                    <div key={i} className="snap-center shrink-0 w-[75%] sm:w-[45%]">
-                      <img src={url} alt="Participation" className="w-full h-56 object-cover rounded-xl" />
-                    </div>
-                  ))}
-                </div>
-                {e.comment && <p className="text-xs text-[#3A3532]/50 mt-2">{e.comment}</p>}
-              </div>
-            ))}
-          </div>
-        )}
+  Les réalisations de ce mois ({entries.length})
+</h2>
+{entries.length === 0 ? (
+  <p className="text-[#3A3532]/60">Sois la première à partager ta réalisation !</p>
+) : (
+  <div className="flex flex-col gap-8">
+    {entries.map((e) => (
+      <div key={e.id}>
+        <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 -mx-6 px-6 pb-2 scrollbar-hide">
+          {e.image_urls?.map((url, i) => (
+            <div key={i} className="snap-center shrink-0 w-[75%] sm:w-[45%]">
+              <img src={url} alt="Participation" className="w-full h-56 object-cover rounded-xl" />
+            </div>
+          ))}
+        </div>
+        {e.comment && <p className="text-xs text-[#3A3532]/50 mt-2">{e.comment}</p>}
+      </div>
+    ))}
+  </div>
+)}
 
         <AdminEditButton href="/admin/challenge" />
       </div>
