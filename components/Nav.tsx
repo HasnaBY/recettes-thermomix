@@ -105,6 +105,9 @@ export default function Nav() {
                   <Link href="/favorites" onClick={close} className={linkClass}>
                     Mes favoris
                   </Link>
+                  <Link href="/astuces" onClick={close} className={linkClass}>
+                    Astuces Thermomix
+                  </Link>
                   <Link href="/challenge" onClick={close} className={linkClass}>
                     Challenge du mois
                   </Link>
