@@ -42,15 +42,24 @@ export default function AdminOffers() {
       for (let i = 0; i < newFiles.length; i++) {
         setUploadProgress(`Envoi de la photo ${i + 1}/${newFiles.length}...`)
 
-        const compressed = await imageCompression(newFiles[i], {
-  maxWidthOrHeight: 1920,
-  maxSizeMB: 1,
-  fileType: 'image/webp',
-  initialQuality: 0.9,
-})
+        const original = newFiles[i]
+        let toUpload: File | Blob = original
+        let extension = original.name.split('.').pop() || 'jpg'
 
-        const fileName = `offer-${Date.now()}-${i}.webp`
-        const { error } = await supabase.storage.from('site-images').upload(fileName, compressed)
+        // Ne compresse que si le fichier est vraiment volumineux (>3 Mo)
+        // pour garder un maximum de netteté sur le texte des offres.
+        if (original.size > 3 * 1024 * 1024) {
+          toUpload = await imageCompression(original, {
+            maxWidthOrHeight: 2400,
+            maxSizeMB: 3,
+            initialQuality: 0.95,
+            useWebWorker: true,
+            fileType: original.type, // garde le format d'origine, pas de conversion webp
+          })
+        }
+
+        const fileName = `offer-${Date.now()}-${i}.${extension}`
+        const { error } = await supabase.storage.from('site-images').upload(fileName, toUpload)
         if (error) throw error
         const { data } = supabase.storage.from('site-images').getPublicUrl(fileName)
         uploadedUrls.push(data.publicUrl)
@@ -85,7 +94,7 @@ export default function AdminOffers() {
     <div className="p-6 sm:p-8 max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Offres du moment</h1>
       <p className="text-gray-500 text-sm mb-6">
-        Ces images et ce texte sont envoyés automatiquement par email dès qu'une personne clique sur "Recevoir les offres du moment" en contact.
+        Ces images et ce texte sont envoyés automatiquement par email dès qu'une personne clique sur "Recevoir les offres du moment" en contact. Les images ne sont compressées que si elles dépassent 3 Mo, pour garder le texte bien lisible.
       </p>
 
       <div className="flex flex-col gap-4 mb-8">

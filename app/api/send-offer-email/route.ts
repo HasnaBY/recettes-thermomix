@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   const imagesHtml = (offers?.image_urls ?? [])
     .map(
       (url: string) =>
-        `<img src="${url}" alt="Offre Thermomix" width="100%" style="max-width:560px;width:100%;display:block;margin:0 auto 16px auto;border-radius:12px;" />`
+        `<img src="${url}" alt="Offre Thermomix" width="100%" style="max-width:680px;width:100%;height:auto;display:block;margin:0 auto 16px auto;border-radius:8px;" />`
     )
     .join('')
 
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
   const html = `
   <div style="font-family: Arial, Helvetica, sans-serif; background-color:#FDFBF6; padding:24px; color:#3A3532;">
-    <div style="max-width:600px; margin:0 auto; background:#ffffff; border-radius:16px; padding:32px; border:1px solid #F0EAE0;">
+    <div style="max-width:720px; margin:0 auto; background:#ffffff; border-radius:16px; padding:32px; border:1px solid #F0EAE0;">
       <h1 style="font-size:22px; margin:0 0 4px 0; color:#3A3532;">Thermomix With Love, Hasna</h1>
       <p style="font-size:14px; color:#3A3532aa; margin:0 0 24px 0;">Les offres du moment</p>
 
