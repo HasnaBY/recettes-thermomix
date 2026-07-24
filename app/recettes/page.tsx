@@ -10,7 +10,9 @@ type Recipe = {
   description: string
   category: string
   origin: string | null
-  time_minutes: number
+  recipe_source: string | null
+  prep_time_minutes: number | null
+  total_time_minutes: number | null
   image_url: string | null
 }
 
@@ -20,6 +22,7 @@ export default function Recettes() {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('toutes')
   const [origin, setOrigin] = useState('toutes')
+  const [source, setSource] = useState('toutes')
   const [pendingApproval, setPendingApproval] = useState(false)
   const supabase = createClient()
 
@@ -59,7 +62,8 @@ export default function Recettes() {
     const matchesSearch = recipe.title.toLowerCase().includes(search.toLowerCase())
     const matchesCategory = category === 'toutes' || recipe.category === category
     const matchesOrigin = origin === 'toutes' || recipe.origin === origin
-    return matchesSearch && matchesCategory && matchesOrigin
+    const matchesSource = source === 'toutes' || recipe.recipe_source === source
+    return matchesSearch && matchesCategory && matchesOrigin && matchesSource
   })
 
   if (loading) {
@@ -74,17 +78,24 @@ export default function Recettes() {
     )
   }
 
+  const sourceBadge = (recipeSource: string | null) => {
+    if (recipeSource === 'creation') {
+      return <span className="text-xs px-2 py-0.5 rounded-full bg-[#F6DEE1]/60 text-[#3A3532]">👩‍🍳 Ma création</span>
+    }
+    return <span className="text-xs px-2 py-0.5 rounded-full bg-[#DCEAF0]/60 text-[#3A3532]">📱 Cookidoo</span>
+  }
+
   return (
     <div className="p-6 sm:p-8 max-w-5xl mx-auto">
       <h1 className="font-display text-3xl text-[#3A3532] mb-6">Mes recettes</h1>
 
-      <div className="flex flex-col sm:flex-row gap-3 mb-8">
+      <div className="flex flex-col sm:flex-row gap-3 mb-8 flex-wrap">
         <input
           type="text"
           placeholder="Rechercher une recette..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 px-4 py-2 border border-[#F0EAE0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C9A44C]"
+          className="flex-1 min-w-[160px] px-4 py-2 border border-[#F0EAE0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C9A44C]"
         />
 
         <select
@@ -110,6 +121,16 @@ export default function Recettes() {
             </option>
           ))}
         </select>
+
+        <select
+          value={source}
+          onChange={(e) => setSource(e.target.value)}
+          className="px-4 py-2 border border-[#F0EAE0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C9A44C]"
+        >
+          <option value="toutes">Toutes les sources</option>
+          <option value="cookidoo">📱 Cookidoo</option>
+          <option value="creation">👩‍🍳 Mes créations</option>
+        </select>
       </div>
 
       {filtered.length === 0 ? (
@@ -134,11 +155,13 @@ export default function Recettes() {
                 </div>
               )}
               <div className="p-4">
+                <div className="mb-2">{sourceBadge(recipe.recipe_source)}</div>
                 <h2 className="font-display text-lg text-[#3A3532] mb-1">{recipe.title}</h2>
                 <p className="text-[#3A3532]/70 text-sm mb-2 line-clamp-2">{recipe.description}</p>
                 <p className="text-xs text-[#3A3532]/50">
                   {recipe.category}
-                  {recipe.origin && ` · ${recipe.origin}`} · {recipe.time_minutes} min
+                  {recipe.origin && ` · ${recipe.origin}`}
+                  {recipe.total_time_minutes && ` · ${recipe.total_time_minutes} min au total`}
                 </p>
               </div>
             </Link>
