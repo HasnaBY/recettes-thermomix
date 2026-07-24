@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import AdminEditButton from '@/components/AdminEditButton'
 import BrandPhoto from '@/components/BrandPhoto'
@@ -18,9 +19,35 @@ export default function Home() {
     story_teaser: string
   } | null>(null)
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
+  const [checkingAdmin, setCheckingAdmin] = useState(true)
   const supabase = createClient()
+  const router = useRouter()
 
   useEffect(() => {
+    const checkAdmin = async () => {
+      const { data: userData } = await supabase.auth.getUser()
+
+      if (userData.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', userData.user.id)
+          .single()
+
+        if (profile?.is_admin) {
+          router.replace('/admin')
+          return
+        }
+      }
+
+      setCheckingAdmin(false)
+    }
+    checkAdmin()
+  }, [])
+
+  useEffect(() => {
+    if (checkingAdmin) return
+
     supabase
       .from('homepage_content')
       .select('*')
@@ -35,8 +62,9 @@ export default function Home() {
       .order('created_at', { ascending: false })
       .limit(3)
       .then(({ data }) => setTestimonials(data ?? []))
-  }, [])
+  }, [checkingAdmin])
 
+  if (checkingAdmin) return <div className="p-8 text-center text-[#3A3532]/60">Chargement...</div>
   if (!content) return <div className="p-8 text-center text-[#3A3532]/60">Chargement...</div>
 
   return (

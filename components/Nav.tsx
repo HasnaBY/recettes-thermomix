@@ -62,15 +62,72 @@ export default function Nav() {
 
   const close = () => setMenuOpen(false)
 
-  const linkClass =
-    'block px-6 py-3 text-[#3A3532] hover:bg-[#F6DEE1]/20 no-underline text-base'
+  const primaryLinkClass = 'text-sm text-[#3A3532]/80 hover:text-[#3A3532] no-underline whitespace-nowrap'
+  const secondaryLinkClass = 'block px-6 py-3 text-[#3A3532] hover:bg-[#F6DEE1]/20 no-underline text-base'
 
   return (
     <>
-      <nav className="px-6 py-4 border-b border-[#F0EAE0] flex justify-between items-center bg-[#FDFBF6]">
-        <Link href="/" className="font-display text-lg text-[#3A3532] no-underline" onClick={close}>
-          Thermomix With Love, Hasna
-        </Link>
+      <nav className="px-6 py-4 border-b border-[#F0EAE0] flex flex-wrap justify-between items-center gap-3 bg-[#FDFBF6]">
+        <div className="flex flex-wrap items-center gap-4">
+          <Link href="/" className="font-display text-lg text-[#3A3532] no-underline">
+            Thermomix With Love, Hasna
+          </Link>
+
+          <div className="flex flex-wrap items-center gap-4">
+            {user ? (
+              <>
+                <Link href="/recettes" className={primaryLinkClass}>
+                  Recettes
+                </Link>
+                <Link href="/listes" className={primaryLinkClass}>
+                  Listes
+                </Link>
+                <Link href="/favorites" className={primaryLinkClass}>
+                  Mes favoris
+                </Link>
+                <Link href="/astuces" className={primaryLinkClass}>
+                  Astuces
+                </Link>
+                <Link href="/challenge" className={primaryLinkClass}>
+                  Challenge du mois
+                </Link>
+                {settings.show_public_testimonials && (
+                  <Link href="/laisser-un-avis" className={primaryLinkClass}>
+                    Laisser un avis
+                  </Link>
+                )}
+                <button onClick={handleLogout} className={`${primaryLinkClass} cursor-pointer`}>
+                  Se déconnecter
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/qui-suis-je" className={primaryLinkClass}>
+                  Qui suis-je
+                </Link>
+                <Link href="/pourquoi-commander" className={primaryLinkClass}>
+                  Pourquoi commander
+                </Link>
+                {settings.show_club && (
+                  <Link href="/club-fondatrices" className={primaryLinkClass}>
+                    Le Cercle With Love
+                  </Link>
+                )}
+                <Link href="/confiance" className={primaryLinkClass}>
+                  Elles m'ont fait confiance
+                </Link>
+                {settings.show_public_testimonials && (
+                  <Link href="/laisser-un-avis" className={primaryLinkClass}>
+                    Laisser un avis
+                  </Link>
+                )}
+                <Link href="/login" className={primaryLinkClass}>
+                  Se connecter
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
 
         <button
           onClick={() => setMenuOpen(true)}
@@ -96,61 +153,38 @@ export default function Nav() {
             <div className="py-2">
               {user ? (
                 <>
-                  <Link href="/recettes" onClick={close} className={linkClass}>
-                    Recettes
-                  </Link>
-                  <Link href="/listes" onClick={close} className={linkClass}>
-                    Listes
-                  </Link>
-                  <Link href="/favorites" onClick={close} className={linkClass}>
-                    Mes favoris
-                  </Link>
-                  <Link href="/astuces" onClick={close} className={linkClass}>
-                    Astuces Thermomix
-                  </Link>
-                  <Link href="/challenge" onClick={close} className={linkClass}>
-                    Challenge du mois
-                  </Link>
-                  {settings.show_public_testimonials && (
-                    <Link href="/laisser-un-avis" onClick={close} className={linkClass}>
-                      Laisser un avis
-                    </Link>
-                  )}
-
-                  <div className="my-2 border-t border-[#F0EAE0]" />
-
-                  <Link href="/qui-suis-je" onClick={close} className={linkClass}>
+                  <Link href="/qui-suis-je" onClick={close} className={secondaryLinkClass}>
                     Qui suis-je
                   </Link>
-                  <Link href="/pourquoi-commander" onClick={close} className={linkClass}>
+                  <Link href="/pourquoi-commander" onClick={close} className={secondaryLinkClass}>
                     Pourquoi commander
                   </Link>
                   {settings.show_club && (
-                    <Link href="/club-fondatrices" onClick={close} className={linkClass}>
+                    <Link href="/club-fondatrices" onClick={close} className={secondaryLinkClass}>
                       Le Cercle With Love
                     </Link>
                   )}
-                  <Link href="/confiance" onClick={close} className={linkClass}>
+                  <Link href="/confiance" onClick={close} className={secondaryLinkClass}>
                     Elles m'ont fait confiance
                   </Link>
                   {settings.show_parrainage && (
-                    <Link href="/parrainage" onClick={close} className={linkClass}>
+                    <Link href="/parrainage" onClick={close} className={secondaryLinkClass}>
                       Parrainage
                     </Link>
                   )}
                   {settings.show_concours && (
-                    <Link href="/grand-concours" onClick={close} className={linkClass}>
+                    <Link href="/grand-concours" onClick={close} className={secondaryLinkClass}>
                       Grand Concours
                     </Link>
                   )}
 
                   <div className="my-2 border-t border-[#F0EAE0]" />
 
-                  <Link href="/contact" onClick={close} className={linkClass}>
+                  <Link href="/contact" onClick={close} className={secondaryLinkClass}>
                     Me contacter
                   </Link>
                   {isAdmin && (
-                    <Link href="/admin" onClick={close} className={linkClass}>
+                    <Link href="/admin" onClick={close} className={secondaryLinkClass}>
                       Admin
                     </Link>
                   )}
@@ -158,64 +192,30 @@ export default function Nav() {
                   <div className="my-2 border-t border-[#F0EAE0]" />
 
                   <div className="px-6 py-2 text-sm text-[#3A3532]/50">{user.email}</div>
-                  <button
-                    onClick={() => {
-                      close()
-                      handleLogout()
-                    }}
-                    className="block w-full text-left px-6 py-3 text-[#3A3532] hover:bg-[#F6DEE1]/20"
-                  >
-                    Se déconnecter
-                  </button>
                 </>
               ) : (
                 <>
-                  <Link href="/qui-suis-je" onClick={close} className={linkClass}>
-                    Qui suis-je
-                  </Link>
-                  <Link href="/pourquoi-commander" onClick={close} className={linkClass}>
-                    Pourquoi commander
-                  </Link>
-                  {settings.show_club && (
-                    <Link href="/club-fondatrices" onClick={close} className={linkClass}>
-                      Le Cercle With Love
-                    </Link>
-                  )}
-                  <Link href="/confiance" onClick={close} className={linkClass}>
-                    Elles m'ont fait confiance
-                  </Link>
-                  {settings.show_public_testimonials && (
-                    <Link href="/laisser-un-avis" onClick={close} className={linkClass}>
-                      Laisser un avis
-                    </Link>
-                  )}
-
-                  <div className="my-2 border-t border-[#F0EAE0]" />
-
-                  <Link href="/recettes" onClick={close} className={linkClass}>
+                  <Link href="/recettes" onClick={close} className={secondaryLinkClass}>
                     Recettes
                   </Link>
-                  <Link href="/listes" onClick={close} className={linkClass}>
+                  <Link href="/listes" onClick={close} className={secondaryLinkClass}>
                     Listes
                   </Link>
                   {settings.show_parrainage && (
-                    <Link href="/parrainage" onClick={close} className={linkClass}>
+                    <Link href="/parrainage" onClick={close} className={secondaryLinkClass}>
                       Parrainage
                     </Link>
                   )}
                   {settings.show_concours && (
-                    <Link href="/grand-concours" onClick={close} className={linkClass}>
+                    <Link href="/grand-concours" onClick={close} className={secondaryLinkClass}>
                       Grand Concours
                     </Link>
                   )}
 
                   <div className="my-2 border-t border-[#F0EAE0]" />
 
-                  <Link href="/contact" onClick={close} className={linkClass}>
+                  <Link href="/contact" onClick={close} className={secondaryLinkClass}>
                     Me contacter
-                  </Link>
-                  <Link href="/login" onClick={close} className={linkClass}>
-                    Se connecter
                   </Link>
                 </>
               )}
