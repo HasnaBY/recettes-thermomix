@@ -109,7 +109,7 @@ export default function Nav() {
                   Pourquoi commander
                 </Link>
                 {settings.show_club && (
-                  <Link href="/club-fondatrices" className={primaryLinkClass}>
+                  <Link href="/cercle-withlove" className={primaryLinkClass}>
                     Le Cercle With Love
                   </Link>
                 )}
@@ -160,7 +160,7 @@ export default function Nav() {
                     Pourquoi commander
                   </Link>
                   {settings.show_club && (
-                    <Link href="/club-fondatrices" onClick={close} className={secondaryLinkClass}>
+                    <Link href="/cercle-withlove" onClick={close} className={secondaryLinkClass}>
                       Le Cercle With Love
                     </Link>
                   )}
