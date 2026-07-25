@@ -67,82 +67,61 @@ export default function Nav() {
 
   return (
     <>
-      <nav className="px-6 py-4 border-b border-[#F0EAE0] flex flex-wrap justify-between items-center gap-3 bg-[#FDFBF6]">
-        <div className="flex flex-wrap items-center gap-4">
-          <Link href="/" className="font-display text-lg text-[#3A3532] no-underline">
-            Thermomix With Love, Hasna
-          </Link>
-
-          <div className="flex flex-wrap items-center gap-4">
-            {user ? (
-              <>
-                <Link href="/recettes" className={primaryLinkClass}>
-                  Recettes
-                </Link>
-                <Link href="/listes" className={primaryLinkClass}>
-                  Listes
-                </Link>
-                <Link href="/favorites" className={primaryLinkClass}>
-                  Mes favoris
-                </Link>
-                <Link href="/astuces" className={primaryLinkClass}>
-                  Astuces
-                </Link>
-                <Link href="/challenge" className={primaryLinkClass}>
-                  Challenge du mois
-                </Link>
-                {settings.show_public_testimonials && (
-                  <Link href="/laisser-un-avis" className={primaryLinkClass}>
-                    Laisser un avis
-                  </Link>
-                )}
-                <button onClick={handleLogout} className={`${primaryLinkClass} cursor-pointer`}>
-                  Se déconnecter
-                </button>
-              </>
-            ) : (
-              <>
-                <Link href="/qui-suis-je" className={primaryLinkClass}>
-                  Qui suis-je
-                </Link>
-                <Link href="/pourquoi-commander" className={primaryLinkClass}>
-                  Pourquoi commander
-                </Link>
-                {settings.show_club && (
-                  <Link href="/cercle-withlove" className={primaryLinkClass}>
-                    Le Cercle With Love
-                  </Link>
-                )}
-                <Link href="/confiance" className={primaryLinkClass}>
-                  Elles m'ont fait confiance
-                </Link>
-                {settings.show_public_testimonials && (
-                  <Link href="/laisser-un-avis" className={primaryLinkClass}>
-                    Laisser un avis
-                  </Link>
-                )}
-                <Link href="/login" className={primaryLinkClass}>
-                  Se connecter
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-
+      <nav className="px-6 py-4 border-b border-[#F0EAE0] flex flex-wrap items-center gap-4 bg-[#FDFBF6]">
         <button
           onClick={() => setMenuOpen(true)}
           aria-label="Ouvrir le menu"
-          className="text-2xl text-[#3A3532] px-2"
+          className="text-2xl text-[#3A3532] px-2 order-1"
         >
           ☰
         </button>
+
+        <Link href="/" className="font-display text-lg text-[#3A3532] no-underline order-2">
+          Thermomix With Love, Hasna
+        </Link>
+
+        <div className="flex flex-wrap items-center gap-4 order-3">
+          {user ? (
+            <>
+              <Link href="/recettes" className={primaryLinkClass}>
+                Recettes
+              </Link>
+              <Link href="/listes" className={primaryLinkClass}>
+                Listes
+              </Link>
+              <Link href="/favorites" className={primaryLinkClass}>
+                Favoris
+              </Link>
+              <Link href="/astuces" className={primaryLinkClass}>
+                Astuces
+              </Link>
+              <Link href="/challenge" className={primaryLinkClass}>
+                Challenge du mois
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/qui-suis-je" className={primaryLinkClass}>
+                Qui suis-je
+              </Link>
+              {settings.show_club && (
+                <Link href="/club-fondatrices" className={primaryLinkClass}>
+                  Le Cercle With Love
+                </Link>
+              )}
+              <Link href="/confiance" className={primaryLinkClass}>
+                Elles m'ont fait confiance
+              </Link>
+            </>
+          )}
+        </div>
       </nav>
 
       {menuOpen && (
         <div className="fixed inset-0 z-[100]">
           <div className="absolute inset-0 bg-black/40" onClick={close} />
 
-          <div className="absolute top-0 right-0 h-full w-[80%] max-w-xs bg-[#FDFBF6] shadow-xl overflow-y-auto">
+          <div className="absolute top-0 left-0 h-full w-[80%] max-w-xs bg-[#FDFBF6] shadow-xl overflow-y-auto">
             <div className="flex justify-between items-center px-6 py-4 border-b border-[#F0EAE0]">
               <span className="font-display text-lg text-[#3A3532]">Menu</span>
               <button onClick={close} className="text-2xl text-[#3A3532] px-2" aria-label="Fermer le menu">
@@ -160,13 +139,18 @@ export default function Nav() {
                     Pourquoi commander
                   </Link>
                   {settings.show_club && (
-                    <Link href="/cercle-withlove" onClick={close} className={secondaryLinkClass}>
+                    <Link href="/club-fondatrices" onClick={close} className={secondaryLinkClass}>
                       Le Cercle With Love
                     </Link>
                   )}
                   <Link href="/confiance" onClick={close} className={secondaryLinkClass}>
                     Elles m'ont fait confiance
                   </Link>
+                  {settings.show_public_testimonials && (
+                    <Link href="/laisser-un-avis" onClick={close} className={secondaryLinkClass}>
+                      Laisser un avis
+                    </Link>
+                  )}
                   {settings.show_parrainage && (
                     <Link href="/parrainage" onClick={close} className={secondaryLinkClass}>
                       Parrainage
@@ -192,9 +176,26 @@ export default function Nav() {
                   <div className="my-2 border-t border-[#F0EAE0]" />
 
                   <div className="px-6 py-2 text-sm text-[#3A3532]/50">{user.email}</div>
+                  <button
+                    onClick={() => {
+                      close()
+                      handleLogout()
+                    }}
+                    className="block w-full text-left px-6 py-3 text-[#3A3532] hover:bg-[#F6DEE1]/20"
+                  >
+                    Se déconnecter
+                  </button>
                 </>
               ) : (
                 <>
+                  <Link href="/pourquoi-commander" onClick={close} className={secondaryLinkClass}>
+                    Pourquoi commander
+                  </Link>
+                  {settings.show_public_testimonials && (
+                    <Link href="/laisser-un-avis" onClick={close} className={secondaryLinkClass}>
+                      Laisser un avis
+                    </Link>
+                  )}
                   <Link href="/recettes" onClick={close} className={secondaryLinkClass}>
                     Recettes
                   </Link>
@@ -216,6 +217,9 @@ export default function Nav() {
 
                   <Link href="/contact" onClick={close} className={secondaryLinkClass}>
                     Me contacter
+                  </Link>
+                  <Link href="/login" onClick={close} className={secondaryLinkClass}>
+                    Se connecter
                   </Link>
                 </>
               )}

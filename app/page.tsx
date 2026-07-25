@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import AdminEditButton from '@/components/AdminEditButton'
 import BrandPhoto from '@/components/BrandPhoto'
@@ -21,7 +20,6 @@ export default function Home() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [checkingAdmin, setCheckingAdmin] = useState(true)
   const supabase = createClient()
-  const router = useRouter()
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -35,7 +33,7 @@ export default function Home() {
           .single()
 
         if (profile?.is_admin) {
-          router.replace('/admin')
+          window.location.href = '/admin'
           return
         }
       }
