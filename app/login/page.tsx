@@ -13,6 +13,20 @@ export default function Login() {
   const router = useRouter()
   const supabase = createClient()
 
+  const redirectAfterLogin = async (userId: string) => {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single()
+
+    if (profile?.is_admin) {
+      window.location.href = '/admin'
+    } else {
+      window.location.href = '/recettes'
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -23,7 +37,7 @@ export default function Login() {
         return
       }
 
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { full_name: fullName.trim() } },
@@ -31,9 +45,8 @@ export default function Login() {
 
       if (error) {
         setError(error.message)
-      } else {
-        router.push('/recettes')
-        router.refresh()
+      } else if (data.user) {
+        await redirectAfterLogin(data.user.id)
       }
       return
     }
@@ -53,7 +66,7 @@ export default function Login() {
       return
     }
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
       const newCount = (attempt?.failed_count ?? 0) + 1
@@ -80,8 +93,9 @@ export default function Login() {
         failed_count: 0,
         locked_until: null,
       })
-      router.push('/recettes')
-      router.refresh()
+      if (data.user) {
+        await redirectAfterLogin(data.user.id)
+      }
     }
   }
 

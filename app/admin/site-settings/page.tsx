@@ -8,7 +8,11 @@ export default function AdminSiteSettings() {
   const [showClub, setShowClub] = useState(true)
   const [showConcours, setShowConcours] = useState(true)
   const [showPublicTestimonials, setShowPublicTestimonials] = useState(true)
+  const [instagramUrl, setInstagramUrl] = useState('')
+  const [tiktokUrl, setTiktokUrl] = useState('')
+  const [snapchatUrl, setSnapchatUrl] = useState('')
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
   const supabase = createClient()
 
@@ -24,6 +28,9 @@ export default function AdminSiteSettings() {
           setShowClub(data.show_club)
           setShowConcours(data.show_concours)
           setShowPublicTestimonials(data.show_public_testimonials ?? true)
+          setInstagramUrl(data.instagram_url ?? '')
+          setTiktokUrl(data.tiktok_url ?? '')
+          setSnapchatUrl(data.snapchat_url ?? '')
         }
         setLoading(false)
       })
@@ -34,6 +41,21 @@ export default function AdminSiteSettings() {
     setMessage('')
     const { error } = await supabase.from('site_settings').update({ [field]: value }).eq('id', 1)
     setMessage(error ? error.message : 'Enregistré')
+  }
+
+  const handleSaveSocials = async () => {
+    setSaving(true)
+    setMessage('')
+    const { error } = await supabase
+      .from('site_settings')
+      .update({
+        instagram_url: instagramUrl || null,
+        tiktok_url: tiktokUrl || null,
+        snapchat_url: snapchatUrl || null,
+      })
+      .eq('id', 1)
+    setSaving(false)
+    setMessage(error ? error.message : 'Réseaux sociaux enregistrés')
   }
 
   if (loading) return <div className="p-8 text-center text-gray-500">Chargement...</div>
@@ -67,7 +89,7 @@ export default function AdminSiteSettings() {
         Masquer une page la rend inaccessible aux visiteurs et la retire de la navigation, sans supprimer son contenu — tu peux la réactiver à tout moment.
       </p>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 mb-10">
         <Row
           label="Programme de parrainage"
           checked={showParrainage}
@@ -88,6 +110,35 @@ export default function AdminSiteSettings() {
           checked={showPublicTestimonials}
           onChange={(v) => toggle('show_public_testimonials', v, setShowPublicTestimonials)}
         />
+      </div>
+
+      <h2 className="text-lg font-semibold text-gray-900 mb-3">Réseaux sociaux</h2>
+      <div className="flex flex-col gap-3">
+        <input
+          placeholder="Lien Instagram"
+          value={instagramUrl}
+          onChange={(e) => setInstagramUrl(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg"
+        />
+        <input
+          placeholder="Lien TikTok"
+          value={tiktokUrl}
+          onChange={(e) => setTiktokUrl(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg"
+        />
+        <input
+          placeholder="Lien Snapchat"
+          value={snapchatUrl}
+          onChange={(e) => setSnapchatUrl(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg"
+        />
+        <button
+          onClick={handleSaveSocials}
+          disabled={saving}
+          className="py-2.5 bg-gray-900 text-white rounded-lg font-medium disabled:opacity-50"
+        >
+          {saving ? 'Enregistrement...' : 'Enregistrer les réseaux sociaux'}
+        </button>
       </div>
 
       {message && <p className="text-sm text-gray-700 mt-4">{message}</p>}

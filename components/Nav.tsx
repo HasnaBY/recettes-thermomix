@@ -96,7 +96,7 @@ export default function Nav() {
                 Astuces
               </Link>
               <Link href="/challenge" className={primaryLinkClass}>
-                Challenge du mois
+                Challenge
               </Link>
             </>
           ) : (

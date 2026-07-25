@@ -4,6 +4,7 @@ import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import Nav from '@/components/Nav'
+import Footer from '@/components/Footer'
 
 const fraunces = Fraunces({
   variable: "--font-display",
@@ -59,7 +60,8 @@ export default function RootLayout({
           </>
         )}
         <Nav />
-        {children}
+        <div className="flex-1">{children}</div>
+        <Footer />
         <Analytics />
       </body>
     </html>
