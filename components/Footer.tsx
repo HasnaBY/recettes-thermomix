@@ -73,7 +73,7 @@ export default function Footer() {
       <p className="text-sm text-[#3A3532]/60 mb-3">Suis-moi sur les réseaux</p>
       <div className="flex justify-center gap-5">
         {links.instagram_url && (
-          
+          <a
             href={links.instagram_url}
             target="_blank"
             rel="noopener noreferrer"
@@ -85,7 +85,7 @@ export default function Footer() {
         )}
         {links.tiktok_url && (
           
-            href={links.tiktok_url}
+          <a  href={links.tiktok_url}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="TikTok"
@@ -95,7 +95,7 @@ export default function Footer() {
           </a>
         )}
         {links.snapchat_url && (
-          
+          <a
             href={links.snapchat_url}
             target="_blank"
             rel="noopener noreferrer"
