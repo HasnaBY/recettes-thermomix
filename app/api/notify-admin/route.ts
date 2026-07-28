@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Type inconnu' }, { status: 400 })
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://recettes-thermomix.vercel.app'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.withlovehasna.com'
 
   let detail: string
 

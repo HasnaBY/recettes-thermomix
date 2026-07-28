@@ -7,7 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '',
     '/qui-suis-je',
     '/pourquoi-commander',
-    '/club-fondatrices',
+    '/cercle-withlove',
     '/recettes',
     '/listes',
     '/confiance',

@@ -18,7 +18,7 @@ const workSans = Work_Sans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://recettes-thermomix.vercel.app'),
+  metadataBase: new URL('https://www.withlovehasna.com'),
   title: {
     default: "Thermomix With Love, Hasna — Conseillère Thermomix",
     template: "%s | Thermomix With Love, Hasna",
