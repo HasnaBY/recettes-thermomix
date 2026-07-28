@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/admin', '/api'],
     },
-    sitemap: 'https://recettes-thermomix.vercel.app/sitemap.xml',
+    sitemap: 'https://www.withlovehasna.com/sitemap.xml',
   }
 }
