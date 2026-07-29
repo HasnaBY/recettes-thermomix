@@ -14,6 +14,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/laisser-un-avis',
     '/parrainage',
     '/grand-concours',
+    '/astuces',
+    '/challenge',
     '/contact',
   ]
 

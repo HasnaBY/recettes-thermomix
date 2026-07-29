@@ -63,7 +63,7 @@ export default function PourquoiCommander() {
 
       <div className="text-center mb-10">
         <Link
-          href="/club-fondatrices"
+          href="/cercle-withlove"
           className="inline-block px-6 py-3 bg-[#3A3532] text-[#FDFBF6] rounded-full font-medium hover:bg-[#2A2622] transition-colors no-underline border border-[#C9A44C]"
         >
           Rejoindre Le Cercle With Love
