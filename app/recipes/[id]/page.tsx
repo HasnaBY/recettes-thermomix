@@ -41,7 +41,6 @@ export default async function RecipeDetail({
 
   const isCreation = recipe.recipe_source === 'creation'
 
-  // Aperçu limité pour les visiteurs non approuvés
   if (!isApproved) {
     return (
       <div className="p-6 sm:p-8 max-w-2xl mx-auto">
@@ -89,7 +88,6 @@ export default async function RecipeDetail({
     )
   }
 
-  // Vue complète pour les clientes approuvées
   return (
     <div className="p-6 sm:p-8 max-w-2xl mx-auto">
       <Link href="/recettes" className="inline-block mb-4 text-sm text-[#3A3532]/70 hover:text-[#3A3532]">

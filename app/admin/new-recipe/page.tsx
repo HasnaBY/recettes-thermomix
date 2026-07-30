@@ -182,15 +182,16 @@ export default function NewRecipe() {
           />
         </div>
 
+        <label className="flex items-center gap-2 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={isFeatured}
+            onChange={(e) => setIsFeatured(e.target.checked)}
+          />
+          Mettre en avant (visible publiquement, sans connexion)
+        </label>
+
         <div>
-          <label className="flex items-center gap-2 text-sm text-gray-700">
-            <input
-              type="checkbox"
-              checked={isFeatured}
-              onChange={(e) => setIsFeatured(e.target.checked)}
-            />
-            Mettre en avant (visible publiquement, sans connexion)
-          </label>
           <label className="block mb-2 text-sm text-gray-600">Photo de la recette</label>
           <input
             type="file"
