@@ -8,10 +8,14 @@ import BrandPhoto from '@/components/BrandPhoto'
 
 type Advantage = { icon: string; title: string; text: string }
 type Testimonial = { id: string; client_name: string | null; content: string; rating: number | null }
+type Recipe = {
+  id: string
+  title: string
+  description: string
+  image_url: string | null
+}
 
 export default function Home() {
-  const [featuredRecipes, setFeaturedRecipes] = useState<any[]>([])
-  
   const [content, setContent] = useState<{
     hero_title: string
     hero_subtitle: string
@@ -20,6 +24,7 @@ export default function Home() {
     story_teaser: string
   } | null>(null)
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
+  const [featuredRecipes, setFeaturedRecipes] = useState<Recipe[]>([])
   const [checkingAdmin, setCheckingAdmin] = useState(true)
   const supabase = createClient()
 
@@ -56,18 +61,18 @@ export default function Home() {
       .then(({ data }) => data && setContent(data as any))
 
     supabase
-      .from('recipes')
-      .select('*')
-      .eq('is_featured', true)
-      .limit(3)
-      .then(({ data }) => setFeaturedRecipes(data ?? []))
-    supabase
       .from('testimonials')
       .select('*')
       .eq('approved', true)
       .order('created_at', { ascending: false })
       .limit(3)
       .then(({ data }) => setTestimonials(data ?? []))
+
+    supabase
+      .from('recipes')
+      .select('id, title, description, image_url')
+      .eq('is_featured', true)
+      .then(({ data }) => setFeaturedRecipes(data ?? []))
   }, [checkingAdmin])
 
   if (checkingAdmin) return <div className="p-8 text-center text-[#3A3532]/60">Chargement...</div>
@@ -139,22 +144,25 @@ export default function Home() {
           className="w-28 h-28 rounded-full object-cover border-2 border-[#C9A44C]"
         />
       </div>
+
+      {/* Aperçu recettes - carrousel */}
       {featuredRecipes.length > 0 && (
-        <section className="relative overflow-hidden px-6 sm:px-8 py-14 max-w-5xl mx-auto">
-          <h2 className="font-display text-2xl text-[#3A3532] mb-10 text-center">
+        <section className="relative overflow-hidden py-14 max-w-5xl mx-auto">
+          <h2 className="font-display text-2xl text-[#3A3532] mb-8 text-center px-6">
             Un aperçu de mes recettes
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 px-6 pb-2 scrollbar-hide">
             {featuredRecipes.map((recipe) => (
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="block rounded-2xl border border-[#F0EAE0] bg-white overflow-hidden hover:shadow-md transition-shadow no-underline text-inherit"
+                className="snap-center shrink-0 w-[75%] sm:w-[38%] lg:w-[30%] block rounded-2xl border border-[#F0EAE0] bg-white overflow-hidden hover:shadow-md transition-shadow no-underline text-inherit"
               >
                 {recipe.image_url ? (
-                  <img src={recipe.image_url} alt={recipe.title} className="w-full h-40 object-cover" />
+                  <img src={recipe.image_url} alt={recipe.title} className="w-full h-44 object-cover" />
                 ) : (
-                  <div className="w-full h-40 bg-[#F6DEE1]/30" />
+                  <div className="w-full h-44 bg-[#F6DEE1]/30" />
                 )}
                 <div className="p-4">
                   <h3 className="font-display text-lg text-[#3A3532] mb-1">{recipe.title}</h3>
@@ -163,13 +171,19 @@ export default function Home() {
               </Link>
             ))}
           </div>
-          <div className="text-center mt-6">
-            <Link href="/recettes" className="text-sm text-[#3A3532]/70 underline">
-              Voir toutes les recettes →
+
+          <p className="text-xs text-[#3A3532]/40 text-center mt-2">← Fais glisser pour voir plus →</p>
+
+          <div className="text-center mt-6 px-6">
+            <Link
+              href="/recettes"
+              className="inline-block px-6 py-3 bg-[#3A3532] text-[#FDFBF6] rounded-full font-medium hover:bg-[#2A2622] transition-colors no-underline border border-[#C9A44C]"
+            >
+              Voir toutes les recettes
             </Link>
           </div>
         </section>
-)}
+      )}
 
       {/* Témoignages */}
       <section className="relative overflow-hidden px-6 sm:px-8 py-14 max-w-4xl mx-auto">
