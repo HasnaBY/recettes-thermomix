@@ -9,8 +9,9 @@ import BrandPhoto from '@/components/BrandPhoto'
 type Advantage = { icon: string; title: string; text: string }
 type Testimonial = { id: string; client_name: string | null; content: string; rating: number | null }
 
-const [featuredRecipes, setFeaturedRecipes] = useState<any[]>([])
 export default function Home() {
+  const [featuredRecipes, setFeaturedRecipes] = useState<any[]>([])
+  
   const [content, setContent] = useState<{
     hero_title: string
     hero_subtitle: string
