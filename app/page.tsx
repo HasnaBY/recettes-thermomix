@@ -9,6 +9,7 @@ import BrandPhoto from '@/components/BrandPhoto'
 type Advantage = { icon: string; title: string; text: string }
 type Testimonial = { id: string; client_name: string | null; content: string; rating: number | null }
 
+const [featuredRecipes, setFeaturedRecipes] = useState<any[]>([])
 export default function Home() {
   const [content, setContent] = useState<{
     hero_title: string
@@ -53,6 +54,12 @@ export default function Home() {
       .single()
       .then(({ data }) => data && setContent(data as any))
 
+    supabase
+      .from('recipes')
+      .select('*')
+      .eq('is_featured', true)
+      .limit(3)
+      .then(({ data }) => setFeaturedRecipes(data ?? []))
     supabase
       .from('testimonials')
       .select('*')
@@ -131,6 +138,37 @@ export default function Home() {
           className="w-28 h-28 rounded-full object-cover border-2 border-[#C9A44C]"
         />
       </div>
+      {featuredRecipes.length > 0 && (
+        <section className="relative overflow-hidden px-6 sm:px-8 py-14 max-w-5xl mx-auto">
+          <h2 className="font-display text-2xl text-[#3A3532] mb-10 text-center">
+            Un aperçu de mes recettes
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {featuredRecipes.map((recipe) => (
+              <Link
+                key={recipe.id}
+                href={`/recipes/${recipe.id}`}
+                className="block rounded-2xl border border-[#F0EAE0] bg-white overflow-hidden hover:shadow-md transition-shadow no-underline text-inherit"
+              >
+                {recipe.image_url ? (
+                  <img src={recipe.image_url} alt={recipe.title} className="w-full h-40 object-cover" />
+                ) : (
+                  <div className="w-full h-40 bg-[#F6DEE1]/30" />
+                )}
+                <div className="p-4">
+                  <h3 className="font-display text-lg text-[#3A3532] mb-1">{recipe.title}</h3>
+                  <p className="text-[#3A3532]/70 text-sm line-clamp-2">{recipe.description}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+          <div className="text-center mt-6">
+            <Link href="/recettes" className="text-sm text-[#3A3532]/70 underline">
+              Voir toutes les recettes →
+            </Link>
+          </div>
+        </section>
+)}
 
       {/* Témoignages */}
       <section className="relative overflow-hidden px-6 sm:px-8 py-14 max-w-4xl mx-auto">

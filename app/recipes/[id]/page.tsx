@@ -9,6 +9,19 @@ export default async function RecipeDetail({
 }) {
   const { id } = await params
   const supabase = await createClient()
+
+  const { data: userData } = await supabase.auth.getUser()
+  let isApproved = false
+
+  if (userData.user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('approved')
+      .eq('id', userData.user.id)
+      .single()
+    isApproved = !!profile?.approved
+  }
+
   const { data: recipe, error } = await supabase
     .from('recipes')
     .select('*')
@@ -16,11 +29,67 @@ export default async function RecipeDetail({
     .single()
 
   if (error || !recipe) {
-    return <div className="p-8 text-center text-[#3A3532]/60">Recette introuvable</div>
+    return (
+      <div className="p-8 text-center text-[#3A3532]/60">
+        Cette recette est introuvable ou réservée aux clientes connectées.{' '}
+        <Link href="/login" className="underline">
+          Se connecter
+        </Link>
+      </div>
+    )
   }
 
   const isCreation = recipe.recipe_source === 'creation'
 
+  // Aperçu limité pour les visiteurs non approuvés
+  if (!isApproved) {
+    return (
+      <div className="p-6 sm:p-8 max-w-2xl mx-auto">
+        <Link href="/recettes" className="inline-block mb-4 text-sm text-[#3A3532]/70 hover:text-[#3A3532]">
+          ← Retour aux recettes
+        </Link>
+
+        {recipe.image_url && (
+          <img
+            src={recipe.image_url}
+            alt={recipe.title}
+            className="w-full h-64 object-cover rounded-2xl my-4"
+          />
+        )}
+
+        <div className="mb-3">
+          <span
+            className={`text-xs px-2 py-0.5 rounded-full ${
+              isCreation ? 'bg-[#F6DEE1]/60' : 'bg-[#DCEAF0]/60'
+            } text-[#3A3532]`}
+          >
+            {isCreation ? '👩‍🍳 Ma création' : '📱 Recette Cookidoo'}
+          </span>
+        </div>
+
+        <h1 className="font-display text-3xl text-[#3A3532] mb-2">{recipe.title}</h1>
+        <p className="text-[#3A3532]/70 mb-3">{recipe.description}</p>
+        <p className="text-sm text-[#3A3532]/50 mb-6">
+          {recipe.category}
+          {recipe.origin && ` · ${recipe.origin}`}
+        </p>
+
+        <div className="border border-[#C9A44C] bg-[#F6DEE1]/20 rounded-2xl p-5 text-center">
+          <p className="text-[#3A3532]/80 mb-4">
+            Les ingrédients et les étapes complètes de cette recette sont réservés à mes clientes connectées.
+          </p>
+          <Link
+            href="/login"
+            className="inline-block px-6 py-3 bg-[#3A3532] text-[#FDFBF6] rounded-full font-medium hover:bg-[#2A2622] transition-colors no-underline border border-[#C9A44C]"
+          >
+            Se connecter pour voir la recette complète
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // Vue complète pour les clientes approuvées
   return (
     <div className="p-6 sm:p-8 max-w-2xl mx-auto">
       <Link href="/recettes" className="inline-block mb-4 text-sm text-[#3A3532]/70 hover:text-[#3A3532]">
@@ -66,7 +135,7 @@ export default async function RecipeDetail({
       )}
 
       {recipe.cookidoo_url && (
-        <a
+        
           href={recipe.cookidoo_url}
           target="_blank"
           rel="noopener noreferrer"

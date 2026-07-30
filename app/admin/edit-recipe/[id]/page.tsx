@@ -17,6 +17,7 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
   const [cookidooUrl, setCookidooUrl] = useState('')
   const [ingredients, setIngredients] = useState('')
   const [steps, setSteps] = useState('')
+  const [isFeatured, setIsFeatured] = useState(false)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(true)
@@ -111,6 +112,7 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
         cookidoo_url: cookidooUrl || null,
         ingredients: ingredientsList.length > 0 ? ingredientsList : null,
         steps: steps || null,
+        is_featured: isFeatured,
         image_url: finalImageUrl,
       })
       .eq('id', id)
@@ -228,6 +230,14 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
         </div>
 
         <div>
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={isFeatured}
+              onChange={(e) => setIsFeatured(e.target.checked)}
+            />
+            Mettre en avant (visible publiquement, sans connexion)
+          </label>
           <label className="block mb-2 text-sm text-gray-600">Remplacer la photo (optionnel)</label>
           <input
             type="file"

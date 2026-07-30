@@ -23,7 +23,8 @@ export default function Recettes() {
   const [category, setCategory] = useState('toutes')
   const [origin, setOrigin] = useState('toutes')
   const [source, setSource] = useState('toutes')
-  const [pendingApproval, setPendingApproval] = useState(false)
+  const [isPublicPreview, setIsPublicPreview] = useState(false)
+  const [accountPending, setAccountPending] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -31,7 +32,10 @@ export default function Recettes() {
       const { data: userData } = await supabase.auth.getUser()
 
       if (!userData.user) {
-        setPendingApproval(true)
+        // Visiteur non connecté : aperçu des recettes "en avant" uniquement
+        setIsPublicPreview(true)
+        const { data } = await supabase.from('recipes').select('*').eq('is_featured', true)
+        setRecipes(data ?? [])
         setLoading(false)
         return
       }
@@ -43,7 +47,7 @@ export default function Recettes() {
         .single()
 
       if (!profile?.approved) {
-        setPendingApproval(true)
+        setAccountPending(true)
         setLoading(false)
         return
       }
@@ -70,10 +74,10 @@ export default function Recettes() {
     return <div className="p-8 text-center text-[#3A3532]/60">Chargement...</div>
   }
 
-  if (pendingApproval) {
+  if (accountPending) {
     return (
       <div className="p-8 max-w-md mx-auto text-center text-[#3A3532]/70">
-        Connecte-toi pour accéder aux recettes. Si ton compte est en attente de validation, tu recevras un accès prochainement.
+        Ton compte est en attente de validation. Tu recevras un accès prochainement.
       </div>
     )
   }
@@ -87,7 +91,21 @@ export default function Recettes() {
 
   return (
     <div className="p-6 sm:p-8 max-w-5xl mx-auto">
-      <h1 className="font-display text-3xl text-[#3A3532] mb-6">Mes recettes</h1>
+      <h1 className="font-display text-3xl text-[#3A3532] mb-2">Mes recettes</h1>
+
+      {isPublicPreview && (
+        <div className="border border-[#C9A44C] bg-[#F6DEE1]/20 rounded-2xl p-4 mb-8">
+          <p className="text-[#3A3532]/80 text-sm mb-3">
+            Voici un aperçu de mes recettes. Connecte-toi pour accéder à toutes les recettes, avec ingrédients et étapes complètes.
+          </p>
+          <Link
+            href="/login"
+            className="inline-block px-5 py-2 bg-[#3A3532] text-[#FDFBF6] rounded-full text-sm font-medium hover:bg-[#2A2622] transition-colors no-underline border border-[#C9A44C]"
+          >
+            Se connecter
+          </Link>
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row gap-3 mb-8 flex-wrap">
         <input
