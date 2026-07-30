@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import AdminEditButton from '@/components/AdminEditButton'
@@ -26,6 +26,7 @@ export default function Home() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [featuredRecipes, setFeaturedRecipes] = useState<Recipe[]>([])
   const [checkingAdmin, setCheckingAdmin] = useState(true)
+  const scrollRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -72,8 +73,15 @@ export default function Home() {
       .from('recipes')
       .select('id, title, description, image_url')
       .eq('is_featured', true)
+      .order('featured_position')
       .then(({ data }) => setFeaturedRecipes(data ?? []))
   }, [checkingAdmin])
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (!scrollRef.current) return
+    const amount = scrollRef.current.clientWidth * 0.8
+    scrollRef.current.scrollBy({ left: direction === 'left' ? -amount : amount, behavior: 'smooth' })
+  }
 
   if (checkingAdmin) return <div className="p-8 text-center text-[#3A3532]/60">Chargement...</div>
   if (!content) return <div className="p-8 text-center text-[#3A3532]/60">Chargement...</div>
@@ -152,27 +160,44 @@ export default function Home() {
             Un aperçu de mes recettes
           </h2>
 
-          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 px-6 pb-2 scrollbar-hide">
-            {featuredRecipes.map((recipe) => (
-              <Link
-                key={recipe.id}
-                href={`/recipes/${recipe.id}`}
-                className="snap-center shrink-0 w-[75%] sm:w-[38%] lg:w-[30%] block rounded-2xl border border-[#F0EAE0] bg-white overflow-hidden hover:shadow-md transition-shadow no-underline text-inherit"
-              >
-                {recipe.image_url ? (
-                  <img src={recipe.image_url} alt={recipe.title} className="w-full h-44 object-cover" />
-                ) : (
-                  <div className="w-full h-44 bg-[#F6DEE1]/30" />
-                )}
-                <div className="p-4">
-                  <h3 className="font-display text-lg text-[#3A3532] mb-1">{recipe.title}</h3>
-                  <p className="text-[#3A3532]/70 text-sm line-clamp-2">{recipe.description}</p>
-                </div>
-              </Link>
-            ))}
+          <div className="relative px-6">
+            <div ref={scrollRef} className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 scrollbar-hide">
+              {featuredRecipes.map((recipe) => (
+                <Link
+                  key={recipe.id}
+                  href={`/recipes/${recipe.id}`}
+                  className="snap-center shrink-0 w-[75%] sm:w-[38%] lg:w-[30%] block rounded-2xl border border-[#F0EAE0] bg-white overflow-hidden hover:shadow-md transition-shadow no-underline text-inherit"
+                >
+                  {recipe.image_url ? (
+                    <img src={recipe.image_url} alt={recipe.title} className="w-full h-44 object-cover" />
+                  ) : (
+                    <div className="w-full h-44 bg-[#F6DEE1]/30" />
+                  )}
+                  <div className="p-4">
+                    <h3 className="font-display text-lg text-[#3A3532] mb-1">{recipe.title}</h3>
+                    <p className="text-[#3A3532]/70 text-sm line-clamp-2">{recipe.description}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            <button
+              onClick={() => scroll('left')}
+              aria-label="Voir les recettes précédentes"
+              className="hidden sm:flex absolute top-1/2 -translate-y-1/2 -left-2 w-10 h-10 items-center justify-center rounded-full bg-white border border-[#F0EAE0] shadow-md text-[#3A3532] hover:bg-[#F6DEE1]/30"
+            >
+              ←
+            </button>
+            <button
+              onClick={() => scroll('right')}
+              aria-label="Voir les recettes suivantes"
+              className="hidden sm:flex absolute top-1/2 -translate-y-1/2 -right-2 w-10 h-10 items-center justify-center rounded-full bg-white border border-[#F0EAE0] shadow-md text-[#3A3532] hover:bg-[#F6DEE1]/30"
+            >
+              →
+            </button>
           </div>
 
-          <p className="text-xs text-[#3A3532]/40 text-center mt-2">← Fais glisser pour voir plus →</p>
+          <p className="text-xs text-[#3A3532]/40 text-center mt-2 sm:hidden">← Fais glisser pour voir plus →</p>
 
           <div className="text-center mt-6 px-6">
             <Link

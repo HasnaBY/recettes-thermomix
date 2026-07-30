@@ -30,6 +30,7 @@ const SECTIONS: { title: string; links: { href: string; label: string }[] }[] = 
     links: [
       { href: '/admin/new-recipe', label: '+ Ajouter une recette' },
       { href: '/admin/recipe-lists', label: 'Gérer les listes de recettes' },
+      { href: '/admin/featured-recipes', label: 'Recettes mises en avant (ordre)' },
     ],
   },
   {
