@@ -41,6 +41,10 @@ const SECTIONS: { title: string; links: { href: string; label: string }[] }[] = 
     ],
   },
   {
+  title: 'Menus IA',
+  links: [{ href: '/admin/menus', label: 'Voir tous les menus générés' }],
+},
+  {
     title: 'Témoignages & confiance',
     links: [
       { href: '/admin/testimonials', label: 'Gérer les témoignages' },

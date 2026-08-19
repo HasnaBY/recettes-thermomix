@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
 type MenuItem = { recipe_id: string; recipe_title: string }
-type Menu = { plats: MenuItem[]; desserts: MenuItem[] }
+type Menu = { plats: MenuItem[]; desserts: MenuItem[]; notes?: string[] }
 
 export default function GenerateurMenu() {
   const [checkingAccess, setCheckingAccess] = useState(true)
@@ -16,9 +16,11 @@ export default function GenerateurMenu() {
   const [nbDesserts, setNbDesserts] = useState('2')
   const [source, setSource] = useState('favorites')
 
+  const [menuId, setMenuId] = useState<string | null>(null)
   const [menu, setMenu] = useState<Menu | null>(null)
   const [generatedAt, setGeneratedAt] = useState<string | null>(null)
   const [generating, setGenerating] = useState(false)
+  const [swappingId, setSwappingId] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [usedCount, setUsedCount] = useState(0)
   const [limit, setLimit] = useState(3)
@@ -54,6 +56,7 @@ export default function GenerateurMenu() {
           .maybeSingle()
 
         if (lastMenu) {
+          setMenuId(lastMenu.id)
           setMenu(lastMenu.menu)
           setGeneratedAt(lastMenu.created_at)
         } else {
@@ -111,11 +114,52 @@ export default function GenerateurMenu() {
         setGeneratedAt(new Date().toISOString())
         setShowForm(false)
         setUsedCount((prev) => prev + 1)
+
+        const { data: latest } = await supabase
+          .from('generated_menus')
+          .select('id')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+        if (latest) setMenuId(latest.id)
       }
     } catch (err: any) {
       setError(err.message)
     } finally {
       setGenerating(false)
+    }
+  }
+
+  const handleSwap = async (itemType: 'plats' | 'desserts', oldRecipeId: string) => {
+    if (!menuId) return
+    setSwappingId(oldRecipeId)
+    setError('')
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      const response = await fetch('/api/swap-menu-item', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ menuId, itemType, oldRecipeId }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error ?? 'Une erreur est survenue')
+      } else {
+        setMenu((prev) => (prev ? { ...prev, ...data.menu } : data.menu))
+      }
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setSwappingId(null)
     }
   }
 
@@ -135,9 +179,29 @@ export default function GenerateurMenu() {
   const remaining = isAdmin ? null : Math.max(limit - usedCount, 0)
   const canGenerate = isAdmin || remaining! > 0
 
+  const renderItem = (item: MenuItem, itemType: 'plats' | 'desserts', bg: string) => (
+    <div key={item.recipe_id} className={`flex justify-between items-center px-3 py-2 ${bg} rounded-xl`}>
+      <Link href={`/recipes/${item.recipe_id}`} className="text-sm font-medium text-[#3A3532] no-underline flex-1">
+        {item.recipe_title}
+      </Link>
+      <button
+        onClick={() => handleSwap(itemType, item.recipe_id)}
+        disabled={swappingId === item.recipe_id}
+        className="text-xs text-[#3A3532]/60 underline ml-2 shrink-0 disabled:opacity-50"
+      >
+        {swappingId === item.recipe_id ? '...' : 'Remplacer'}
+      </button>
+    </div>
+  )
+
   return (
     <div className="px-6 sm:px-8 py-12 max-w-2xl mx-auto">
-      <h1 className="font-display text-3xl text-[#3A3532] mb-2 text-center">🗓️ Générateur de menu</h1>
+      <div className="flex justify-between items-center mb-2">
+        <h1 className="font-display text-3xl text-[#3A3532]">🗓️ Générateur de menu</h1>
+        <Link href="/mes-menus" className="text-sm text-[#3A3532]/60 underline whitespace-nowrap">
+          Historique
+        </Link>
+      </div>
       <p className="text-[#3A3532]/70 text-center mb-2">
         Génère ton menu à partir des recettes du site.
       </p>
@@ -146,6 +210,8 @@ export default function GenerateurMenu() {
           {remaining} génération{remaining > 1 ? 's' : ''} restante{remaining > 1 ? 's' : ''}
         </p>
       )}
+
+      {error && <p className="text-red-600 text-sm text-center mb-4">{error}</p>}
 
       {menu && !showForm && (
         <div className="mb-8">
@@ -158,19 +224,21 @@ export default function GenerateurMenu() {
             )}
           </div>
 
+          {menu.notes && menu.notes.length > 0 && (
+            <div className="mb-4 border border-[#C9A44C] bg-[#F6DEE1]/20 rounded-xl p-3">
+              {menu.notes.map((note, i) => (
+                <p key={i} className="text-xs text-[#3A3532]/80">
+                  {note}
+                </p>
+              ))}
+            </div>
+          )}
+
           {menu.plats?.length > 0 && (
             <div className="mb-6">
               <h3 className="font-display text-lg text-[#3A3532] mb-2">🍽️ Plats</h3>
               <div className="flex flex-col gap-2">
-                {menu.plats.map((item, i) => (
-                  <Link
-                    key={i}
-                    href={`/recipes/${item.recipe_id}`}
-                    className="px-3 py-2 bg-[#DCEAF0]/30 rounded-xl no-underline text-[#3A3532] text-sm font-medium"
-                  >
-                    {item.recipe_title}
-                  </Link>
-                ))}
+                {menu.plats.map((item) => renderItem(item, 'plats', 'bg-[#DCEAF0]/30'))}
               </div>
             </div>
           )}
@@ -179,24 +247,13 @@ export default function GenerateurMenu() {
             <div className="mb-6">
               <h3 className="font-display text-lg text-[#3A3532] mb-2">🍰 Desserts / goûters</h3>
               <div className="flex flex-col gap-2">
-                {menu.desserts.map((item, i) => (
-                  <Link
-                    key={i}
-                    href={`/recipes/${item.recipe_id}`}
-                    className="px-3 py-2 bg-[#F6DEE1]/30 rounded-xl no-underline text-[#3A3532] text-sm font-medium"
-                  >
-                    {item.recipe_title}
-                  </Link>
-                ))}
+                {menu.desserts.map((item) => renderItem(item, 'desserts', 'bg-[#F6DEE1]/30'))}
               </div>
             </div>
           )}
 
           {canGenerate && (
-            <button
-              onClick={() => setShowForm(true)}
-              className="text-sm text-[#3A3532] underline"
-            >
+            <button onClick={() => setShowForm(true)} className="text-sm text-[#3A3532] underline">
               Générer un nouveau menu
             </button>
           )}
@@ -247,8 +304,6 @@ export default function GenerateurMenu() {
                   />
                 </div>
               </div>
-
-              {error && <p className="text-red-600 text-sm">{error}</p>}
 
               <button
                 type="submit"

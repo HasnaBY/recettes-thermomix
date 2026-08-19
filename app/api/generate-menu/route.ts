@@ -25,7 +25,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Compte non approuvé' }, { status: 403 })
   }
 
-  // Vérifie la limite de générations pour les non-admins
   if (!profile.is_admin) {
     const { data: settings } = await supabase
       .from('site_settings')
@@ -51,64 +50,68 @@ export async function POST(request: NextRequest) {
   const body = await request.json()
   const { nbPlats, nbDesserts, source } = body
 
-  let recipesQuery = supabase
+  const { data: allRecipes, error } = await supabase
     .from('recipes')
     .select('id, title, category, ingredients')
 
+  if (error || !allRecipes) {
+    return NextResponse.json({ error: 'Erreur lors de la récupération des recettes' }, { status: 500 })
+  }
+
+  const withIngredients = allRecipes.filter((r) => r.ingredients && r.ingredients.length > 0)
+
+  let favoriteIds: string[] = []
   if (source === 'favorites') {
     const { data: favIds } = await supabase
       .from('favorites')
       .select('recipe_id')
       .eq('user_id', userData.user.id)
-
-    const ids = (favIds ?? []).map((f) => f.recipe_id)
-    if (ids.length === 0) {
-      return NextResponse.json({ error: "Tu n'as pas encore de recettes favorites." }, { status: 400 })
-    }
-    recipesQuery = recipesQuery.in('id', ids)
+    favoriteIds = (favIds ?? []).map((f) => f.recipe_id)
   }
 
-  const { data: recipes, error } = await recipesQuery
+  const pool = source === 'favorites' ? withIngredients.filter((r) => favoriteIds.includes(r.id)) : withIngredients
+  const fallbackPool = source === 'favorites' ? withIngredients.filter((r) => !favoriteIds.includes(r.id)) : []
 
-  if (error || !recipes) {
-    return NextResponse.json({ error: 'Erreur lors de la récupération des recettes' }, { status: 500 })
-  }
+  const platsFavPool = pool.filter((r) => !isDessertCategory(r.category)).map((r) => ({ id: r.id, title: r.title }))
+  const dessertsFavPool = pool.filter((r) => isDessertCategory(r.category)).map((r) => ({ id: r.id, title: r.title }))
+  const platsFallbackPool = fallbackPool.filter((r) => !isDessertCategory(r.category)).map((r) => ({ id: r.id, title: r.title }))
+  const dessertsFallbackPool = fallbackPool.filter((r) => isDessertCategory(r.category)).map((r) => ({ id: r.id, title: r.title }))
 
-  const withIngredients = recipes.filter((r) => r.ingredients && r.ingredients.length > 0)
-
-  const platsPool = withIngredients
-    .filter((r) => !isDessertCategory(r.category))
-    .map((r) => ({ id: r.id, title: r.title, category: r.category }))
-
-  const dessertsPool = withIngredients
-    .filter((r) => isDessertCategory(r.category))
-    .map((r) => ({ id: r.id, title: r.title, category: r.category }))
-
-  if (nbPlats > 0 && platsPool.length === 0) {
-    return NextResponse.json(
-      { error: "Aucun plat disponible avec des ingrédients renseignés." },
-      { status: 400 }
+  const notes: string[] = []
+  if (source === 'favorites' && nbPlats > platsFavPool.length) {
+    notes.push(
+      `Tu n'as que ${platsFavPool.length} plat(s) en favoris pour ${nbPlats} demandé(s) — le menu a été complété avec d'autres recettes du site.`
     )
   }
-  if (nbDesserts > 0 && dessertsPool.length === 0) {
-    return NextResponse.json(
-      { error: "Aucun dessert/goûter disponible avec des ingrédients renseignés." },
-      { status: 400 }
+  if (source === 'favorites' && nbDesserts > dessertsFavPool.length) {
+    notes.push(
+      `Tu n'as que ${dessertsFavPool.length} dessert(s)/goûter(s) en favoris pour ${nbDesserts} demandé(s) — le menu a été complété avec d'autres recettes du site.`
     )
   }
 
-  const prompt = `Tu es un assistant culinaire. Voici deux listes de recettes disponibles, déjà triées par type.
+  if (nbPlats > 0 && platsFavPool.length + platsFallbackPool.length === 0) {
+    return NextResponse.json({ error: "Aucun plat disponible avec des ingrédients renseignés." }, { status: 400 })
+  }
+  if (nbDesserts > 0 && dessertsFavPool.length + dessertsFallbackPool.length === 0) {
+    return NextResponse.json({ error: "Aucun dessert/goûter disponible." }, { status: 400 })
+  }
 
-Plats disponibles (JSON) :
-${JSON.stringify(platsPool)}
+  const prompt = `Tu es un assistant culinaire. Voici des recettes disponibles, triées par priorité.
 
-Desserts/goûters disponibles (JSON) :
-${JSON.stringify(dessertsPool)}
+Plats en priorité (favoris) :
+${JSON.stringify(platsFavPool)}
+Plats de secours (à utiliser seulement si la liste ci-dessus ne suffit pas) :
+${JSON.stringify(platsFallbackPool)}
 
-Choisis exactement ${nbPlats} plats en piochant UNIQUEMENT dans la liste "Plats disponibles" (utilise leur "id" exact).
-Choisis exactement ${nbDesserts} desserts/goûters en piochant UNIQUEMENT dans la liste "Desserts/goûters disponibles" (utilise leur "id" exact).
-Varie les choix autant que possible, ne répète pas la même recette deux fois sauf si la liste est trop courte pour le nombre demandé.
-Réponds uniquement en JSON, avec exactement ce format :
+Desserts/goûters en priorité (favoris) :
+${JSON.stringify(dessertsFavPool)}
+Desserts/goûters de secours (à utiliser seulement si la liste ci-dessus ne suffit pas) :
+${JSON.stringify(dessertsFallbackPool)}
+
+Choisis exactement ${nbPlats} plats au total : pioche d'abord dans "Plats en priorité", et seulement si ce n'est pas suffisant, complète avec "Plats de secours".
+Choisis exactement ${nbDesserts} desserts/goûters au total, avec la même logique de priorité.
+Utilise les "id" exacts fournis. Varie les choix, ne répète pas une recette sauf si nécessaire.
+Réponds uniquement en JSON avec ce format :
 {
   "plats": [{ "recipe_id": "uuid-exact" }],
   "desserts": [{ "recipe_id": "uuid-exact" }]
@@ -129,20 +132,18 @@ Réponds uniquement en JSON, avec exactement ce format :
     })
 
     const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.error?.message ?? 'Erreur OpenAI')
-    }
+    if (!response.ok) throw new Error(data.error?.message ?? 'Erreur OpenAI')
 
     const menuJson = JSON.parse(data.choices[0].message.content)
 
-    const recipeMap = new Map(recipes.map((r) => [r.id, r]))
+    const recipeMap = new Map(allRecipes.map((r) => [r.id, r]))
     menuJson.plats?.forEach((item: any) => {
       item.recipe_title = recipeMap.get(item.recipe_id)?.title ?? 'Recette inconnue'
     })
     menuJson.desserts?.forEach((item: any) => {
       item.recipe_title = recipeMap.get(item.recipe_id)?.title ?? 'Recette inconnue'
     })
+    menuJson.notes = notes
 
     await supabase.from('generated_menus').insert({
       user_id: userData.user.id,
