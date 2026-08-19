@@ -95,6 +95,9 @@ export default function Nav() {
               <Link href="/astuces" className={primaryLinkClass}>
                 Astuces
               </Link>
+              <Link href="/generateur-menu" className={primaryLinkClass}>
+                Menu
+              </Link>
               <Link href="/challenge" className={primaryLinkClass}>
                 Challenge
               </Link>
