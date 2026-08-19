@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+function isDessertCategory(category: string | null) {
+  if (!category) return false
+  const c = category.toLowerCase()
+  return c.includes('dessert') || c.includes('goûter') || c.includes('gouter')
+}
+
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: userData } = await supabase.auth.getUser()
@@ -11,7 +17,7 @@ export async function POST(request: NextRequest) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('approved')
+    .select('approved, is_admin')
     .eq('id', userData.user.id)
     .single()
 
@@ -19,12 +25,35 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Compte non approuvé' }, { status: 403 })
   }
 
+  // Vérifie la limite de générations pour les non-admins
+  if (!profile.is_admin) {
+    const { data: settings } = await supabase
+      .from('site_settings')
+      .select('menu_generation_limit')
+      .eq('id', 1)
+      .single()
+
+    const limit = settings?.menu_generation_limit ?? 3
+
+    const { count } = await supabase
+      .from('generated_menus')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userData.user.id)
+
+    if ((count ?? 0) >= limit) {
+      return NextResponse.json(
+        { error: `Tu as atteint ta limite de ${limit} générations de menu.` },
+        { status: 403 }
+      )
+    }
+  }
+
   const body = await request.json()
-  const { days, people, objective, source } = body
+  const { nbPlats, nbDesserts, source } = body
 
   let recipesQuery = supabase
     .from('recipes')
-    .select('id, title, category, prep_time_minutes, total_time_minutes, ingredients')
+    .select('id, title, category, ingredients')
 
   if (source === 'favorites') {
     const { data: favIds } = await supabase
@@ -45,34 +74,44 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Erreur lors de la récupération des recettes' }, { status: 500 })
   }
 
-  const recipesForPrompt = recipes
-    .filter((r) => r.ingredients && r.ingredients.length > 0)
-    .map((r) => ({
-      id: r.id,
-      title: r.title,
-      category: r.category,
-      prep_time: r.prep_time_minutes,
-      total_time: r.total_time_minutes,
-    }))
+  const withIngredients = recipes.filter((r) => r.ingredients && r.ingredients.length > 0)
 
-  if (recipesForPrompt.length === 0) {
+  const platsPool = withIngredients
+    .filter((r) => !isDessertCategory(r.category))
+    .map((r) => ({ id: r.id, title: r.title, category: r.category }))
+
+  const dessertsPool = withIngredients
+    .filter((r) => isDessertCategory(r.category))
+    .map((r) => ({ id: r.id, title: r.title, category: r.category }))
+
+  if (nbPlats > 0 && platsPool.length === 0) {
     return NextResponse.json(
-      { error: "Aucune recette disponible avec des ingrédients renseignés pour générer un menu." },
+      { error: "Aucun plat disponible avec des ingrédients renseignés." },
+      { status: 400 }
+    )
+  }
+  if (nbDesserts > 0 && dessertsPool.length === 0) {
+    return NextResponse.json(
+      { error: "Aucun dessert/goûter disponible avec des ingrédients renseignés." },
       { status: 400 }
     )
   }
 
-  const prompt = `Tu es un assistant culinaire. Voici une liste de recettes disponibles au format JSON :
-${JSON.stringify(recipesForPrompt)}
+  const prompt = `Tu es un assistant culinaire. Voici deux listes de recettes disponibles, déjà triées par type.
 
-Génère un menu pour ${days} jours, pour ${people} personnes, avec l'objectif "${objective}".
-Choisis uniquement des recettes présentes dans la liste ci-dessus (utilise leur "id" exact).
-Varie les recettes autant que possible, ne répète pas la même recette deux fois sauf si la liste est très courte.
+Plats disponibles (JSON) :
+${JSON.stringify(platsPool)}
+
+Desserts/goûters disponibles (JSON) :
+${JSON.stringify(dessertsPool)}
+
+Choisis exactement ${nbPlats} plats en piochant UNIQUEMENT dans la liste "Plats disponibles" (utilise leur "id" exact).
+Choisis exactement ${nbDesserts} desserts/goûters en piochant UNIQUEMENT dans la liste "Desserts/goûters disponibles" (utilise leur "id" exact).
+Varie les choix autant que possible, ne répète pas la même recette deux fois sauf si la liste est trop courte pour le nombre demandé.
 Réponds uniquement en JSON, avec exactement ce format :
 {
-  "days": [
-    { "day": "Lundi", "meals": [ { "type": "Dîner", "recipe_id": "uuid-exact-de-la-liste" } ] }
-  ]
+  "plats": [{ "recipe_id": "uuid-exact" }],
+  "desserts": [{ "recipe_id": "uuid-exact" }]
 }`
 
   try {
@@ -98,16 +137,16 @@ Réponds uniquement en JSON, avec exactement ce format :
     const menuJson = JSON.parse(data.choices[0].message.content)
 
     const recipeMap = new Map(recipes.map((r) => [r.id, r]))
-    menuJson.days.forEach((day: any) => {
-      day.meals.forEach((meal: any) => {
-        const recipe = recipeMap.get(meal.recipe_id)
-        meal.recipe_title = recipe?.title ?? 'Recette inconnue'
-      })
+    menuJson.plats?.forEach((item: any) => {
+      item.recipe_title = recipeMap.get(item.recipe_id)?.title ?? 'Recette inconnue'
+    })
+    menuJson.desserts?.forEach((item: any) => {
+      item.recipe_title = recipeMap.get(item.recipe_id)?.title ?? 'Recette inconnue'
     })
 
     await supabase.from('generated_menus').insert({
       user_id: userData.user.id,
-      params: { days, people, objective, source },
+      params: { nbPlats, nbDesserts, source },
       menu: menuJson,
     })
 

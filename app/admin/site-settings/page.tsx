@@ -11,6 +11,7 @@ export default function AdminSiteSettings() {
   const [instagramUrl, setInstagramUrl] = useState('')
   const [tiktokUrl, setTiktokUrl] = useState('')
   const [snapchatUrl, setSnapchatUrl] = useState('')
+  const [menuGenerationLimit, setMenuGenerationLimit] = useState('3')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
@@ -31,6 +32,7 @@ export default function AdminSiteSettings() {
           setInstagramUrl(data.instagram_url ?? '')
           setTiktokUrl(data.tiktok_url ?? '')
           setSnapchatUrl(data.snapchat_url ?? '')
+          setMenuGenerationLimit((data.menu_generation_limit ?? 3).toString())
         }
         setLoading(false)
       })
@@ -56,6 +58,17 @@ export default function AdminSiteSettings() {
       .eq('id', 1)
     setSaving(false)
     setMessage(error ? error.message : 'Réseaux sociaux enregistrés')
+  }
+
+  const handleSaveMenuLimit = async () => {
+    setSaving(true)
+    setMessage('')
+    const { error } = await supabase
+      .from('site_settings')
+      .update({ menu_generation_limit: parseInt(menuGenerationLimit) || 0 })
+      .eq('id', 1)
+    setSaving(false)
+    setMessage(error ? error.message : 'Limite enregistrée')
   }
 
   if (loading) return <div className="p-8 text-center text-gray-500">Chargement...</div>
@@ -111,6 +124,27 @@ export default function AdminSiteSettings() {
           onChange={(v) => toggle('show_public_testimonials', v, setShowPublicTestimonials)}
         />
       </div>
+
+      <h2 className="text-lg font-semibold text-gray-900 mb-3">Générateur de menu IA</h2>
+      <div className="flex gap-2 mb-10">
+        <input
+          type="number"
+          min="0"
+          value={menuGenerationLimit}
+          onChange={(e) => setMenuGenerationLimit(e.target.value)}
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+        />
+        <button
+          onClick={handleSaveMenuLimit}
+          disabled={saving}
+          className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+        >
+          Enregistrer
+        </button>
+      </div>
+      <p className="text-xs text-gray-400 -mt-8 mb-10">
+        Nombre maximum de générations de menu par cliente (les comptes admin ne sont pas limités).
+      </p>
 
       <h2 className="text-lg font-semibold text-gray-900 mb-3">Réseaux sociaux</h2>
       <div className="flex flex-col gap-3">
