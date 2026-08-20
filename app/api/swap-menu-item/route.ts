@@ -37,30 +37,36 @@ export async function POST(request: NextRequest) {
 
   const withIngredients = (allRecipes ?? []).filter((r) => r.ingredients && r.ingredients.length > 0)
 
-  let pool = withIngredients
-
+  let favoriteIds: string[] = []
   if (source === 'favorites') {
     const { data: favIds } = await supabase
       .from('favorites')
       .select('recipe_id')
       .eq('user_id', userData.user.id)
-    const ids = (favIds ?? []).map((f) => f.recipe_id)
-    const favoritePool = withIngredients.filter((r) => ids.includes(r.id))
-    pool = favoritePool.length > 0 ? favoritePool : withIngredients
+    favoriteIds = (favIds ?? []).map((f) => f.recipe_id)
   }
+
+  const priorityPool = source === 'favorites' ? withIngredients.filter((r) => favoriteIds.includes(r.id)) : withIngredients
+  const fallbackPool = source === 'favorites' ? withIngredients.filter((r) => !favoriteIds.includes(r.id)) : []
 
   const currentIds = [
     ...(menuRow.menu.plats ?? []).map((i: any) => i.recipe_id),
     ...(menuRow.menu.desserts ?? []).map((i: any) => i.recipe_id),
   ]
 
-  const candidates = pool.filter((r) => {
-    const matchesType = itemType === 'desserts' ? isDessertCategory(r.category) : !isDessertCategory(r.category)
-    return matchesType && !currentIds.includes(r.id)
-  })
+  const matchesType = (r: any) =>
+    itemType === 'desserts' ? isDessertCategory(r.category) : !isDessertCategory(r.category)
+
+  const priorityCandidates = priorityPool.filter((r) => matchesType(r) && !currentIds.includes(r.id))
+  const fallbackCandidates = fallbackPool.filter((r) => matchesType(r) && !currentIds.includes(r.id))
+
+  const candidates = priorityCandidates.length > 0 ? priorityCandidates : fallbackCandidates
 
   if (candidates.length === 0) {
-    return NextResponse.json({ error: "Aucune autre recette disponible pour remplacer celle-ci." }, { status: 400 })
+    return NextResponse.json(
+      { error: "Aucune autre recette disponible sur tout le site pour remplacer celle-ci." },
+      { status: 400 }
+    )
   }
 
   const replacement = candidates[Math.floor(Math.random() * candidates.length)]

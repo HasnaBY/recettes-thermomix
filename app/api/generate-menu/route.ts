@@ -7,6 +7,31 @@ function isDessertCategory(category: string | null) {
   return c.includes('dessert') || c.includes('goûter') || c.includes('gouter')
 }
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+function pickWithPriority(
+  priorityPool: { id: string; title: string }[],
+  fallbackPool: { id: string; title: string }[],
+  count: number
+) {
+  const shuffledPriority = shuffle(priorityPool)
+  const shuffledFallback = shuffle(fallbackPool)
+
+  const picked = shuffledPriority.slice(0, count)
+  if (picked.length < count) {
+    const remaining = count - picked.length
+    picked.push(...shuffledFallback.slice(0, remaining))
+  }
+  return picked
+}
+
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: userData } = await supabase.auth.getUser()
@@ -69,90 +94,61 @@ export async function POST(request: NextRequest) {
     favoriteIds = (favIds ?? []).map((f) => f.recipe_id)
   }
 
-  const pool = source === 'favorites' ? withIngredients.filter((r) => favoriteIds.includes(r.id)) : withIngredients
+  const priorityPool = source === 'favorites' ? withIngredients.filter((r) => favoriteIds.includes(r.id)) : withIngredients
   const fallbackPool = source === 'favorites' ? withIngredients.filter((r) => !favoriteIds.includes(r.id)) : []
 
-  const platsFavPool = pool.filter((r) => !isDessertCategory(r.category)).map((r) => ({ id: r.id, title: r.title }))
-  const dessertsFavPool = pool.filter((r) => isDessertCategory(r.category)).map((r) => ({ id: r.id, title: r.title }))
-  const platsFallbackPool = fallbackPool.filter((r) => !isDessertCategory(r.category)).map((r) => ({ id: r.id, title: r.title }))
-  const dessertsFallbackPool = fallbackPool.filter((r) => isDessertCategory(r.category)).map((r) => ({ id: r.id, title: r.title }))
+  const platsPriority = priorityPool.filter((r) => !isDessertCategory(r.category)).map((r) => ({ id: r.id, title: r.title }))
+  const dessertsPriority = priorityPool.filter((r) => isDessertCategory(r.category)).map((r) => ({ id: r.id, title: r.title }))
+  const platsFallback = fallbackPool.filter((r) => !isDessertCategory(r.category)).map((r) => ({ id: r.id, title: r.title }))
+  const dessertsFallback = fallbackPool.filter((r) => isDessertCategory(r.category)).map((r) => ({ id: r.id, title: r.title }))
 
   const notes: string[] = []
-  if (source === 'favorites' && nbPlats > platsFavPool.length) {
+  if (source === 'favorites' && nbPlats > platsPriority.length) {
     notes.push(
-      `Tu n'as que ${platsFavPool.length} plat(s) en favoris pour ${nbPlats} demandé(s) — le menu a été complété avec d'autres recettes du site.`
+      `Tu n'as que ${platsPriority.length} plat(s) en favoris pour ${nbPlats} demandé(s) — le menu a été complété avec d'autres recettes du site.`
     )
   }
-  if (source === 'favorites' && nbDesserts > dessertsFavPool.length) {
+  if (source === 'favorites' && nbDesserts > dessertsPriority.length) {
     notes.push(
-      `Tu n'as que ${dessertsFavPool.length} dessert(s)/goûter(s) en favoris pour ${nbDesserts} demandé(s) — le menu a été complété avec d'autres recettes du site.`
+      `Tu n'as que ${dessertsPriority.length} dessert(s)/goûter(s) en favoris pour ${nbDesserts} demandé(s) — le menu a été complété avec d'autres recettes du site.`
     )
   }
 
-  if (nbPlats > 0 && platsFavPool.length + platsFallbackPool.length === 0) {
+  const totalPlatsAvailable = platsPriority.length + platsFallback.length
+  const totalDessertsAvailable = dessertsPriority.length + dessertsFallback.length
+
+  if (nbPlats > 0 && totalPlatsAvailable === 0) {
     return NextResponse.json({ error: "Aucun plat disponible avec des ingrédients renseignés." }, { status: 400 })
   }
-  if (nbDesserts > 0 && dessertsFavPool.length + dessertsFallbackPool.length === 0) {
+  if (nbDesserts > 0 && totalDessertsAvailable === 0) {
     return NextResponse.json({ error: "Aucun dessert/goûter disponible." }, { status: 400 })
   }
 
-  const prompt = `Tu es un assistant culinaire. Voici des recettes disponibles, triées par priorité.
-
-Plats en priorité (favoris) :
-${JSON.stringify(platsFavPool)}
-Plats de secours (à utiliser seulement si la liste ci-dessus ne suffit pas) :
-${JSON.stringify(platsFallbackPool)}
-
-Desserts/goûters en priorité (favoris) :
-${JSON.stringify(dessertsFavPool)}
-Desserts/goûters de secours (à utiliser seulement si la liste ci-dessus ne suffit pas) :
-${JSON.stringify(dessertsFallbackPool)}
-
-Choisis exactement ${nbPlats} plats au total : pioche d'abord dans "Plats en priorité", et seulement si ce n'est pas suffisant, complète avec "Plats de secours".
-Choisis exactement ${nbDesserts} desserts/goûters au total, avec la même logique de priorité.
-Utilise les "id" exacts fournis. Varie les choix, ne répète pas une recette sauf si nécessaire.
-Réponds uniquement en JSON avec ce format :
-{
-  "plats": [{ "recipe_id": "uuid-exact" }],
-  "desserts": [{ "recipe_id": "uuid-exact" }]
-}`
-
-  try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_object' },
-      }),
-    })
-
-    const data = await response.json()
-    if (!response.ok) throw new Error(data.error?.message ?? 'Erreur OpenAI')
-
-    const menuJson = JSON.parse(data.choices[0].message.content)
-
-    const recipeMap = new Map(allRecipes.map((r) => [r.id, r]))
-    menuJson.plats?.forEach((item: any) => {
-      item.recipe_title = recipeMap.get(item.recipe_id)?.title ?? 'Recette inconnue'
-    })
-    menuJson.desserts?.forEach((item: any) => {
-      item.recipe_title = recipeMap.get(item.recipe_id)?.title ?? 'Recette inconnue'
-    })
-    menuJson.notes = notes
-
-    await supabase.from('generated_menus').insert({
-      user_id: userData.user.id,
-      params: { nbPlats, nbDesserts, source },
-      menu: menuJson,
-    })
-
-    return NextResponse.json({ menu: menuJson })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  if (nbPlats > totalPlatsAvailable) {
+    notes.push(
+      `Seulement ${totalPlatsAvailable} plat(s) au total sont disponibles sur le site pour ${nbPlats} demandé(s).`
+    )
   }
+  if (nbDesserts > totalDessertsAvailable) {
+    notes.push(
+      `Seulement ${totalDessertsAvailable} dessert(s) au total sont disponibles sur le site pour ${nbDesserts} demandé(s).`
+    )
+  }
+
+  const chosenPlats = pickWithPriority(platsPriority, platsFallback, Math.min(nbPlats, totalPlatsAvailable))
+  const chosenDesserts = pickWithPriority(dessertsPriority, dessertsFallback, Math.min(nbDesserts, totalDessertsAvailable))
+
+  const menuJson = {
+    plats: chosenPlats.map((r) => ({ recipe_id: r.id, recipe_title: r.title })),
+    desserts: chosenDesserts.map((r) => ({ recipe_id: r.id, recipe_title: r.title })),
+    notes,
+  }
+
+  await supabase.from('generated_menus').insert({
+    user_id: userData.user.id,
+    params: { nbPlats, nbDesserts, source },
+    menu: menuJson,
+  })
+
+  return NextResponse.json({ menu: menuJson })
 }
