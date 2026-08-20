@@ -25,6 +25,7 @@ export default function Recettes() {
   const [source, setSource] = useState('toutes')
   const [isPublicPreview, setIsPublicPreview] = useState(false)
   const [accountPending, setAccountPending] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -32,7 +33,6 @@ export default function Recettes() {
       const { data: userData } = await supabase.auth.getUser()
 
       if (!userData.user) {
-        // Visiteur non connecté : aperçu des recettes "en avant" uniquement
         setIsPublicPreview(true)
         const { data } = await supabase.from('recipes').select('*').eq('is_featured', true)
         setRecipes(data ?? [])
@@ -42,9 +42,11 @@ export default function Recettes() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('approved')
+        .select('approved, is_admin')
         .eq('id', userData.user.id)
         .single()
+
+      setIsAdmin(!!profile?.is_admin)
 
       if (!profile?.approved) {
         setAccountPending(true)
@@ -156,33 +158,44 @@ export default function Recettes() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((recipe) => (
-            <Link
-              key={recipe.id}
-              href={`/recipes/${recipe.id}`}
-              className="block rounded-2xl border border-[#F0EAE0] bg-white overflow-hidden hover:shadow-md transition-shadow no-underline text-inherit"
-            >
-              {recipe.image_url ? (
-                <img
-                  src={recipe.image_url}
-                  alt={recipe.title}
-                  className="w-full h-40 object-cover"
-                />
-              ) : (
-                <div className="w-full h-40 bg-[#F6DEE1]/30 flex items-center justify-center text-[#3A3532]/40 text-sm">
-                  Pas de photo
+            <div key={recipe.id} className="relative">
+              <Link
+                href={`/recipes/${recipe.id}`}
+                className="block rounded-2xl border border-[#F0EAE0] bg-white overflow-hidden hover:shadow-md transition-shadow no-underline text-inherit"
+              >
+                {recipe.image_url ? (
+                  <img
+                    src={recipe.image_url}
+                    alt={recipe.title}
+                    className="w-full h-40 object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-40 bg-[#F6DEE1]/30 flex items-center justify-center text-[#3A3532]/40 text-sm">
+                    Pas de photo
+                  </div>
+                )}
+                <div className="p-4">
+                  <div className="mb-2">{sourceBadge(recipe.recipe_source)}</div>
+                  <h2 className="font-display text-lg text-[#3A3532] mb-1">{recipe.title}</h2>
+                  <p className="text-[#3A3532]/70 text-sm mb-2 line-clamp-2">{recipe.description}</p>
+                  <p className="text-xs text-[#3A3532]/50">
+                    {recipe.category}
+                    {recipe.origin && ` · ${recipe.origin}`}
+                    {recipe.total_time_minutes && ` · ${recipe.total_time_minutes} min au total`}
+                  </p>
                 </div>
+              </Link>
+
+              {isAdmin && (
+                <Link
+                  href={`/admin/edit-recipe/${recipe.id}`}
+                  className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-white/95 rounded-full shadow no-underline text-sm"
+                  aria-label="Modifier cette recette"
+                >
+                  ✏️
+                </Link>
               )}
-              <div className="p-4">
-                <div className="mb-2">{sourceBadge(recipe.recipe_source)}</div>
-                <h2 className="font-display text-lg text-[#3A3532] mb-1">{recipe.title}</h2>
-                <p className="text-[#3A3532]/70 text-sm mb-2 line-clamp-2">{recipe.description}</p>
-                <p className="text-xs text-[#3A3532]/50">
-                  {recipe.category}
-                  {recipe.origin && ` · ${recipe.origin}`}
-                  {recipe.total_time_minutes && ` · ${recipe.total_time_minutes} min au total`}
-                </p>
-              </div>
-            </Link>
+            </div>
           ))}
         </div>
       )}

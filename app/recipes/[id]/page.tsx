@@ -12,14 +12,16 @@ export default async function RecipeDetail({
 
   const { data: userData } = await supabase.auth.getUser()
   let isApproved = false
+  let isAdmin = false
 
   if (userData.user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('approved')
+      .select('approved, is_admin')
       .eq('id', userData.user.id)
       .single()
     isApproved = !!profile?.approved
+    isAdmin = !!profile?.is_admin
   }
 
   const { data: recipe, error } = await supabase
@@ -90,9 +92,19 @@ export default async function RecipeDetail({
 
   return (
     <div className="p-6 sm:p-8 max-w-2xl mx-auto">
-      <Link href="/recettes" className="inline-block mb-4 text-sm text-[#3A3532]/70 hover:text-[#3A3532]">
-        ← Retour aux recettes
-      </Link>
+      <div className="flex justify-between items-center mb-4">
+        <Link href="/recettes" className="text-sm text-[#3A3532]/70 hover:text-[#3A3532]">
+          ← Retour aux recettes
+        </Link>
+        {isAdmin && (
+          <Link
+            href={`/admin/edit-recipe/${id}`}
+            className="text-sm px-3 py-1.5 bg-[#3A3532] text-[#FDFBF6] rounded-full no-underline"
+          >
+            ✏️ Modifier
+          </Link>
+        )}
+      </div>
 
       <FavoriteButton recipeId={id} />
 
@@ -134,7 +146,7 @@ export default async function RecipeDetail({
 
       {recipe.cookidoo_url && (
         
-        <a  href={recipe.cookidoo_url}
+          href={recipe.cookidoo_url}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block mb-6 px-4 py-2 bg-[#F6DEE1]/40 text-[#3A3532] rounded-full text-sm font-medium hover:bg-[#F6DEE1]/70 border border-[#C9A44C]"

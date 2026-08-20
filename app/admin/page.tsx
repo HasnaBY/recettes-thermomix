@@ -14,6 +14,10 @@ type Profile = {
 
 const SECTIONS: { title: string; links: { href: string; label: string }[] }[] = [
   {
+  title: 'Vue d\'ensemble',
+  links: [{ href: '/admin/dashboard', label: '📊 Tableau de bord' }],
+  },
+  {
     title: 'Contenu du site',
     links: [
       { href: '/admin/homepage', label: "Modifier l'accueil" },
