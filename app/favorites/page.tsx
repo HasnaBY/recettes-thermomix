@@ -17,7 +17,8 @@ export default function Favorites() {
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
-
+  const [recommendations, setRecommendations] = useState<Recipe[]>([])
+  
   useEffect(() => {
     const load = async () => {
       const { data: userData } = await supabase.auth.getUser()
@@ -33,6 +34,15 @@ export default function Favorites() {
         .select('recipe_id, recipes(*)')
         .eq('user_id', uid)
 
+      const {
+        data: { session },
+        } = await supabase.auth.getSession()
+        const recRes = await fetch('/api/recommendations', {
+          headers: { Authorization: `Bearer ${session?.access_token}` },
+        })
+        const recData = await recRes.json()
+        setRecommendations(recData.recipes ?? [])
+
       if (!error && data) {
         const favRecipes = data.map((f: any) => f.recipes).filter(Boolean) as Recipe[]
         setRecipes(favRecipes)
@@ -47,6 +57,30 @@ export default function Favorites() {
   return (
     <div className="p-6 sm:p-8 max-w-5xl mx-auto">
       <h1 className="font-display text-3xl text-[#3A3532] mb-6">Mes favoris</h1>
+
+      {recommendations.length > 0 && (
+        <section className="mt-12">
+          <h2 className="font-display text-xl text-[#3A3532] mb-4">Elle pourrait aussi te plaire</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {recommendations.map((recipe) => (
+              <Link
+                key={recipe.id}
+                href={`/recipes/${recipe.id}`}
+                className="block rounded-2xl border border-[#F0EAE0] bg-white overflow-hidden hover:shadow-md transition-shadow no-underline text-inherit"
+              >
+                {recipe.image_url ? (
+                  <img src={recipe.image_url} alt={recipe.title} className="w-full h-32 object-cover" />
+                ) : (
+                  <div className="w-full h-32 bg-[#F6DEE1]/30" />
+                )}
+                <div className="p-3">
+                  <p className="font-display text-sm text-[#3A3532]">{recipe.title}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {recipes.length === 0 ? (
         <p className="text-[#3A3532]/60">Tu n'as pas encore de recette en favori.</p>
