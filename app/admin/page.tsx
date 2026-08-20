@@ -18,6 +18,14 @@ const SECTIONS: { title: string; links: { href: string; label: string }[] }[] = 
   links: [{ href: '/admin/dashboard', label: '📊 Tableau de bord' }],
   },
   {
+  title: 'Intelligence artificielle',
+  links: [
+    { href: '/admin/ai-settings', label: 'Activer/désactiver les fonctionnalités IA' },
+    { href: '/admin/recipe-creator', label: 'Créer une recette depuis des ingrédients' },
+    { href: '/admin/newsletter', label: 'Générer une newsletter' },
+  ],
+},
+  {
     title: 'Contenu du site',
     links: [
       { href: '/admin/homepage', label: "Modifier l'accueil" },
