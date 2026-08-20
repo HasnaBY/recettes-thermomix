@@ -146,7 +146,7 @@ export default async function RecipeDetail({
 
       {recipe.cookidoo_url && (
         
-          href={recipe.cookidoo_url}
+        <a  href={recipe.cookidoo_url}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block mb-6 px-4 py-2 bg-[#F6DEE1]/40 text-[#3A3532] rounded-full text-sm font-medium hover:bg-[#F6DEE1]/70 border border-[#C9A44C]"
