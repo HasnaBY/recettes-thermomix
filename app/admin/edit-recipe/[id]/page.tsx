@@ -25,6 +25,7 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
   const [error, setError] = useState('')
   const router = useRouter()
   const supabase = createClient()
+  const [tagging, setTagging] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -132,6 +133,33 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
     router.push('/admin')
   }
 
+  const handleAutoTag = async () => {
+    setTagging(true)
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      const response = await fetch('/api/tag-recipe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({
+          title,
+          description,
+          ingredients: ingredients.split('\n').filter((i) => i.trim() !== ''),
+        }),
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setCategory(data.category)
+        if (data.origin) setOrigin(data.origin)
+      } else {
+        setError(data.error)
+      }
+    } finally {
+      setTagging(false)
+    }
+  } 
   if (loading) return <div className="p-8 text-center text-gray-500">Chargement...</div>
 
   return (
@@ -168,7 +196,14 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
           onChange={(e) => setOrigin(e.target.value)}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
         />
-
+        <button
+          type="button"
+          onClick={handleAutoTag}
+          disabled={tagging || !title}
+          className="self-start text-sm text-gray-700 underline disabled:opacity-50"
+        >
+          {tagging ? 'Analyse...' : '🏷️ Suggérer catégorie/origine avec l\'IA'}
+        </button>
         <div>
           <label className="block mb-2 text-sm text-gray-600">Type de recette</label>
           <select
