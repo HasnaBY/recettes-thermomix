@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
 type MenuItem = { recipe_id: string; recipe_title: string }
-type Menu = { plats: MenuItem[]; desserts: MenuItem[]; notes?: string[] }
+type Menu = { plats: MenuItem[]; desserts: MenuItem[]; boissons: MenuItem[]; pains: MenuItem[]; notes?: string[] }
 
 export default function GenerateurMenu() {
   const [checkingAccess, setCheckingAccess] = useState(true)
@@ -14,6 +14,8 @@ export default function GenerateurMenu() {
 
   const [nbPlats, setNbPlats] = useState('5')
   const [nbDesserts, setNbDesserts] = useState('2')
+  const [nbBoissons, setNbBoissons] = useState('0')
+  const [nbPains, setNbPains] = useState('0')
   const [source, setSource] = useState('favorites')
 
   const [menuId, setMenuId] = useState<string | null>(null)
@@ -101,6 +103,8 @@ export default function GenerateurMenu() {
         body: JSON.stringify({
           nbPlats: parseInt(nbPlats),
           nbDesserts: parseInt(nbDesserts),
+          nbBoissons: parseInt(nbBoissons) || 0,
+          nbPains: parseInt(nbPains) || 0,
           source,
         }),
       })
@@ -130,7 +134,7 @@ export default function GenerateurMenu() {
     }
   }
 
-  const handleSwap = async (itemType: 'plats' | 'desserts', oldRecipeId: string) => {
+  const handleSwap = async (itemType: 'plats' | 'desserts' | 'boissons' | 'pains', oldRecipeId: string) => {
     if (!menuId) return
     setSwappingId(oldRecipeId)
     setError('')
@@ -179,20 +183,38 @@ export default function GenerateurMenu() {
   const remaining = isAdmin ? null : Math.max(limit - usedCount, 0)
   const canGenerate = isAdmin || remaining! > 0
 
-  const renderItem = (item: MenuItem, itemType: 'plats' | 'desserts', bg: string) => (
-    <div key={item.recipe_id} className={`flex justify-between items-center px-3 py-2 ${bg} rounded-xl`}>
-      <Link href={`/recipes/${item.recipe_id}`} className="text-sm font-medium text-[#3A3532] no-underline flex-1">
-        {item.recipe_title}
-      </Link>
-      <button
-        onClick={() => handleSwap(itemType, item.recipe_id)}
-        disabled={swappingId === item.recipe_id}
-        className="text-xs text-[#3A3532]/60 underline ml-2 shrink-0 disabled:opacity-50"
-      >
-        {swappingId === item.recipe_id ? '...' : 'Remplacer'}
-      </button>
-    </div>
-  )
+  const renderSection = (
+    title: string,
+    emoji: string,
+    items: MenuItem[] | undefined,
+    itemType: 'plats' | 'desserts' | 'boissons' | 'pains',
+    bg: string
+  ) => {
+    if (!items || items.length === 0) return null
+    return (
+      <div className="mb-6">
+        <h3 className="font-display text-lg text-[#3A3532] mb-2">
+          {emoji} {title}
+        </h3>
+        <div className="flex flex-col gap-2">
+          {items.map((item) => (
+            <div key={item.recipe_id} className={`flex justify-between items-center px-3 py-2 ${bg} rounded-xl`}>
+              <Link href={`/recipes/${item.recipe_id}`} className="text-sm font-medium text-[#3A3532] no-underline flex-1">
+                {item.recipe_title}
+              </Link>
+              <button
+                onClick={() => handleSwap(itemType, item.recipe_id)}
+                disabled={swappingId === item.recipe_id}
+                className="text-xs text-[#3A3532]/60 underline ml-2 shrink-0 disabled:opacity-50"
+              >
+                {swappingId === item.recipe_id ? '...' : 'Remplacer'}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="px-6 sm:px-8 py-12 max-w-2xl mx-auto">
@@ -234,23 +256,10 @@ export default function GenerateurMenu() {
             </div>
           )}
 
-          {menu.plats?.length > 0 && (
-            <div className="mb-6">
-              <h3 className="font-display text-lg text-[#3A3532] mb-2">🍽️ Plats</h3>
-              <div className="flex flex-col gap-2">
-                {menu.plats.map((item) => renderItem(item, 'plats', 'bg-[#DCEAF0]/30'))}
-              </div>
-            </div>
-          )}
-
-          {menu.desserts?.length > 0 && (
-            <div className="mb-6">
-              <h3 className="font-display text-lg text-[#3A3532] mb-2">🍰 Desserts / goûters</h3>
-              <div className="flex flex-col gap-2">
-                {menu.desserts.map((item) => renderItem(item, 'desserts', 'bg-[#F6DEE1]/30'))}
-              </div>
-            </div>
-          )}
+          {renderSection('Plats', '🍽️', menu.plats, 'plats', 'bg-[#DCEAF0]/30')}
+          {renderSection('Desserts / goûters', '🍰', menu.desserts, 'desserts', 'bg-[#F6DEE1]/30')}
+          {renderSection('Boissons', '🥤', menu.boissons, 'boissons', 'bg-[#E3ECDD]/40')}
+          {renderSection('Pains', '🍞', menu.pains, 'pains', 'bg-[#F0EAE0]')}
 
           {canGenerate && (
             <button onClick={() => setShowForm(true)} className="text-sm text-[#3A3532] underline">
@@ -282,7 +291,7 @@ export default function GenerateurMenu() {
 
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="block mb-1 text-sm text-[#3A3532]/70">Nombre de plats</label>
+                  <label className="block mb-1 text-sm text-[#3A3532]/70">Plats</label>
                   <input
                     type="number"
                     min="0"
@@ -293,13 +302,38 @@ export default function GenerateurMenu() {
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block mb-1 text-sm text-[#3A3532]/70">Nombre de desserts/goûters</label>
+                  <label className="block mb-1 text-sm text-[#3A3532]/70">Desserts/goûters</label>
                   <input
                     type="number"
                     min="0"
                     max="14"
                     value={nbDesserts}
                     onChange={(e) => setNbDesserts(e.target.value)}
+                    className="w-full px-4 py-2 border border-[#F0EAE0] rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="block mb-1 text-sm text-[#3A3532]/70">Boissons</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="14"
+                    value={nbBoissons}
+                    onChange={(e) => setNbBoissons(e.target.value)}
+                    className="w-full px-4 py-2 border border-[#F0EAE0] rounded-xl"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block mb-1 text-sm text-[#3A3532]/70">Pains</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="14"
+                    value={nbPains}
+                    onChange={(e) => setNbPains(e.target.value)}
                     className="w-full px-4 py-2 border border-[#F0EAE0] rounded-xl"
                   />
                 </div>

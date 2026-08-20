@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-function isDessertCategory(category: string | null) {
-  if (!category) return false
+type Kind = 'dessert' | 'boisson' | 'pain' | 'plat' | 'autre'
+
+function classify(category: string | null): Kind {
+  if (!category) return 'autre'
   const c = category.toLowerCase()
-  return c.includes('dessert') || c.includes('goûter') || c.includes('gouter')
+  if (c.includes('dessert') || c.includes('goûter') || c.includes('gouter')) return 'dessert'
+  if (c.includes('boisson')) return 'boisson'
+  if (c.includes('pain')) return 'pain'
+  if (c.includes('plat') || c.includes('salade')) return 'plat'
+  return 'autre'
 }
+
+const typeToKind: Record<string, Kind> = { plats: 'plat', desserts: 'dessert', boissons: 'boisson', pains: 'pain' }
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -30,6 +38,7 @@ export async function POST(request: NextRequest) {
   }
 
   const source = menuRow.params?.source ?? 'all'
+  const kind = typeToKind[itemType]
 
   const { data: allRecipes } = await supabase
     .from('recipes')
@@ -49,22 +58,20 @@ export async function POST(request: NextRequest) {
   const priorityPool = source === 'favorites' ? withIngredients.filter((r) => favoriteIds.includes(r.id)) : withIngredients
   const fallbackPool = source === 'favorites' ? withIngredients.filter((r) => !favoriteIds.includes(r.id)) : []
 
-  const currentIds = [
-    ...(menuRow.menu.plats ?? []).map((i: any) => i.recipe_id),
-    ...(menuRow.menu.desserts ?? []).map((i: any) => i.recipe_id),
-  ]
+  const currentIds = Object.values(menuRow.menu)
+    .filter((v: any) => Array.isArray(v))
+    .flat()
+    .map((i: any) => i.recipe_id)
 
-  const matchesType = (r: any) =>
-    itemType === 'desserts' ? isDessertCategory(r.category) : !isDessertCategory(r.category)
+  const matches = (r: any) => classify(r.category) === kind && !currentIds.includes(r.id)
 
-  const priorityCandidates = priorityPool.filter((r) => matchesType(r) && !currentIds.includes(r.id))
-  const fallbackCandidates = fallbackPool.filter((r) => matchesType(r) && !currentIds.includes(r.id))
-
+  const priorityCandidates = priorityPool.filter(matches)
+  const fallbackCandidates = fallbackPool.filter(matches)
   const candidates = priorityCandidates.length > 0 ? priorityCandidates : fallbackCandidates
 
   if (candidates.length === 0) {
     return NextResponse.json(
-      { error: "Aucune autre recette disponible sur tout le site pour remplacer celle-ci." },
+      { error: 'Aucune autre recette disponible sur tout le site pour remplacer celle-ci.' },
       { status: 400 }
     )
   }
