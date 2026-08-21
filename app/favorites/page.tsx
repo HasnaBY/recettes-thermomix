@@ -58,29 +58,7 @@ export default function Favorites() {
     <div className="p-6 sm:p-8 max-w-5xl mx-auto">
       <h1 className="font-display text-3xl text-[#3A3532] mb-6">Mes favoris</h1>
 
-      {recommendations.length > 0 && (
-        <section className="mt-12">
-          <h2 className="font-display text-xl text-[#3A3532] mb-4">Elle pourrait aussi te plaire</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {recommendations.map((recipe) => (
-              <Link
-                key={recipe.id}
-                href={`/recipes/${recipe.id}`}
-                className="block rounded-2xl border border-[#F0EAE0] bg-white overflow-hidden hover:shadow-md transition-shadow no-underline text-inherit"
-              >
-                {recipe.image_url ? (
-                  <img src={recipe.image_url} alt={recipe.title} className="w-full h-32 object-cover" />
-                ) : (
-                  <div className="w-full h-32 bg-[#F6DEE1]/30" />
-                )}
-                <div className="p-3">
-                  <p className="font-display text-sm text-[#3A3532]">{recipe.title}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+
 
       {recipes.length === 0 ? (
         <p className="text-[#3A3532]/60">Tu n'as pas encore de recette en favori.</p>
@@ -109,6 +87,30 @@ export default function Favorites() {
             </Link>
           ))}
         </div>
+      )}
+
+            {recommendations.length > 0 && (
+        <section className="mt-12">
+          <h2 className="font-display text-xl text-[#3A3532] mb-4">Elle pourrait aussi te plaire</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {recommendations.map((recipe) => (
+              <Link
+                key={recipe.id}
+                href={`/recipes/${recipe.id}`}
+                className="block rounded-2xl border border-[#F0EAE0] bg-white overflow-hidden hover:shadow-md transition-shadow no-underline text-inherit"
+              >
+                {recipe.image_url ? (
+                  <img src={recipe.image_url} alt={recipe.title} className="w-full h-32 object-cover" />
+                ) : (
+                  <div className="w-full h-32 bg-[#F6DEE1]/30" />
+                )}
+                <div className="p-3">
+                  <p className="font-display text-sm text-[#3A3532]">{recipe.title}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
       )}
     </div>
   )
