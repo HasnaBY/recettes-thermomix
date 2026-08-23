@@ -14,6 +14,7 @@ type Recipe = {
   prep_time_minutes: number | null
   total_time_minutes: number | null
   image_url: string | null
+  status: string
 }
 
 export default function Recettes() {
@@ -34,17 +35,13 @@ export default function Recettes() {
 
       if (!userData.user) {
         setIsPublicPreview(true)
-        const { data } = await supabase.from('recipes').select('*').eq('is_featured', true)
+        const { data } = await supabase.from('recipes').select('*').eq('is_featured', true).eq('status', 'published')
         setRecipes(data ?? [])
         setLoading(false)
         return
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('approved, is_admin')
-        .eq('id', userData.user.id)
-        .single()
+      const { data: profile } = await supabase.from('profiles').select('approved, is_admin').eq('id', userData.user.id).single()
 
       setIsAdmin(!!profile?.is_admin)
 
@@ -54,7 +51,12 @@ export default function Recettes() {
         return
       }
 
-      const { data, error } = await supabase.from('recipes').select('*')
+      let query = supabase.from('recipes').select('*')
+      if (!profile.is_admin) {
+        query = query.eq('status', 'published')
+      }
+
+      const { data, error } = await query
       if (!error && data) setRecipes(data)
       setLoading(false)
     }
@@ -164,18 +166,19 @@ export default function Recettes() {
                 className="block rounded-2xl border border-[#F0EAE0] bg-white overflow-hidden hover:shadow-md transition-shadow no-underline text-inherit"
               >
                 {recipe.image_url ? (
-                  <img
-                    src={recipe.image_url}
-                    alt={recipe.title}
-                    className="w-full h-40 object-cover"
-                  />
+                  <img src={recipe.image_url} alt={recipe.title} className="w-full h-40 object-cover" />
                 ) : (
                   <div className="w-full h-40 bg-[#F6DEE1]/30 flex items-center justify-center text-[#3A3532]/40 text-sm">
                     Pas de photo
                   </div>
                 )}
                 <div className="p-4">
-                  <div className="mb-2">{sourceBadge(recipe.recipe_source)}</div>
+                  <div className="mb-2 flex gap-2 flex-wrap">
+                    {sourceBadge(recipe.recipe_source)}
+                    {recipe.status === 'draft' && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Brouillon</span>
+                    )}
+                  </div>
                   <h2 className="font-display text-lg text-[#3A3532] mb-1">{recipe.title}</h2>
                   <p className="text-[#3A3532]/70 text-sm mb-2 line-clamp-2">{recipe.description}</p>
                   <p className="text-xs text-[#3A3532]/50">

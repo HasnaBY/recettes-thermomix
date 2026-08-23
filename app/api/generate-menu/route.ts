@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
   const { data: allRecipes, error } = await supabase
     .from('recipes')
     .select('id, title, category, ingredients')
+    .eq('status', 'published')
 
   if (error || !allRecipes) {
     return NextResponse.json({ error: 'Erreur lors de la récupération des recettes' }, { status: 500 })

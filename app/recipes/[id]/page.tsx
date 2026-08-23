@@ -2,6 +2,19 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import FavoriteButton from '@/components/FavoriteButton'
 
+function renderWithLinks(text: string) {
+  const parts = text.split(/(https?:\/\/[^\s]+)/g)
+  return parts.map((part, i) =>
+    /^https?:\/\//.test(part) ? (
+      <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="underline text-[#3A3532]">
+        {part}
+      </a>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  )
+}
+
 export default async function RecipeDetail({
   params,
 }: {
@@ -15,20 +28,12 @@ export default async function RecipeDetail({
   let isAdmin = false
 
   if (userData.user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('approved, is_admin')
-      .eq('id', userData.user.id)
-      .single()
+    const { data: profile } = await supabase.from('profiles').select('approved, is_admin').eq('id', userData.user.id).single()
     isApproved = !!profile?.approved
     isAdmin = !!profile?.is_admin
   }
 
-  const { data: recipe, error } = await supabase
-    .from('recipes')
-    .select('*')
-    .eq('id', id)
-    .single()
+  const { data: recipe, error } = await supabase.from('recipes').select('*').eq('id', id).single()
 
   if (error || !recipe) {
     return (
@@ -41,7 +46,17 @@ export default async function RecipeDetail({
     )
   }
 
+  if (recipe.status === 'draft' && !isAdmin) {
+    return <div className="p-8 text-center text-[#3A3532]/60">Cette recette n'est pas encore disponible.</div>
+  }
+
   const isCreation = recipe.recipe_source === 'creation'
+
+  let relatedRecipes: { id: string; title: string; image_url: string | null }[] = []
+  if (recipe.related_recipe_ids && recipe.related_recipe_ids.length > 0) {
+    const { data } = await supabase.from('recipes').select('id, title, image_url').in('id', recipe.related_recipe_ids)
+    relatedRecipes = data ?? []
+  }
 
   if (!isApproved) {
     return (
@@ -51,19 +66,11 @@ export default async function RecipeDetail({
         </Link>
 
         {recipe.image_url && (
-          <img
-            src={recipe.image_url}
-            alt={recipe.title}
-            className="w-full h-64 object-cover rounded-2xl my-4"
-          />
+          <img src={recipe.image_url} alt={recipe.title} className="w-full h-64 object-cover rounded-2xl my-4" />
         )}
 
         <div className="mb-3">
-          <span
-            className={`text-xs px-2 py-0.5 rounded-full ${
-              isCreation ? 'bg-[#F6DEE1]/60' : 'bg-[#DCEAF0]/60'
-            } text-[#3A3532]`}
-          >
+          <span className={`text-xs px-2 py-0.5 rounded-full ${isCreation ? 'bg-[#F6DEE1]/60' : 'bg-[#DCEAF0]/60'} text-[#3A3532]`}>
             {isCreation ? '👩‍🍳 Ma création' : '📱 Recette Cookidoo'}
           </span>
         </div>
@@ -97,10 +104,7 @@ export default async function RecipeDetail({
           ← Retour aux recettes
         </Link>
         {isAdmin && (
-          <Link
-            href={`/admin/edit-recipe/${id}`}
-            className="text-sm px-3 py-1.5 bg-[#3A3532] text-[#FDFBF6] rounded-full no-underline"
-          >
+          <Link href={`/admin/edit-recipe/${id}`} className="text-sm px-3 py-1.5 bg-[#3A3532] text-[#FDFBF6] rounded-full no-underline">
             ✏️ Modifier
           </Link>
         )}
@@ -109,21 +113,16 @@ export default async function RecipeDetail({
       <FavoriteButton recipeId={id} />
 
       {recipe.image_url && (
-        <img
-          src={recipe.image_url}
-          alt={recipe.title}
-          className="w-full h-64 object-cover rounded-2xl my-4"
-        />
+        <img src={recipe.image_url} alt={recipe.title} className="w-full h-64 object-cover rounded-2xl my-4" />
       )}
 
-      <div className="mb-3">
-        <span
-          className={`text-xs px-2 py-0.5 rounded-full ${
-            isCreation ? 'bg-[#F6DEE1]/60' : 'bg-[#DCEAF0]/60'
-          } text-[#3A3532]`}
-        >
+      <div className="mb-3 flex gap-2 flex-wrap">
+        <span className={`text-xs px-2 py-0.5 rounded-full ${isCreation ? 'bg-[#F6DEE1]/60' : 'bg-[#DCEAF0]/60'} text-[#3A3532]`}>
           {isCreation ? '👩‍🍳 Ma création' : '📱 Recette Cookidoo'}
         </span>
+        {recipe.status === 'draft' && (
+          <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Brouillon</span>
+        )}
       </div>
 
       <h1 className="font-display text-3xl text-[#3A3532] mb-2">{recipe.title}</h1>
@@ -135,18 +134,14 @@ export default async function RecipeDetail({
 
       {(recipe.prep_time_minutes || recipe.total_time_minutes) && (
         <div className="flex gap-4 mb-4 text-sm text-[#3A3532]/70">
-          {recipe.prep_time_minutes && (
-            <span>⏱️ {recipe.prep_time_minutes} min de préparation</span>
-          )}
-          {recipe.total_time_minutes && (
-            <span>🍽️ {recipe.total_time_minutes} min au total</span>
-          )}
+          {recipe.prep_time_minutes && <span>⏱️ {recipe.prep_time_minutes} min de préparation</span>}
+          {recipe.total_time_minutes && <span>🍽️ {recipe.total_time_minutes} min au total</span>}
         </div>
       )}
 
       {recipe.cookidoo_url && (
         
-        <a  href={recipe.cookidoo_url}
+          href={recipe.cookidoo_url}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block mb-6 px-4 py-2 bg-[#F6DEE1]/40 text-[#3A3532] rounded-full text-sm font-medium hover:bg-[#F6DEE1]/70 border border-[#C9A44C]"
@@ -169,9 +164,38 @@ export default async function RecipeDetail({
       )}
 
       {recipe.steps && (
-        <section>
+        <section className="mb-6">
           <h2 className="font-display text-xl text-[#3A3532] mb-3">Étapes de préparation</h2>
           <p className="text-[#3A3532]/80 whitespace-pre-wrap leading-relaxed">{recipe.steps}</p>
+        </section>
+      )}
+
+      {recipe.advice && (
+        <section className="mb-6">
+          <h2 className="font-display text-xl text-[#3A3532] mb-3">💡 Conseils</h2>
+          <p className="text-[#3A3532]/80 whitespace-pre-wrap leading-relaxed">{renderWithLinks(recipe.advice)}</p>
+        </section>
+      )}
+
+      {relatedRecipes.length > 0 && (
+        <section>
+          <h2 className="font-display text-xl text-[#3A3532] mb-3">Recettes liées</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {relatedRecipes.map((r) => (
+              <Link
+                key={r.id}
+                href={`/recipes/${r.id}`}
+                className="block rounded-xl border border-[#F0EAE0] bg-white overflow-hidden no-underline text-inherit"
+              >
+                {r.image_url ? (
+                  <img src={r.image_url} alt={r.title} className="w-full h-24 object-cover" />
+                ) : (
+                  <div className="w-full h-24 bg-[#F6DEE1]/30" />
+                )}
+                <p className="text-xs text-[#3A3532] p-2">{r.title}</p>
+              </Link>
+            ))}
+          </div>
         </section>
       )}
     </div>

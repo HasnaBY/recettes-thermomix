@@ -26,17 +26,38 @@ export default function AdminDashboard() {
   const [totalChallengeEntries, setTotalChallengeEntries] = useState(0)
   const [totalFavorites, setTotalFavorites] = useState(0)
 
+  const [noImageCount, setNoImageCount] = useState(0)
+  const [noCategoryCount, setNoCategoryCount] = useState(0)
+  const [noOriginCount, setNoOriginCount] = useState(0)
+  const [noIngredientsCount, setNoIngredientsCount] = useState(0)
+  const [duplicateTitles, setDuplicateTitles] = useState<string[]>([])
   const supabase = createClient()
 
   useEffect(() => {
     const load = async () => {
       const { data: recipes } = await supabase.from('recipes').select('category, recipe_source, is_featured')
 
+      const { data: fullRecipes } = await supabase.from('recipes').select('title, category, origin, image_url, ingredients')
+
+      setNoImageCount(fullRecipes?.filter((r) => !r.image_url).length ?? 0)
+      setNoCategoryCount(fullRecipes?.filter((r) => !r.category).length ?? 0)
+      setNoOriginCount(fullRecipes?.filter((r) => !r.origin).length ?? 0)
+      setNoIngredientsCount(fullRecipes?.filter((r) => !r.ingredients || r.ingredients.length === 0).length ?? 0)
+
+      const titleCounts: Record<string, number> = {}
+      fullRecipes?.forEach((r) => {
+        const key = r.title.trim().toLowerCase()
+        titleCounts[key] = (titleCounts[key] ?? 0) + 1
+      })
+      setDuplicateTitles(Object.entries(titleCounts).filter(([, c]) => c > 1).map(([t]) => t))
+
+
       setTotalRecipes(recipes?.length ?? 0)
       setFeaturedCount(recipes?.filter((r) => r.is_featured).length ?? 0)
       setCreationCount(recipes?.filter((r) => r.recipe_source === 'creation').length ?? 0)
       setCookidooCount(recipes?.filter((r) => r.recipe_source !== 'creation').length ?? 0)
 
+      
       const catMap: Record<string, number> = {}
       recipes?.forEach((r) => {
         const cat = r.category || 'Non classée'
@@ -117,6 +138,20 @@ export default function AdminDashboard() {
           </div>
         ))}
       </div>
+
+      <h2 className="text-sm text-gray-500 uppercase tracking-wide mb-3">Qualité du contenu</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <StatCard label="Sans photo" value={noImageCount} />
+          <StatCard label="Sans catégorie" value={noCategoryCount} />
+          <StatCard label="Sans origine" value={noOriginCount} />
+          <StatCard label="Sans ingrédients" value={noIngredientsCount} />
+        </div>
+        {duplicateTitles.length > 0 && (
+          <div className="border border-amber-300 bg-amber-50 rounded-xl p-3 mb-8">
+            <p className="text-sm font-medium text-amber-800 mb-1">Titres potentiellement en doublon :</p>
+            <p className="text-xs text-amber-700">{duplicateTitles.join(', ')}</p>
+          </div>
+        )}
 
       <h2 className="text-sm text-gray-500 uppercase tracking-wide mb-3">Clientes</h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">

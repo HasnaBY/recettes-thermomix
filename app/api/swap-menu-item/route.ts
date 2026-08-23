@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
   const { data: allRecipes } = await supabase
     .from('recipes')
     .select('id, title, category, ingredients')
+    .eq('status', 'published')
 
   const withIngredients = (allRecipes ?? []).filter((r) => r.ingredients && r.ingredients.length > 0)
 
