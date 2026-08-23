@@ -15,6 +15,8 @@ type Recipe = {
   total_time_minutes: number | null
   image_url: string | null
   status: string
+  created_at: string
+
 }
 
 export default function Recettes() {
