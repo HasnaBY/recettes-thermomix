@@ -7,7 +7,7 @@ import AdminEditButton from '@/components/AdminEditButton'
 import BrandPhoto from '@/components/BrandPhoto'
 
 type Advantage = { icon: string; title: string; text: string }
-type Testimonial = { id: string; client_name: string | null; content: string; rating: number | null }
+type Testimonial = { id: string; client_name: string | null; content: string; rating: number | null ;created_at: string}
 type Recipe = {
   id: string
   title: string
@@ -230,7 +230,12 @@ export default function Home() {
                   </div>
                 )}
                 <p className="text-[#3A3532]/80 text-sm mb-2">{t.content}</p>
-                {t.client_name && <p className="text-xs text-[#3A3532]/50">— {t.client_name}</p>}
+                <div className="flex justify-between items-center">
+                  {t.client_name && <p className="text-xs text-[#3A3532]/50">— {t.client_name}</p>}
+                  <p className="text-xs text-[#3A3532]/40">
+                    {new Date(t.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

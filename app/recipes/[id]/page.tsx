@@ -123,6 +123,9 @@ export default async function RecipeDetail({
         {recipe.status === 'draft' && (
           <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Brouillon</span>
         )}
+        <p className="text-xs text-[#3A3532]/40 mb-2">
+          Publiée le {new Date(recipe.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+        </p>
       </div>
 
       <h1 className="font-display text-3xl text-[#3A3532] mb-2">{recipe.title}</h1>
