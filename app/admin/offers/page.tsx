@@ -2,287 +2,147 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { User } from '@supabase/supabase-js'
-import CtaBanner from '@/components/CtaBanner'
-import AdminEditButton from '@/components/AdminEditButton'
-import BrandPhoto from '@/components/BrandPhoto'
-import Lightbox from '@/components/Lightbox'
 import imageCompression from 'browser-image-compression'
 
-type Testimonial = {
-  id: string
-  client_name: string | null
-  content: string
-  rating: number | null
-  image_urls: string[] | null
-  created_at: string
-}
-type Item = { id: string; category: string; image_url: string; caption: string | null }
-
-const CATEGORIES: { key: string; label: string; emoji: string }[] = [
-  { key: 'atelier', label: 'Photos d\'ateliers', emoji: '👩‍🍳' },
-  { key: 'realisation', label: 'Réalisations de clientes', emoji: '🍽️' },
-  { key: 'capture', label: 'Messages reçus', emoji: '💬' },
-  { key: 'avis', label: 'Avis', emoji: '⭐' },
-]
-
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
-}
-
-export default function Confiance() {
-  const [user, setUser] = useState<User | null>(null)
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([])
-  const [items, setItems] = useState<Item[]>([])
-  const [loading, setLoading] = useState(true)
-
-  const [clientName, setClientName] = useState('')
-  const [content, setContent] = useState('')
-  const [rating, setRating] = useState('5')
-  const [files, setFiles] = useState<File[]>([])
+export default function AdminOffers() {
+  const [description, setDescription] = useState('')
+  const [imageUrls, setImageUrls] = useState<string[]>([])
+  const [newFiles, setNewFiles] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
-  const [sent, setSent] = useState(false)
-  const [error, setError] = useState('')
-
-  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
-
+  const [uploadProgress, setUploadProgress] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState('')
   const supabase = createClient()
 
-  const loadTestimonials = async () => {
-    const { data } = await supabase
-      .from('testimonials')
-      .select('*')
-      .eq('approved', true)
-      .order('created_at', { ascending: false })
-    setTestimonials(data ?? [])
+  const load = async () => {
+    const { data } = await supabase.from('current_offers').select('*').eq('id', 1).single()
+    if (data) {
+      setDescription(data.description ?? '')
+      setImageUrls(data.image_urls ?? [])
+    }
   }
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user))
-    loadTestimonials()
-
-    supabase
-      .from('social_proof')
-      .select('*')
-      .order('position')
-      .then(({ data }) => {
-        setItems(data ?? [])
-        setLoading(false)
-      })
+    load()
   }, [])
 
   const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = Array.from(e.target.files ?? [])
-    setFiles(selected.slice(0, 3))
+    setNewFiles(selected)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!user) return
+  const addImages = async () => {
+    if (newFiles.length === 0) return
     setUploading(true)
-    setError('')
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
+    setMessage('')
 
     try {
       const uploadedUrls: string[] = []
 
-      for (const file of files) {
-        const compressed = await imageCompression(file, {
-          maxWidthOrHeight: 1200,
-          maxSizeMB: 0.3,
-          fileType: 'image/webp',
-        })
-        const fileName = `${user.id}-${Date.now()}-${Math.random().toString(36).slice(2)}.webp`
-        const { error: uploadError } = await supabase.storage.from('testimonial-images').upload(fileName, compressed)
-        if (uploadError) throw uploadError
-        const { data: urlData } = supabase.storage.from('testimonial-images').getPublicUrl(fileName)
-        uploadedUrls.push(urlData.publicUrl)
+      for (let i = 0; i < newFiles.length; i++) {
+        setUploadProgress(`Envoi de la photo ${i + 1}/${newFiles.length}...`)
+
+        const original = newFiles[i]
+        let toUpload: File | Blob = original
+        let extension = original.name.split('.').pop() || 'jpg'
+
+        // Ne compresse que si le fichier est vraiment volumineux (>3 Mo)
+        // pour garder un maximum de netteté sur le texte des offres.
+        if (original.size > 3 * 1024 * 1024) {
+          toUpload = await imageCompression(original, {
+            maxWidthOrHeight: 2400,
+            maxSizeMB: 3,
+            initialQuality: 0.95,
+            useWebWorker: true,
+            fileType: original.type, // garde le format d'origine, pas de conversion webp
+          })
+        }
+
+        const fileName = `offer-${Date.now()}-${i}.${extension}`
+        const { error } = await supabase.storage.from('site-images').upload(fileName, toUpload)
+        if (error) throw error
+        const { data } = supabase.storage.from('site-images').getPublicUrl(fileName)
+        uploadedUrls.push(data.publicUrl)
       }
 
-      const { error: insertError } = await supabase.from('testimonials').insert({
-        user_id: user.id,
-        client_name: clientName || null,
-        content,
-        rating: parseInt(rating),
-        approved: false,
-        image_urls: uploadedUrls.length > 0 ? uploadedUrls : null,
-      })
-
-      if (insertError) throw insertError
-
-      setSent(true)
-      setContent('')
-      setClientName('')
-      setFiles([])
+      setImageUrls((prev) => [...prev, ...uploadedUrls])
+      setNewFiles([])
     } catch (err: any) {
-      setError(err.message)
+      setMessage('Erreur : ' + err.message)
     } finally {
       setUploading(false)
+      setUploadProgress('')
     }
   }
 
-  if (loading) return <div className="p-8 text-center text-[#3A3532]/60">Chargement...</div>
+  const removeImage = (url: string) => {
+    setImageUrls((prev) => prev.filter((u) => u !== url))
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    setMessage('')
+    const { error } = await supabase
+      .from('current_offers')
+      .update({ description, image_urls: imageUrls })
+      .eq('id', 1)
+    setSaving(false)
+    setMessage(error ? error.message : 'Enregistré avec succès !')
+  }
 
   return (
-    <div className="px-6 sm:px-8 py-12 max-w-4xl mx-auto">
-      <h1 className="font-display text-3xl text-[#3A3532] mb-2 text-center">
-        🥰 Elles m'ont fait confiance
-      </h1>
-      <p className="text-[#3A3532]/70 text-center mb-10">
-        Quelques mots et moments partagés avec mes clientes.
+    <div className="p-6 sm:p-8 max-w-2xl mx-auto">
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">Offres du moment</h1>
+      <p className="text-gray-500 text-sm mb-6">
+        Ces images et ce texte sont envoyés automatiquement par email dès qu'une personne clique sur "Recevoir les offres du moment" en contact. Les images ne sont compressées que si elles dépassent 3 Mo, pour garder le texte bien lisible.
       </p>
 
-      <div className="flex justify-center mb-10">
-        <BrandPhoto
-          photoKey="round_logo"
-          alt="Thermomix With Love, Hasna"
-          className="w-28 h-28 rounded-full object-cover border-2 border-[#C9A44C]"
+      <div className="flex flex-col gap-4 mb-8">
+        <textarea
+          placeholder="Texte d'introduction de l'offre"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={3}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg"
         />
       </div>
 
-      {user && (
-        <div className="border border-[#F0EAE0] bg-white rounded-2xl p-5 mb-10 max-w-xl mx-auto">
-          <h2 className="font-display text-lg text-[#3A3532] mb-3">Laisser un témoignage</h2>
-          {sent ? (
-            <p className="text-[#3A3532]/70">
-              Merci pour ton témoignage ! Il sera visible après validation.
-            </p>
-          ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-              <input
-                placeholder="Ton nom"
-                value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
-                required
-                className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
-              />
-              <textarea
-                placeholder="Ton témoignage"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                required
-                rows={3}
-                className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
-              />
-              <select
-                value={rating}
-                onChange={(e) => setRating(e.target.value)}
-                className="px-4 py-2 border border-[#F0EAE0] rounded-xl"
-              >
-                {[5, 4, 3, 2, 1].map((n) => (
-                  <option key={n} value={n}>
-                    {n} étoiles
-                  </option>
-                ))}
-              </select>
-              <div>
-                <label className="block mb-2 text-sm text-[#3A3532]/60">
-                  Jusqu'à 3 photos (optionnel)
-                </label>
-                <input type="file" accept="image/*" multiple onChange={handleFilesChange} />
-                {files.length > 0 && (
-                  <p className="text-xs text-[#3A3532]/50 mt-1">{files.length} photo(s) sélectionnée(s)</p>
-                )}
-              </div>
-              {error && <p className="text-red-600 text-sm">{error}</p>}
-              <button
-                type="submit"
-                disabled={uploading}
-                className="py-2 bg-[#3A3532] text-[#FDFBF6] rounded-full font-medium hover:bg-[#2A2622] transition-colors border border-[#C9A44C] disabled:opacity-50"
-              >
-                {uploading ? 'Envoi...' : 'Envoyer mon témoignage'}
-              </button>
-            </form>
-          )}
-        </div>
-      )}
-
-      <section className="mb-12">
-        <h2 className="font-display text-xl text-[#3A3532] mb-4">Ce qu'elles disent</h2>
-        {testimonials.length === 0 ? (
-          <p className="text-[#3A3532]/60">Pas encore de témoignage à afficher.</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {testimonials.map((t) => (
-              <div key={t.id} className="border border-[#F0EAE0] bg-white rounded-2xl p-4">
-                {t.rating && (
-                  <div className="text-[#C9A44C] mb-2 text-sm">
-                    {'★'.repeat(t.rating)}
-                    {'☆'.repeat(5 - t.rating)}
-                  </div>
-                )}
-                <p className="text-[#3A3532]/80 text-sm mb-2">{t.content}</p>
-                {t.image_urls && t.image_urls.length > 0 && (
-                  <div className="grid grid-cols-3 gap-1 mb-2">
-                    {t.image_urls.map((url, i) => (
-                      <img
-                        key={i}
-                        src={url}
-                        alt=""
-                        onClick={() => setLightboxSrc(url)}
-                        className="w-full h-16 object-cover rounded-lg cursor-pointer"
-                      />
-                    ))}
-                  </div>
-                )}
-                <div className="flex justify-between items-center">
-                  {t.client_name && <p className="text-xs text-[#3A3532]/50">— {t.client_name}</p>}
-                  <p className="text-xs text-[#3A3532]/40">{formatDate(t.created_at)}</p>
-                </div>
-              </div>
-            ))}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+        {imageUrls.map((url) => (
+          <div key={url}>
+            <img src={url} className="w-full h-32 object-cover rounded-lg" />
+            <button onClick={() => removeImage(url)} className="text-xs text-red-600 mt-1">
+              Supprimer
+            </button>
           </div>
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-2 mb-6">
+        <label className="text-sm text-gray-600">Sélectionne une ou plusieurs photos</label>
+        <input type="file" accept="image/*" multiple onChange={handleFilesChange} />
+        {newFiles.length > 0 && (
+          <p className="text-xs text-gray-500">{newFiles.length} photo(s) sélectionnée(s)</p>
         )}
-      </section>
+        {uploadProgress && <p className="text-xs text-gray-500">{uploadProgress}</p>}
+        <button
+          onClick={addImages}
+          disabled={uploading || newFiles.length === 0}
+          className="self-start px-3 py-1.5 bg-gray-900 text-white rounded-lg text-sm disabled:opacity-50"
+        >
+          {uploading ? 'Envoi...' : 'Ajouter les photos'}
+        </button>
+      </div>
 
-      {CATEGORIES.map((cat) => {
-        const catItems = items.filter((i) => i.category === cat.key)
-        if (catItems.length === 0) return null
+      {message && <p className="text-sm text-gray-700 mb-4">{message}</p>}
 
-        return (
-          <section key={cat.key} className="mb-10">
-            <h2 className="font-display text-xl text-[#3A3532] mb-4">
-              {cat.emoji} {cat.label}
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {catItems.map((item) => (
-                <div key={item.id}>
-                  <img
-                    src={item.image_url}
-                    alt={item.caption ?? cat.label}
-                    onClick={() => setLightboxSrc(item.image_url)}
-                    className="w-full h-36 object-cover rounded-xl cursor-pointer"
-                  />
-                  {item.caption && <p className="text-xs text-[#3A3532]/50 mt-1">{item.caption}</p>}
-                </div>
-              ))}
-            </div>
-          </section>
-        )
-      })}
-
-      <CtaBanner
-        text="Prête à rejoindre mes clientes conquises ?"
-        buttonLabel="Me contacter"
-        href="/contact"
-      />
-
-      <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
-
-      <AdminEditButton href="/admin/testimonials" />
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className="py-2.5 px-6 bg-gray-900 text-white rounded-lg font-medium disabled:opacity-50"
+      >
+        {saving ? 'Enregistrement...' : 'Enregistrer'}
+      </button>
     </div>
   )
 }
