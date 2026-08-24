@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Work_Sans } from "next/font/google";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
@@ -31,6 +31,19 @@ export const metadata: Metadata = {
     type: "website",
     locale: "fr_FR",
   },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "With Love Hasna",
+  },
+  icons: {
+    apple: "/icon-192.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#3A3532",
 };
 
 export default function RootLayout({
@@ -59,6 +72,15 @@ export default function RootLayout({
             </Script>
           </>
         )}
+        <Script id="sw-register" strategy="afterInteractive">
+          {`
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
+              });
+            }
+          `}
+        </Script>
         <Nav />
         <div className="flex-1">{children}</div>
         <Footer />

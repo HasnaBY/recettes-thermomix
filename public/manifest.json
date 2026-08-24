@@ -1,0 +1,35 @@
+{
+  "name": "Thermomix With Love, Hasna",
+  "short_name": "With Love Hasna",
+  "description": "Recettes, accompagnement et conseils Thermomix par Hasna",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FDFBF6",
+  "theme_color": "#3A3532",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
