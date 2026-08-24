@@ -149,7 +149,7 @@ export default function Nav() {
                   <Link href="/confiance" onClick={close} className={secondaryLinkClass}>
                     Elles m'ont fait confiance
                   </Link>
-                  <Link href="/assistant" className={primaryLinkClass}>
+                  <Link href="/assistant" onClick={close} className={secondaryLinkClass}>
                     Assistant
                   </Link>
                   {settings.show_public_testimonials && (
