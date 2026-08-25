@@ -9,13 +9,15 @@ type AiFeatures = {
   recipe_writer_enabled: boolean
   recipe_creator_enabled: boolean
   chatbot_enabled: boolean
+  recipe_import_enabled: boolean
 }
 
 const FEATURES: { key: keyof AiFeatures; label: string; description: string }[] = [
-  { key: 'auto_tagging_enabled', label: 'Tagging automatique des recettes', description: "L'IA suggère catégorie/origine à partir du titre et des ingrédients." },
+  { key: 'auto_tagging_enabled', label: 'Tagging automatique des recettes', description: "L'IA suggère description/catégorie/origine à partir du titre et des ingrédients." },
   { key: 'recommendations_enabled', label: 'Suggestions basées sur les favoris', description: 'Algorithme (sans IA) qui propose des recettes proches des favoris de la cliente.' },
   { key: 'recipe_writer_enabled', label: 'Assistant rédaction (descriptions + newsletters)', description: 'Génère des descriptions accrocheuses et des mails pour tes clientes.' },
   { key: 'recipe_creator_enabled', label: 'Création de recette depuis ingrédients bruts', description: 'Transforme tes idées en recette au format Thermomix.' },
+  { key: 'recipe_import_enabled', label: 'Import de recette (lien ou texte collé)', description: "Colle un lien ou le texte d'une recette, l'IA extrait titre/ingrédients/étapes tels quels." },
   { key: 'chatbot_enabled', label: 'Chatbot culinaire pour les clientes', description: 'Assistant conversationnel pour répondre aux questions Thermomix.' },
 ]
 

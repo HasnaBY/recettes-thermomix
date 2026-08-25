@@ -8,6 +8,7 @@ export default function AdminSiteSettings() {
   const [showClub, setShowClub] = useState(true)
   const [showConcours, setShowConcours] = useState(true)
   const [showPublicTestimonials, setShowPublicTestimonials] = useState(true)
+  const [hideCookidooSteps, setHideCookidooSteps] = useState(false)
   const [instagramUrl, setInstagramUrl] = useState('')
   const [tiktokUrl, setTiktokUrl] = useState('')
   const [snapchatUrl, setSnapchatUrl] = useState('')
@@ -16,7 +17,6 @@ export default function AdminSiteSettings() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
   const supabase = createClient()
-  const [hideCookidooSteps, setHideCookidooSteps] = useState(false)
 
   useEffect(() => {
     supabase
@@ -30,10 +30,10 @@ export default function AdminSiteSettings() {
           setShowClub(data.show_club)
           setShowConcours(data.show_concours)
           setShowPublicTestimonials(data.show_public_testimonials ?? true)
+          setHideCookidooSteps(data.hide_cookidoo_steps ?? false)
           setInstagramUrl(data.instagram_url ?? '')
           setTiktokUrl(data.tiktok_url ?? '')
           setSnapchatUrl(data.snapchat_url ?? '')
-          setHideCookidooSteps(data.hide_cookidoo_steps ?? false)
           setMenuGenerationLimit((data.menu_generation_limit ?? 3).toString())
         }
         setLoading(false)
@@ -99,10 +99,7 @@ export default function AdminSiteSettings() {
 
   return (
     <div className="p-6 sm:p-8 max-w-lg mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Visibilité des pages</h1>
-      <p className="text-gray-500 text-sm mb-6">
-        Masquer une page la rend inaccessible aux visiteurs et la retire de la navigation, sans supprimer son contenu — tu peux la réactiver à tout moment.
-      </p>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Visibilité des pages & réglages</h1>
 
       <div className="flex flex-col gap-3 mb-10">
         <Row
@@ -126,7 +123,7 @@ export default function AdminSiteSettings() {
           onChange={(v) => toggle('show_public_testimonials', v, setShowPublicTestimonials)}
         />
         <Row
-          label="Masquer les étapes/ingrédients Cookidoo (visible admin uniquement)"
+          label="Masquer étapes/ingrédients Cookidoo (admin voit toujours tout)"
           checked={hideCookidooSteps}
           onChange={(v) => toggle('hide_cookidoo_steps', v, setHideCookidooSteps)}
         />
