@@ -52,6 +52,9 @@ export default async function RecipeDetail({
 
   const isCreation = recipe.recipe_source === 'creation'
 
+  const { data: siteSettings } = await supabase.from('site_settings').select('hide_cookidoo_steps').eq('id', 1).single()
+  const hideDetails = !isCreation && !!siteSettings?.hide_cookidoo_steps && !isAdmin
+
   let relatedRecipes: { id: string; title: string; image_url: string | null }[] = []
   if (recipe.related_recipe_ids && recipe.related_recipe_ids.length > 0) {
     const { data } = await supabase.from('recipes').select('id, title, image_url').in('id', recipe.related_recipe_ids)
@@ -123,9 +126,6 @@ export default async function RecipeDetail({
         {recipe.status === 'draft' && (
           <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Brouillon</span>
         )}
-        <p className="text-xs text-[#3A3532]/40 mb-2">
-          Publiée le {new Date(recipe.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-        </p>
       </div>
 
       <h1 className="font-display text-3xl text-[#3A3532] mb-2">{recipe.title}</h1>
@@ -144,7 +144,7 @@ export default async function RecipeDetail({
 
       {recipe.cookidoo_url && (
         
-        <a  href={recipe.cookidoo_url}
+          href={recipe.cookidoo_url}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block mb-6 px-4 py-2 bg-[#F6DEE1]/40 text-[#3A3532] rounded-full text-sm font-medium hover:bg-[#F6DEE1]/70 border border-[#C9A44C]"
@@ -153,24 +153,34 @@ export default async function RecipeDetail({
         </a>
       )}
 
-      {recipe.ingredients && recipe.ingredients.length > 0 && (
-        <section className="mb-6">
-          <h2 className="font-display text-xl text-[#3A3532] mb-3">Ingrédients</h2>
-          <ul className="grid gap-1.5">
-            {recipe.ingredients.map((ingredient: string, i: number) => (
-              <li key={i} className="text-[#3A3532]/80 flex gap-2">
-                <span className="text-[#C9A44C]">•</span> {ingredient}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      {hideDetails ? (
+        <div className="border border-[#C9A44C] bg-[#F6DEE1]/20 rounded-2xl p-5 text-center mb-6">
+          <p className="text-[#3A3532]/80">
+            Retrouve les ingrédients et les étapes complètes directement sur Cookidoo via le lien ci-dessus.
+          </p>
+        </div>
+      ) : (
+        <>
+          {recipe.ingredients && recipe.ingredients.length > 0 && (
+            <section className="mb-6">
+              <h2 className="font-display text-xl text-[#3A3532] mb-3">Ingrédients</h2>
+              <ul className="grid gap-1.5">
+                {recipe.ingredients.map((ingredient: string, i: number) => (
+                  <li key={i} className="text-[#3A3532]/80 flex gap-2">
+                    <span className="text-[#C9A44C]">•</span> {ingredient}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
-      {recipe.steps && (
-        <section className="mb-6">
-          <h2 className="font-display text-xl text-[#3A3532] mb-3">Étapes de préparation</h2>
-          <p className="text-[#3A3532]/80 whitespace-pre-wrap leading-relaxed">{recipe.steps}</p>
-        </section>
+          {recipe.steps && (
+            <section className="mb-6">
+              <h2 className="font-display text-xl text-[#3A3532] mb-3">Étapes de préparation</h2>
+              <p className="text-[#3A3532]/80 whitespace-pre-wrap leading-relaxed">{recipe.steps}</p>
+            </section>
+          )}
+        </>
       )}
 
       {recipe.advice && (

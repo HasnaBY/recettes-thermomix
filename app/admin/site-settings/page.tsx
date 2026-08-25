@@ -16,6 +16,7 @@ export default function AdminSiteSettings() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
   const supabase = createClient()
+  const [hideCookidooSteps, setHideCookidooSteps] = useState(false)
 
   useEffect(() => {
     supabase
@@ -32,6 +33,7 @@ export default function AdminSiteSettings() {
           setInstagramUrl(data.instagram_url ?? '')
           setTiktokUrl(data.tiktok_url ?? '')
           setSnapchatUrl(data.snapchat_url ?? '')
+          setHideCookidooSteps(data.hide_cookidoo_steps ?? false)
           setMenuGenerationLimit((data.menu_generation_limit ?? 3).toString())
         }
         setLoading(false)
@@ -122,6 +124,11 @@ export default function AdminSiteSettings() {
           label="Page publique 'Laisser un avis'"
           checked={showPublicTestimonials}
           onChange={(v) => toggle('show_public_testimonials', v, setShowPublicTestimonials)}
+        />
+        <Row
+          label="Masquer les étapes/ingrédients Cookidoo (visible admin uniquement)"
+          checked={hideCookidooSteps}
+          onChange={(v) => toggle('hide_cookidoo_steps', v, setHideCookidooSteps)}
         />
       </div>
 
