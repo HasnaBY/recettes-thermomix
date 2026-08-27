@@ -96,24 +96,21 @@ export default function GenerateurMenu() {
     load()
   }, [])
 
-  const handleGenerate = async (e: React.FormEvent) => {
+ const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault()
     setGenerating(true)
     setError('')
 
     try {
-      const {
-        data: { session, user: sessionUser },
-      } = (await supabase.auth.getSession()).data
-        ? await supabase.auth.getSession()
-        : { data: { session: null, user: null } }
-
-      const currentSession = session
-      const userId = currentSession?.user.id
+      const { data: { session } } = await supabase.auth.getSession()
+      const userId = session?.user?.id
 
       const response = await fetch('/api/generate-menu', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${currentSession?.access_token}` },
+        headers: { 
+          'Content-Type': 'application/json', 
+          Authorization: `Bearer ${session?.access_token}` 
+        },
         body: JSON.stringify({
           nbPlats: parseInt(nbPlats),
           nbDesserts: parseInt(nbDesserts),
