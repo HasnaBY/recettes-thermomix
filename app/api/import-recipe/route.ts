@@ -60,7 +60,9 @@ Choisis une CATEGORIE parmi cette liste existante si une convient : ${JSON.strin
 
 Choisis une ORIGINE parmi cette liste existante si une convient : ${JSON.stringify((origins ?? []).map((o) => o.label))}. Sinon, propose une nouvelle origine ou null si incertaine.
 
-Extrais aussi le temps de préparation et le temps total en minutes si mentionnés sur la page.
+Extrais le temps de préparation (temps actif en cuisine) en minutes si mentionné sur la page.
+
+Calcule aussi le TEMPS TOTAL en minutes en additionnant toutes les durées mentionnées dans les étapes (cuisson, mixage, repos, etc.) — si la page indique déjà un temps total explicite, utilise-le en priorité.
 
 Réponds uniquement en JSON avec ce format exact :
 {

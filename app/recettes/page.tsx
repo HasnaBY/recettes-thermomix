@@ -29,6 +29,7 @@ export default function Recettes() {
   const [category, setCategory] = useState('toutes')
   const [origin, setOrigin] = useState('toutes')
   const [source, setSource] = useState('toutes')
+  const [statusFilter, setStatusFilter] = useState('toutes')
   const [isPublicPreview, setIsPublicPreview] = useState(false)
   const [accountPending, setAccountPending] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
@@ -42,7 +43,6 @@ export default function Recettes() {
   const [showQuickAdd, setShowQuickAdd] = useState(false)
   const [addMode, setAddMode] = useState<AddMode>('manual')
 
-  // Formulaire manuel
   const [qTitle, setQTitle] = useState('')
   const [qDescription, setQDescription] = useState('')
   const [qCategory, setQCategory] = useState('')
@@ -56,17 +56,16 @@ export default function Recettes() {
   const [qPublished, setQPublished] = useState(true)
   const [qImageFile, setQImageFile] = useState<File | null>(null)
   const [tagging, setTagging] = useState(false)
+  const [computingTime, setComputingTime] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
 
-  // Mode import (lien ou texte)
   const [importMode, setImportMode] = useState<'url' | 'text'>('url')
   const [importUrl, setImportUrl] = useState('')
   const [importText, setImportText] = useState('')
   const [extracting, setExtracting] = useState(false)
   const [importError, setImportError] = useState('')
 
-  // Mode création depuis ingrédients bruts
   const [rawIdea, setRawIdea] = useState('')
   const [generating, setGenerating] = useState(false)
   const [generateError, setGenerateError] = useState('')
@@ -166,6 +165,30 @@ export default function Recettes() {
       }
     } finally {
       setTagging(false)
+    }
+  }
+
+  const handleComputeTime = async () => {
+    setComputingTime(true)
+    setSaveError('')
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      const response = await fetch('/api/compute-recipe-time', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ steps: qSteps }),
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setQTotalTime(data.total_time_minutes?.toString() ?? qTotalTime)
+      } else {
+        setSaveError(data.error)
+      }
+    } finally {
+      setComputingTime(false)
     }
   }
 
@@ -292,6 +315,8 @@ export default function Recettes() {
       setQTitle(data.title ?? '')
       setQDescription(data.description ?? '')
       setQCategory(data.category ?? '')
+      setQPrepTime(data.prep_time_minutes?.toString() ?? '')
+      setQTotalTime(data.total_time_minutes?.toString() ?? '')
       setQIngredients((data.ingredients ?? []).join('\n'))
       setQSteps(data.steps ?? '')
       setQRecipeSource('creation')
@@ -312,7 +337,8 @@ export default function Recettes() {
     const matchesCategory = category === 'toutes' || recipe.category === category
     const matchesOrigin = origin === 'toutes' || recipe.origin === origin
     const matchesSource = source === 'toutes' || recipe.recipe_source === source
-    return matchesSearch && matchesCategory && matchesOrigin && matchesSource
+    const matchesStatus = statusFilter === 'toutes' || recipe.status === statusFilter
+    return matchesSearch && matchesCategory && matchesOrigin && matchesSource && matchesStatus
   })
 
   if (loading) {
@@ -464,7 +490,7 @@ export default function Recettes() {
 
           <form onSubmit={handleQuickAdd} className="flex flex-col gap-3">
             <h2 className="font-display text-lg text-[#3A3532]">
-              {addMode === 'manual' ? 'Détails de la recette' : 'Vérifie et complète avant d\'enregistrer'}
+              {addMode === 'manual' ? 'Détails de la recette' : "Vérifie et complète avant d'enregistrer"}
             </h2>
 
             <input
@@ -516,6 +542,14 @@ export default function Recettes() {
                 />
               </div>
             </div>
+            <button
+              type="button"
+              onClick={handleComputeTime}
+              disabled={computingTime || !qSteps}
+              className="self-start -mt-1 text-sm text-gray-700 underline disabled:opacity-50"
+            >
+              {computingTime ? 'Calcul...' : '🧮 Calculer le temps total automatiquement (somme des étapes)'}
+            </button>
 
             <div>
               <label className="block mb-1 text-sm text-gray-600">Type de recette</label>
@@ -634,6 +668,18 @@ export default function Recettes() {
           <option value="cookidoo">📱 Cookidoo</option>
           <option value="creation">👩‍🍳 Mes créations</option>
         </select>
+
+        {isAdmin && (
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-4 py-2 border border-[#F0EAE0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C9A44C]"
+          >
+            <option value="toutes">Publiées + brouillons</option>
+            <option value="published">Publiées uniquement</option>
+            <option value="draft">Brouillons uniquement</option>
+          </select>
+        )}
       </div>
 
       {filtered.length === 0 ? (

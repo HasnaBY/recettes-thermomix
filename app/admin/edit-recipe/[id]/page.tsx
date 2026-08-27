@@ -28,6 +28,9 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [tagging, setTagging] = useState(false)
+  const [computingTime, setComputingTime] = useState(false)
+  const [translating, setTranslating] = useState(false)
+  const [aiFeatures, setAiFeatures] = useState({ auto_tagging_enabled: false, translate_enabled: false })
   const [error, setError] = useState('')
   const router = useRouter()
   const supabase = createClient()
@@ -60,6 +63,14 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
       setIsFeatured(data.is_featured ?? false)
       setPublished((data.status ?? 'published') === 'published')
       setImageUrl(data.image_url)
+
+      const { data: features } = await supabase
+        .from('ai_features')
+        .select('auto_tagging_enabled, translate_enabled')
+        .eq('id', 1)
+        .single()
+      if (features) setAiFeatures(features as any)
+
       setLoading(false)
     }
     load()
@@ -92,6 +103,64 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
       }
     } finally {
       setTagging(false)
+    }
+  }
+
+  const handleComputeTime = async () => {
+    setComputingTime(true)
+    setError('')
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      const response = await fetch('/api/compute-recipe-time', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ steps }),
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setTotalTimeMinutes(data.total_time_minutes?.toString() ?? totalTimeMinutes)
+      } else {
+        setError(data.error)
+      }
+    } finally {
+      setComputingTime(false)
+    }
+  }
+
+  const handleTranslate = async () => {
+    setTranslating(true)
+    setError('')
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      const response = await fetch('/api/translate-recipe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({
+          title,
+          description,
+          ingredients: ingredients.split('\n').filter((i) => i.trim() !== ''),
+          steps,
+          advice,
+        }),
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setTitle(data.title ?? title)
+        setDescription(data.description ?? description)
+        setIngredients((data.ingredients ?? []).join('\n'))
+        setSteps(data.steps ?? steps)
+        setAdvice(data.advice ?? advice)
+      } else {
+        setError(data.error)
+      }
+    } finally {
+      setTranslating(false)
     }
   }
 
@@ -154,14 +223,14 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
       setError(updateError.message)
       setSaving(false)
     } else {
-      router.push('/admin')
+      router.push('/recettes')
     }
   }
 
   const handleDelete = async () => {
     if (!confirm('Supprimer définitivement cette recette ?')) return
     await supabase.from('recipes').delete().eq('id', id)
-    router.push('/admin')
+    router.push('/recettes')
   }
 
   if (loading) return <div className="p-8 text-center text-gray-500">Chargement...</div>
@@ -171,6 +240,17 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Modifier la recette</h1>
 
       {imageUrl && <img src={imageUrl} alt={title} className="w-full h-48 object-cover rounded-lg mb-4" />}
+
+      {aiFeatures.translate_enabled && (
+        <button
+          type="button"
+          onClick={handleTranslate}
+          disabled={translating}
+          className="mb-4 text-sm text-gray-700 underline disabled:opacity-50"
+        >
+          {translating ? 'Traduction...' : '🌍 Traduire vers le français'}
+        </button>
+      )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
@@ -190,14 +270,16 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
         <TagSelect table="recipe_categories" value={category} onChange={setCategory} placeholder="Choisir une catégorie" />
         <TagSelect table="recipe_origins" value={origin} onChange={setOrigin} placeholder="Choisir une origine (optionnel)" />
 
-        <button
-          type="button"
-          onClick={handleAutoTag}
-          disabled={tagging || !title}
-          className="self-start text-sm text-gray-700 underline disabled:opacity-50"
-        >
-          {tagging ? 'Analyse...' : "🏷️ Suggérer description/catégorie/origine avec l'IA"}
-        </button>
+        {aiFeatures.auto_tagging_enabled && (
+          <button
+            type="button"
+            onClick={handleAutoTag}
+            disabled={tagging || !title}
+            className="self-start text-sm text-gray-700 underline disabled:opacity-50"
+          >
+            {tagging ? 'Analyse...' : "🏷️ Suggérer description/catégorie/origine avec l'IA"}
+          </button>
+        )}
 
         <div>
           <label className="block mb-2 text-sm text-gray-600">Type de recette</label>
@@ -231,6 +313,14 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
             />
           </div>
         </div>
+        <button
+          type="button"
+          onClick={handleComputeTime}
+          disabled={computingTime || !steps}
+          className="self-start -mt-2 text-sm text-gray-700 underline disabled:opacity-50"
+        >
+          {computingTime ? 'Calcul...' : '🧮 Calculer le temps total automatiquement (somme des étapes)'}
+        </button>
 
         <input
           type="url"
