@@ -63,6 +63,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: '/admin/ai-settings', label: 'Activer/désactiver les fonctionnalités IA' },
       { href: '/admin/newsletter', label: 'Générer une newsletter' },
       { href: '/admin/menus', label: 'Voir tous les menus générés' },
+      { href: '/admin/assign-menu', label: 'Générer un menu pour une cliente' },
     ],
   },
 ]

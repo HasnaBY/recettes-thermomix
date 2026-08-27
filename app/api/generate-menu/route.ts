@@ -42,40 +42,46 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Non connectée' }, { status: 401 })
   }
 
-  const { data: profile } = await supabase
+  const { data: requesterProfile } = await supabase
     .from('profiles')
     .select('approved, is_admin')
     .eq('id', userData.user.id)
     .single()
 
-  if (!profile?.approved) {
-    return NextResponse.json({ error: 'Compte non approuvé' }, { status: 403 })
-  }
+  const body = await request.json()
+  const { nbPlats, nbDesserts, nbBoissons = 0, nbPains = 0, source, targetUserId } = body
 
-  if (!profile.is_admin) {
-    const { data: settings } = await supabase
-      .from('site_settings')
-      .select('menu_generation_limit')
-      .eq('id', 1)
-      .single()
+  const isAdminAssigning = !!targetUserId && requesterProfile?.is_admin
+  const ownerId = isAdminAssigning ? targetUserId : userData.user.id
 
-    const limit = settings?.menu_generation_limit ?? 3
+  if (!isAdminAssigning) {
+    if (!requesterProfile?.approved) {
+      return NextResponse.json({ error: 'Compte non approuvé' }, { status: 403 })
+    }
 
-    const { count } = await supabase
-      .from('generated_menus')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userData.user.id)
+    if (!requesterProfile.is_admin) {
+      const { data: settings } = await supabase
+        .from('site_settings')
+        .select('menu_generation_limit')
+        .eq('id', 1)
+        .single()
 
-    if ((count ?? 0) >= limit) {
-      return NextResponse.json(
-        { error: `Tu as atteint ta limite de ${limit} générations de menu.` },
-        { status: 403 }
-      )
+      const limit = settings?.menu_generation_limit ?? 3
+
+      const { count } = await supabase
+        .from('generated_menus')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userData.user.id)
+        .eq('origin', 'client')
+
+      if ((count ?? 0) >= limit) {
+        return NextResponse.json(
+          { error: `Tu as atteint ta limite de ${limit} générations de menu.` },
+          { status: 403 }
+        )
+      }
     }
   }
-
-  const body = await request.json()
-  const { nbPlats, nbDesserts, nbBoissons = 0, nbPains = 0, source } = body
 
   const { data: allRecipes, error } = await supabase
     .from('recipes')
@@ -90,10 +96,7 @@ export async function POST(request: NextRequest) {
 
   let favoriteIds: string[] = []
   if (source === 'favorites') {
-    const { data: favIds } = await supabase
-      .from('favorites')
-      .select('recipe_id')
-      .eq('user_id', userData.user.id)
+    const { data: favIds } = await supabase.from('favorites').select('recipe_id').eq('user_id', ownerId)
     favoriteIds = (favIds ?? []).map((f) => f.recipe_id)
   }
 
@@ -132,7 +135,7 @@ export async function POST(request: NextRequest) {
 
     if (source === 'favorites' && k.requested > priority.length) {
       notes.push(
-        `Tu n'as que ${priority.length} ${k.label} en favoris pour ${k.requested} demandé(s) — le menu a été complété avec d'autres recettes du site.`
+        `Il n'y a que ${priority.length} ${k.label} en favoris pour ${k.requested} demandé(s) — le menu a été complété avec d'autres recettes du site.`
       )
     }
     if (k.requested > total) {
@@ -145,11 +148,17 @@ export async function POST(request: NextRequest) {
 
   const menuJson = { ...result, notes }
 
-  await supabase.from('generated_menus').insert({
-    user_id: userData.user.id,
+  const { error: insertError } = await supabase.from('generated_menus').insert({
+    user_id: ownerId,
+    created_by: userData.user.id,
+    origin: isAdminAssigning ? 'admin' : 'client',
     params: { nbPlats, nbDesserts, nbBoissons, nbPains, source },
     menu: menuJson,
   })
+
+  if (insertError) {
+    return NextResponse.json({ error: insertError.message }, { status: 500 })
+  }
 
   return NextResponse.json({ menu: menuJson })
 }
