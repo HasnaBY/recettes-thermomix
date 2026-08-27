@@ -45,9 +45,25 @@ export default function MenuPdfDownloadButton({ menu }: { menu: Menu }) {
       const { default: MenuPdfDocument } = await import('@/lib/pdf/MenuPdfDocument')
 
       const recipeMap = new Map(recipes.map((r) => [r.id, r]))
-      const orderedRecipes = allItems
-        .map((i) => recipeMap.get(i.recipe_id))
-        .filter((r): r is NonNullable<typeof r> => Boolean(r))
+
+      const buildCategoryList = (items: MenuItem[] | undefined) =>
+        (items ?? [])
+          .map((i) => recipeMap.get(i.recipe_id))
+          .filter((r): r is NonNullable<typeof r> => Boolean(r))
+
+      const categorizedRecipes = {
+        plats: buildCategoryList(menu.plats),
+        desserts: buildCategoryList(menu.desserts),
+        boissons: buildCategoryList(menu.boissons),
+        pains: buildCategoryList(menu.pains),
+      }
+
+      const orderedRecipes = [
+        ...categorizedRecipes.plats,
+        ...categorizedRecipes.desserts,
+        ...categorizedRecipes.boissons,
+        ...categorizedRecipes.pains,
+      ]
 
       const shoppingByRecipe: { recipeTitle: string; items: string[] }[] = []
       const shoppingByCategory: Record<string, { ingredient: string; recipeTitle: string }[]> = {}
@@ -64,7 +80,7 @@ export default function MenuPdfDownloadButton({ menu }: { menu: Menu }) {
 
       const blob = await pdf(
         <MenuPdfDocument
-          recipes={orderedRecipes}
+          categorizedRecipes={categorizedRecipes}
           shoppingByRecipe={shoppingByRecipe}
           shoppingByCategory={shoppingByCategory}
           grouping={grouping}
