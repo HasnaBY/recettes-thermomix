@@ -96,7 +96,7 @@ export default function GenerateurMenu() {
     load()
   }, [])
 
- const handleGenerate = async (e: React.FormEvent) => {
+  const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault()
     setGenerating(true)
     setError('')
