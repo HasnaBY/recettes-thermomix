@@ -14,7 +14,15 @@ export async function POST(request: NextRequest) {
 
   const { title, description, ingredients, steps, advice } = await request.json()
 
-  const prompt = `Traduis vers le français les champs suivants d'une recette Thermomix, si nécessaire (s'ils sont déjà en français, laisse-les identiques). Garde les quantités, vitesses, températures et minutages Thermomix inchangés (juste les mots autour).
+  const prompt = `Traduis vers le français les champs suivants d'une recette Thermomix, si nécessaire (s'ils sont déjà en français, laisse-les identiques).
+
+IMPORTANT — conversion des unités : en plus de la traduction du texte, convertis systématiquement toutes les unités de mesure non françaises vers les unités françaises standard :
+- Températures en °F → convertis en °C (arrondi à l'entier le plus proche)
+- Volumes en cups, tablespoons (tbsp), teaspoons (tsp), fl oz → convertis en ml ou cl (arrondi à un chiffre logique, ex: multiples de 5 ou 10 ml)
+- Poids en oz (once), lb (livre) → convertis en g ou kg
+- Longueurs en inches → convertis en cm si pertinent (ex: taille d'un moule)
+- Une fois convertie, la quantité doit être exprimée uniquement dans l'unité française (ne garde pas l'unité d'origine entre parenthèses)
+- Les vitesses/températures/minutages spécifiques au Thermomix (déjà en °C, ml, g) doivent rester inchangés
 
 Titre : ${title ?? ''}
 Description : ${description ?? ''}
