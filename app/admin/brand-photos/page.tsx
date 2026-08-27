@@ -12,6 +12,7 @@ const SLOTS = [
   { key: 'table_ete', label: '🎖️ Table de recettes d\'été', usage: 'Challenge + Anti-canicule' },
   { key: 'round_logo', label: '⭕ Logo rond', usage: 'Accueil, Qui suis-je, Pourquoi commander, Le Cercle, Elles m\'ont fait confiance, Challenge' },
 { key: 'kids_cooking', label: '👩‍👧‍👦 Session cuisine avec les enfants', usage: 'Qui suis-je' },
+  { key: 'cercle_logo', label: '💛 Logo Le Cercle With Love', usage: 'PDF du menu (en-tête, à côté du logo principal)' },
 
 ]
 
@@ -98,6 +99,7 @@ export default function AdminBrandPhotos() {
             />
             {uploadingKey === slot.key && <p className="text-xs text-gray-500 mt-1">Envoi en cours...</p>}
           </div>
+          
         ))}
       </div>
     </div>

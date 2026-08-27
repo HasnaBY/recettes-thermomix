@@ -1,5 +1,5 @@
 'use client'
-
+import MenuPdfDownloadButton from '@/components/MenuPdfDownloadButton'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
@@ -255,6 +255,7 @@ export default function GenerateurMenu() {
               ))}
             </div>
           )}
+          <MenuPdfDownloadButton menu={menu} />
 
           {renderSection('Plats', '🍽️', menu.plats, 'plats', 'bg-[#DCEAF0]/30')}
           {renderSection('Desserts / goûters', '🍰', menu.desserts, 'desserts', 'bg-[#F6DEE1]/30')}
