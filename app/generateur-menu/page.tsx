@@ -239,7 +239,7 @@ export default function GenerateurMenu() {
           </div>
         )}
 
-        <MenuPdfDownloadButton menu={menuRow.menu} />
+        <MenuPdfDownloadButton menu={menuRow.menu} origin={menuRow.origin} />
 
         {renderSection('Plats', '🍽️', menuRow.menu.plats, 'plats', 'bg-[#DCEAF0]/30')}
         {renderSection('Desserts / goûters', '🍰', menuRow.menu.desserts, 'desserts', 'bg-[#F6DEE1]/30')}

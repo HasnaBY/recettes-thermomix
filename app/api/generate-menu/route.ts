@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     .single()
 
   const body = await request.json()
-  const { nbPlats, nbDesserts, nbBoissons = 0, nbPains = 0, source, targetUserId } = body
+  const { nbPlats, nbDesserts, nbBoissons = 0, nbPains = 0, source, targetUserId, preview = false } = body
 
   const isAdminAssigning = !!targetUserId && requesterProfile?.is_admin
   const ownerId = isAdminAssigning ? targetUserId : userData.user.id
@@ -133,7 +133,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Aucun ${k.label} disponible avec des ingrédients renseignés.` }, { status: 400 })
     }
 
-    if (source === 'favorites' && k.requested > priority.length) {
+    // La note "pas assez de favoris" n'a de sens que côté cliente pour son propre menu personnel
+    if (!isAdminAssigning && source === 'favorites' && k.requested > priority.length) {
       notes.push(
         `Il n'y a que ${priority.length} ${k.label} en favoris pour ${k.requested} demandé(s) — le menu a été complété avec d'autres recettes du site.`
       )
@@ -147,6 +148,10 @@ export async function POST(request: NextRequest) {
   }
 
   const menuJson = { ...result, notes }
+
+  if (preview) {
+    return NextResponse.json({ menu: menuJson })
+  }
 
   const { error: insertError } = await supabase.from('generated_menus').insert({
     user_id: ownerId,
