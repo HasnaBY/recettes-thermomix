@@ -1,42 +1,81 @@
 import { Document, Page, Text, View, Image, StyleSheet, Link } from '@react-pdf/renderer'
 
 const styles = StyleSheet.create({
-  page: { padding: 28, backgroundColor: '#FDFBF6', fontSize: 10, color: '#3A3532' },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 6, borderBottom: 1.5, borderBottomColor: '#C9A44C', paddingBottom: 12 },
-  logo: { width: 48, height: 48, borderRadius: 24, marginRight: 10 },
+  page: { padding: 26, backgroundColor: '#FDFBF6', fontSize: 10, color: '#3A3532' },
+
+  headerCard: { backgroundColor: '#FFFFFF', borderRadius: 14, padding: 18, marginBottom: 16, borderWidth: 1, borderColor: '#F0EAE0' },
+  headerTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  logo: { width: 42, height: 42, borderRadius: 21, marginRight: 10 },
   headerTextWrap: { flexDirection: 'column', flex: 1 },
-  siteName: { fontSize: 16, fontWeight: 700, color: '#3A3532' },
-  subtitle: { fontSize: 9, color: '#3A3532', opacity: 0.7, marginTop: 2 },
-  cercleLogoSmall: { width: 26, height: 26, borderRadius: 13, marginLeft: 8 },
-  dateText: { fontSize: 8, color: '#3A3532', opacity: 0.6, marginTop: 12, marginBottom: 10, textAlign: 'right' },
+  siteName: { fontSize: 13, fontWeight: 700, color: '#3A3532' },
+  siteTagline: { fontSize: 8, color: '#3A3532', opacity: 0.6, marginTop: 1 },
+  cercleLogoSmall: { width: 24, height: 24, borderRadius: 12, marginLeft: 8 },
 
-  dayRow: { flexDirection: 'row', marginBottom: 8, alignItems: 'center' },
-  dayLabel: { width: 62, fontSize: 9, fontWeight: 700, color: '#3A3532', backgroundColor: '#C9A44C', paddingVertical: 3, paddingHorizontal: 6, borderRadius: 4, textAlign: 'center' },
+  mainTitle: { fontSize: 22, fontWeight: 700, color: '#3A3532', textAlign: 'center', marginBottom: 8 },
+  dateBanner: { backgroundColor: '#C9A44C', borderRadius: 20, paddingVertical: 6, paddingHorizontal: 16, alignSelf: 'center' },
+  dateBannerText: { fontSize: 10, fontWeight: 700, color: '#FDFBF6' },
 
-  categoryBlock: { borderRadius: 10, padding: 12, marginBottom: 14 },
-  categoryTitle: { fontSize: 13, fontWeight: 700, marginBottom: 10, color: '#3A3532' },
-  recipeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  recipeCard: { width: '100%', flexDirection: 'row', backgroundColor: '#FFFFFF', borderRadius: 8, padding: 8, marginBottom: 8, alignItems: 'center' },
-  recipeImage: { width: 90, height: 90, borderRadius: 8, marginRight: 10 },
-  recipeImagePlaceholder: { width: 90, height: 90, borderRadius: 8, marginRight: 10, backgroundColor: '#FDFBF6' },
-  recipeInfo: { flexDirection: 'column', flex: 1 },
-  recipeTitle: { fontSize: 11, fontWeight: 700, marginBottom: 4, color: '#3A3532' },
-  recipeLink: { fontSize: 9, color: '#3A3532', textDecoration: 'underline' },
+  dayBlock: { marginBottom: 12, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: '#F0EAE0' },
+  dayHeader: { backgroundColor: '#3A3532', paddingVertical: 5, paddingHorizontal: 12 },
+  dayHeaderText: { fontSize: 10.5, fontWeight: 700, color: '#FDFBF6', letterSpacing: 1 },
+  dayContent: { flexDirection: 'row' },
 
-  footer: { position: 'absolute', bottom: 18, left: 28, right: 28, fontSize: 8, color: '#3A3532', textAlign: 'center', borderTop: 1, borderTopColor: '#F0EAE0', paddingTop: 6, opacity: 0.7 },
+  itemHalf: { width: '50%', padding: 10, flexDirection: 'column' },
+  itemHalfLeft: { backgroundColor: '#DCEAF0' },
+  itemHalfRight: { backgroundColor: '#F6DEE1' },
+
+  badge: { alignSelf: 'flex-start', borderRadius: 10, paddingVertical: 2, paddingHorizontal: 8, marginBottom: 6 },
+  badgePlat: { backgroundColor: '#3A3532' },
+  badgeDessert: { backgroundColor: '#C9A44C' },
+  badgeText: { fontSize: 7, fontWeight: 700, color: '#FDFBF6', letterSpacing: 0.5 },
+
+  itemImage: { width: '100%', height: 80, borderRadius: 8, marginBottom: 6 },
+  itemImagePlaceholder: { width: '100%', height: 80, borderRadius: 8, marginBottom: 6, backgroundColor: '#FFFFFF' },
+  itemTitle: { fontSize: 9.5, fontWeight: 700, color: '#3A3532', marginBottom: 3 },
+  itemLink: { fontSize: 7.5, color: '#3A3532', textDecoration: 'underline' },
+
+  extraSectionTitle: { fontSize: 13, fontWeight: 700, color: '#3A3532', marginTop: 10, marginBottom: 10 },
+  extraGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  extraCard: { width: '100%', flexDirection: 'row', backgroundColor: '#F0EAE0', borderRadius: 8, padding: 8, marginBottom: 8, alignItems: 'center' },
+  extraImage: { width: 60, height: 60, borderRadius: 8, marginRight: 8 },
+  extraImagePlaceholder: { width: 60, height: 60, borderRadius: 8, marginRight: 8, backgroundColor: '#FFFFFF' },
+  extraInfo: { flexDirection: 'column', flex: 1 },
+  extraTitle: { fontSize: 9.5, fontWeight: 700, color: '#3A3532', marginBottom: 3 },
+
+  dateGenerated: { fontSize: 7.5, color: '#3A3532', opacity: 0.5, textAlign: 'center', marginTop: 8 },
+  footer: { position: 'absolute', bottom: 16, left: 26, right: 26, fontSize: 8, color: '#3A3532', textAlign: 'center', borderTop: 1, borderTopColor: '#F0EAE0', paddingTop: 6, opacity: 0.7 },
 })
 
-const CATEGORY_STYLES: Record<string, { bg: string; label: string }> = {
-  plats: { bg: '#DCEAF0', label: 'Plats' },
-  desserts: { bg: '#F6DEE1', label: 'Desserts / goûters' },
-  boissons: { bg: '#E3ECDD', label: 'Boissons' },
-  pains: { bg: '#F0EAE0', label: 'Pains' },
-}
-
-const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']
+const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi']
 
 type Recipe = { id: string; title: string; image_url: string | null; cookidoo_url: string | null }
 type CategorizedRecipes = Record<string, Recipe[]>
+
+function ItemCard({ recipe, badgeLabel, side }: { recipe: Recipe; badgeLabel: 'PLAT' | 'DESSERT' | 'BOISSON'; side: 'left' | 'right' }) {
+  const badgeStyle = badgeLabel === 'PLAT' ? styles.badgePlat : styles.badgeDessert
+  return (
+    <View style={[styles.itemHalf, side === 'left' ? styles.itemHalfLeft : styles.itemHalfRight]}>
+      <View style={[styles.badge, badgeStyle]}>
+        <Text style={styles.badgeText}>{badgeLabel}</Text>
+      </View>
+      {recipe.cookidoo_url ? (
+        <Link src={recipe.cookidoo_url}>
+          {recipe.image_url ? <Image src={recipe.image_url} style={styles.itemImage} /> : <View style={styles.itemImagePlaceholder} />}
+        </Link>
+      ) : recipe.image_url ? (
+        <Image src={recipe.image_url} style={styles.itemImage} />
+      ) : (
+        <View style={styles.itemImagePlaceholder} />
+      )}
+      <Text style={styles.itemTitle}>{recipe.title}</Text>
+      {recipe.cookidoo_url && (
+        <Link src={recipe.cookidoo_url} style={styles.itemLink}>
+          Voir sur Cookidoo
+        </Link>
+      )}
+    </View>
+  )
+}
 
 export default function MenuPdfDocument({
   categorizedRecipes,
@@ -51,63 +90,98 @@ export default function MenuPdfDocument({
   generatedAt: string
   distributeByDay: boolean
 }) {
-  const RecipeRow = ({ r, dayLabel }: { r: Recipe; dayLabel?: string }) => (
-    <View style={styles.recipeCard} wrap={false}>
-      {dayLabel && <Text style={styles.dayLabel}>{dayLabel}</Text>}
-      {r.cookidoo_url ? (
-        <Link src={r.cookidoo_url}>
-          {r.image_url ? (
-            <Image src={r.image_url} style={[styles.recipeImage, dayLabel ? { marginLeft: 10 } : {}]} />
-          ) : (
-            <View style={[styles.recipeImagePlaceholder, dayLabel ? { marginLeft: 10 } : {}]} />
-          )}
-        </Link>
-      ) : r.image_url ? (
-        <Image src={r.image_url} style={[styles.recipeImage, dayLabel ? { marginLeft: 10 } : {}]} />
-      ) : (
-        <View style={[styles.recipeImagePlaceholder, dayLabel ? { marginLeft: 10 } : {}]} />
-      )}
-      <View style={styles.recipeInfo}>
-        <Text style={styles.recipeTitle}>{r.title}</Text>
-        {r.cookidoo_url && (
-          <Link src={r.cookidoo_url} style={styles.recipeLink}>
-            Voir sur Cookidoo
-          </Link>
-        )}
-      </View>
-    </View>
-  )
+  const plats = categorizedRecipes.plats ?? []
+  const desserts = categorizedRecipes.desserts ?? []
+  const boissons = categorizedRecipes.boissons ?? []
+  const pains = categorizedRecipes.pains ?? []
+
+  // Combine desserts + boissons comme accompagnements possibles, un par jour
+  const accompaniments: { recipe: Recipe; label: 'DESSERT' | 'BOISSON' }[] = [
+    ...desserts.map((r) => ({ recipe: r, label: 'DESSERT' as const })),
+    ...boissons.map((r) => ({ recipe: r, label: 'BOISSON' as const })),
+  ]
+
+  const dayCount = distributeByDay ? Math.min(plats.length, 5) : 0
+  const dayPairs = distributeByDay
+    ? DAYS.slice(0, dayCount).map((day, i) => ({
+        day,
+        plat: plats[i],
+        accompaniment: accompaniments[i],
+      }))
+    : []
+
+  // Tout ce qui n'a pas été casé dans un jour part en "Recettes supplémentaires"
+  const usedPlatIds = new Set(dayPairs.map((p) => p.plat?.id).filter(Boolean))
+  const usedAccompIds = new Set(dayPairs.map((p) => p.accompaniment?.recipe.id).filter(Boolean))
+
+  const extraItems: Recipe[] = distributeByDay
+    ? [
+        ...plats.filter((r) => !usedPlatIds.has(r.id)),
+        ...desserts.filter((r) => !usedAccompIds.has(r.id)),
+        ...boissons.filter((r) => !usedAccompIds.has(r.id)),
+        ...pains,
+      ]
+    : [...plats, ...desserts, ...boissons, ...pains]
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          {siteLogo && <Image src={siteLogo} style={styles.logo} />}
-          <View style={styles.headerTextWrap}>
-            <Text style={styles.siteName}>Thermomix With Love, Hasna</Text>
-            <Text style={styles.subtitle}>Ton menu personnalise - Le Cercle With Love</Text>
+        <View style={styles.headerCard}>
+          <View style={styles.headerTop}>
+            {siteLogo && <Image src={siteLogo} style={styles.logo} />}
+            <View style={styles.headerTextWrap}>
+              <Text style={styles.siteName}>Thermomix With Love, Hasna</Text>
+              <Text style={styles.siteTagline}>Le Cercle With Love</Text>
+            </View>
+            {cercleLogo && <Image src={cercleLogo} style={styles.cercleLogoSmall} />}
           </View>
-          {cercleLogo && <Image src={cercleLogo} style={styles.cercleLogoSmall} />}
+          <Text style={styles.mainTitle}>Menu de la semaine</Text>
+          <View style={styles.dateBanner}>
+            <Text style={styles.dateBannerText}>Genere le {generatedAt}</Text>
+          </View>
         </View>
 
-        <Text style={styles.dateText}>Genere le {generatedAt}</Text>
-
-        {Object.entries(categorizedRecipes).map(([key, recipes]) => {
-          if (recipes.length === 0) return null
-          const style = CATEGORY_STYLES[key]
-          const useDays = distributeByDay && key === 'plats'
-
-          return (
-            <View key={key} style={[styles.categoryBlock, { backgroundColor: style.bg }]} wrap={false}>
-              <Text style={styles.categoryTitle}>{style.label}</Text>
-              <View style={styles.recipeGrid}>
-                {recipes.map((r, i) => (
-                  <RecipeRow key={r.id} r={r} dayLabel={useDays ? DAYS[i % DAYS.length] : undefined} />
-                ))}
+        {distributeByDay &&
+          dayPairs.map((pair, i) => (
+            <View key={i} style={styles.dayBlock} wrap={false}>
+              <View style={styles.dayHeader}>
+                <Text style={styles.dayHeaderText}>{pair.day.toUpperCase()}</Text>
+              </View>
+              <View style={styles.dayContent}>
+                {pair.plat && <ItemCard recipe={pair.plat} badgeLabel="PLAT" side="left" />}
+                {pair.accompaniment && (
+                  <ItemCard recipe={pair.accompaniment.recipe} badgeLabel={pair.accompaniment.label} side="right" />
+                )}
               </View>
             </View>
-          )
-        })}
+          ))}
+
+        {extraItems.length > 0 && (
+          <>
+            <Text style={styles.extraSectionTitle}>
+              {distributeByDay ? 'Recettes supplementaires' : 'Recettes du menu'}
+            </Text>
+            <View style={styles.extraGrid}>
+              {extraItems.map((r) => (
+                <View key={r.id} style={styles.extraCard} wrap={false}>
+                  {r.image_url ? (
+                    <Image src={r.image_url} style={styles.extraImage} />
+                  ) : (
+                    <View style={styles.extraImagePlaceholder} />
+                  )}
+                  <View style={styles.extraInfo}>
+                    <Text style={styles.extraTitle}>{r.title}</Text>
+                    {r.cookidoo_url && (
+                      <Link src={r.cookidoo_url} style={styles.itemLink}>
+                        Voir sur Cookidoo
+                      </Link>
+                    )}
+                  </View>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
 
         <Text style={styles.footer} fixed>
           Thermomix With Love, Hasna - www.withlovehasna.com
