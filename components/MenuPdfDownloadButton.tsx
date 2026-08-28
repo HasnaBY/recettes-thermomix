@@ -7,7 +7,15 @@ import { categorizeIngredient } from '@/lib/categorizeIngredient'
 type MenuItem = { recipe_id: string; recipe_title: string }
 type Menu = { plats?: MenuItem[]; desserts?: MenuItem[]; boissons?: MenuItem[]; pains?: MenuItem[] }
 
-export default function MenuPdfDownloadButton({ menu, origin }: { menu: Menu; origin?: string }) {
+export default function MenuPdfDownloadButton({
+  menu,
+  origin,
+  periodStart,
+}: {
+  menu: Menu
+  origin?: string
+  periodStart?: string | null
+}) {
   const [grouping, setGrouping] = useState<'recipe' | 'category'>('recipe')
   const [generatingMenu, setGeneratingMenu] = useState(false)
   const [generatingList, setGeneratingList] = useState(false)
@@ -79,6 +87,7 @@ export default function MenuPdfDownloadButton({ menu, origin }: { menu: Menu; or
           cercleLogo={cercleLogo}
           generatedAt={generatedAt}
           distributeByDay={distributeByDay}
+          periodStart={periodStart ?? null}
         />
       ).toBlob()
 

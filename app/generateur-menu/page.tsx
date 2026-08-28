@@ -1,5 +1,6 @@
 'use client'
 
+import { getNextMonday, toDateInputValue } from '@/lib/dateHelpers'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
@@ -28,6 +29,8 @@ export default function GenerateurMenu() {
   const [usedCount, setUsedCount] = useState(0)
   const [limit, setLimit] = useState(3)
   const [showForm, setShowForm] = useState(false)
+
+  const [periodStart, setPeriodStart] = useState(toDateInputValue(getNextMonday()))
 
   const supabase = createClient()
 
@@ -117,6 +120,7 @@ export default function GenerateurMenu() {
           nbBoissons: parseInt(nbBoissons) || 0,
           nbPains: parseInt(nbPains) || 0,
           source,
+          periodStart,
         }),
       })
 
@@ -239,8 +243,7 @@ export default function GenerateurMenu() {
           </div>
         )}
 
-        <MenuPdfDownloadButton menu={menuRow.menu} origin={menuRow.origin} />
-
+        <MenuPdfDownloadButton menu={menuRow.menu} origin={menuRow.origin} periodStart={(menuRow as any).params?.periodStart} />
         {renderSection('Plats', '🍽️', menuRow.menu.plats, 'plats', 'bg-[#DCEAF0]/30')}
         {renderSection('Desserts / goûters', '🍰', menuRow.menu.desserts, 'desserts', 'bg-[#F6DEE1]/30')}
         {renderSection('Boissons', '🥤', menuRow.menu.boissons, 'boissons', 'bg-[#E3ECDD]/40')}
@@ -282,6 +285,15 @@ export default function GenerateurMenu() {
             <form onSubmit={handleGenerate} className="border border-[#F0EAE0] bg-white rounded-2xl p-5 mb-10 flex flex-col gap-4">
               <h2 className="font-display text-lg text-[#3A3532]">Générer mon propre menu</h2>
 
+              <div>
+                <label className="block mb-1 text-sm text-[#3A3532]/70">Semaine du (lundi)</label>
+                <input
+                  type="date"
+                  value={periodStart}
+                  onChange={(e) => setPeriodStart(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#F0EAE0] rounded-xl"
+                />
+              </div>
               <div>
                 <label className="block mb-1 text-sm text-[#3A3532]/70">Recettes à utiliser</label>
                 <select

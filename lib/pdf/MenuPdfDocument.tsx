@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, Image, StyleSheet, Link } from '@react-pdf/renderer'
+import { formatDayLabel } from '@/lib/dateHelpers'
 
 const styles = StyleSheet.create({
   page: { padding: 26, backgroundColor: '#FDFBF6', fontSize: 10, color: '#3A3532' },
@@ -29,24 +30,21 @@ const styles = StyleSheet.create({
   badgeDessert: { backgroundColor: '#C9A44C' },
   badgeText: { fontSize: 7, fontWeight: 700, color: '#FDFBF6', letterSpacing: 0.5 },
 
-  itemImage: { width: '100%', height: 80, borderRadius: 8, marginBottom: 6 },
-  itemImagePlaceholder: { width: '100%', height: 80, borderRadius: 8, marginBottom: 6, backgroundColor: '#FFFFFF' },
+  itemImage: { width: '100%', height: 85, borderRadius: 8, marginBottom: 6, objectFit: 'cover' },
+  itemImagePlaceholder: { width: '100%', height: 85, borderRadius: 8, marginBottom: 6, backgroundColor: '#FFFFFF' },
   itemTitle: { fontSize: 9.5, fontWeight: 700, color: '#3A3532', marginBottom: 3 },
   itemLink: { fontSize: 7.5, color: '#3A3532', textDecoration: 'underline' },
 
   extraSectionTitle: { fontSize: 13, fontWeight: 700, color: '#3A3532', marginTop: 10, marginBottom: 10 },
   extraGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   extraCard: { width: '100%', flexDirection: 'row', backgroundColor: '#F0EAE0', borderRadius: 8, padding: 8, marginBottom: 8, alignItems: 'center' },
-  extraImage: { width: 60, height: 60, borderRadius: 8, marginRight: 8 },
-  extraImagePlaceholder: { width: 60, height: 60, borderRadius: 8, marginRight: 8, backgroundColor: '#FFFFFF' },
+  extraImage: { width: 62, height: 62, borderRadius: 8, marginRight: 8, objectFit: 'cover' },
+  extraImagePlaceholder: { width: 62, height: 62, borderRadius: 8, marginRight: 8, backgroundColor: '#FFFFFF' },
   extraInfo: { flexDirection: 'column', flex: 1 },
   extraTitle: { fontSize: 9.5, fontWeight: 700, color: '#3A3532', marginBottom: 3 },
 
-  dateGenerated: { fontSize: 7.5, color: '#3A3532', opacity: 0.5, textAlign: 'center', marginTop: 8 },
   footer: { position: 'absolute', bottom: 16, left: 26, right: 26, fontSize: 8, color: '#3A3532', textAlign: 'center', borderTop: 1, borderTopColor: '#F0EAE0', paddingTop: 6, opacity: 0.7 },
 })
-
-const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi']
 
 type Recipe = { id: string; title: string; image_url: string | null; cookidoo_url: string | null }
 type CategorizedRecipes = Record<string, Recipe[]>
@@ -83,19 +81,20 @@ export default function MenuPdfDocument({
   cercleLogo,
   generatedAt,
   distributeByDay,
+  periodStart,
 }: {
   categorizedRecipes: CategorizedRecipes
   siteLogo: string | null
   cercleLogo: string | null
   generatedAt: string
   distributeByDay: boolean
+  periodStart: string | null
 }) {
   const plats = categorizedRecipes.plats ?? []
   const desserts = categorizedRecipes.desserts ?? []
   const boissons = categorizedRecipes.boissons ?? []
   const pains = categorizedRecipes.pains ?? []
 
-  // Combine desserts + boissons comme accompagnements possibles, un par jour
   const accompaniments: { recipe: Recipe; label: 'DESSERT' | 'BOISSON' }[] = [
     ...desserts.map((r) => ({ recipe: r, label: 'DESSERT' as const })),
     ...boissons.map((r) => ({ recipe: r, label: 'BOISSON' as const })),
@@ -103,14 +102,13 @@ export default function MenuPdfDocument({
 
   const dayCount = distributeByDay ? Math.min(plats.length, 5) : 0
   const dayPairs = distributeByDay
-    ? DAYS.slice(0, dayCount).map((day, i) => ({
-        day,
+    ? Array.from({ length: dayCount }).map((_, i) => ({
+        label: periodStart ? formatDayLabel(periodStart, i + 1) : ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI'][i],
         plat: plats[i],
         accompaniment: accompaniments[i],
       }))
     : []
 
-  // Tout ce qui n'a pas été casé dans un jour part en "Recettes supplémentaires"
   const usedPlatIds = new Set(dayPairs.map((p) => p.plat?.id).filter(Boolean))
   const usedAccompIds = new Set(dayPairs.map((p) => p.accompaniment?.recipe.id).filter(Boolean))
 
@@ -145,7 +143,7 @@ export default function MenuPdfDocument({
           dayPairs.map((pair, i) => (
             <View key={i} style={styles.dayBlock} wrap={false}>
               <View style={styles.dayHeader}>
-                <Text style={styles.dayHeaderText}>{pair.day.toUpperCase()}</Text>
+                <Text style={styles.dayHeaderText}>{pair.label}</Text>
               </View>
               <View style={styles.dayContent}>
                 {pair.plat && <ItemCard recipe={pair.plat} badgeLabel="PLAT" side="left" />}
