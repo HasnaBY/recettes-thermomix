@@ -165,6 +165,54 @@ export default function AssignMenu() {
     }
   }
 
+  const handleDebugPdf = async () => {
+    try {
+      const { pdf } = await import('@react-pdf/renderer')
+      const { default: MenuPdfDocument } = await import('@/lib/pdf/MenuPdfDocument')
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+
+      const ids = [
+        ...(previewMenu?.plats ?? []),
+        ...(previewMenu?.desserts ?? []),
+        ...(previewMenu?.boissons ?? []),
+      ].map((i) => i.recipe_id)
+
+      const { data: recipes } = await supabase
+        .from('recipes')
+        .select('id, title, image_url, cookidoo_url')
+        .in('id', ids)
+
+      const { data: bg } = await supabase
+        .from('brand_photos')
+        .select('image_url')
+        .eq('key', 'menu_pdf_background')
+        .single()
+
+      const recipeMap = new Map((recipes ?? []).map((r) => [r.id, r]))
+      const build = (items: any) => (items ?? []).map((i: any) => recipeMap.get(i.recipe_id)).filter(Boolean)
+
+      const blob = await pdf(
+        <MenuPdfDocument
+          categorizedRecipes={{
+            plats: build(previewMenu?.plats),
+            desserts: build(previewMenu?.desserts),
+            boissons: build(previewMenu?.boissons),
+          }}
+          backgroundImage={bg?.image_url ?? null}
+          periodStart={periodStart}
+          debug={true}
+        />
+      ).toBlob()
+
+      const url = URL.createObjectURL(blob)
+      window.open(url, '_blank')
+    } catch (err: any) {
+      console.error('Erreur mode calibrage PDF:', err)
+      setError("Erreur lors de la génération du PDF de calibrage : " + err.message)
+    }
+  }
+
   const renderSection = (title: string, items: MenuItem[] | undefined, bg: string, itemType: 'plats' | 'desserts' | 'boissons' | 'pains') => {
     if (!items || items.length === 0) return null
     return (
@@ -178,6 +226,7 @@ export default function AssignMenu() {
               </Link>
               {!sent && (
                 <button
+                  type="button"
                   onClick={() => handleSwap(itemType, item.recipe_id)}
                   disabled={swappingId === item.recipe_id}
                   className="text-xs text-gray-600 underline ml-2 shrink-0 disabled:opacity-50"
@@ -326,8 +375,8 @@ export default function AssignMenu() {
       </form>
 
       {previewMenu && (
-        <div className="border border-gray-200 rounded-xl p-4">
-          <p className="text-sm font-bold text-gray-900 mb-3">
+        <div className="border border-gray-200 rounded-xl p-4 flex flex-col gap-3">
+          <p className="text-sm font-bold text-gray-900 mb-1">
             {sent ? 'Menu envoyé' : `Aperçu — ${sendToAll ? `sera envoyé à ${clients.length} cliente(s)` : 'non encore envoyé'}`}
           </p>
 
@@ -336,62 +385,24 @@ export default function AssignMenu() {
           {renderSection('Boissons', previewMenu.boissons, 'bg-green-50', 'boissons')}
           {renderSection('Pains', previewMenu.pains, 'bg-gray-100', 'pains')}
 
-          <div className="mt-4">
+          <div className="mt-2 flex flex-col gap-2 items-start">
             <MenuPdfDownloadButton menu={previewMenu} origin="admin" periodStart={periodStart} />
+            
+            <button
+              type="button"
+              onClick={handleDebugPdf}
+              className="relative z-10 text-xs text-red-600 underline cursor-pointer hover:text-red-800 focus:outline-none py-1"
+            >
+              🔧 Mode calibrage (voir les cadres de positionnement)
+            </button>
           </div>
-          <button
-            onClick={async () => {
-              const { pdf } = await import('@react-pdf/renderer')
-              const { default: MenuPdfDocument } = await import('@/lib/pdf/MenuPdfDocument')
-              const { createClient } = await import('@/lib/supabase/client')
-              const supabase = createClient()
-
-              const ids = [
-                ...(previewMenu?.plats ?? []),
-                ...(previewMenu?.desserts ?? []),
-                ...(previewMenu?.boissons ?? []),
-              ].map((i) => i.recipe_id)
-
-              const { data: recipes } = await supabase
-                .from('recipes')
-                .select('id, title, image_url, cookidoo_url')
-                .in('id', ids)
-
-              const { data: bg } = await supabase
-                .from('brand_photos')
-                .select('image_url')
-                .eq('key', 'menu_pdf_background')
-                .single()
-
-              const recipeMap = new Map((recipes ?? []).map((r) => [r.id, r]))
-              const build = (items: any) => (items ?? []).map((i: any) => recipeMap.get(i.recipe_id)).filter(Boolean)
-
-              const blob = await pdf(
-                <MenuPdfDocument
-                  categorizedRecipes={{
-                    plats: build(previewMenu?.plats),
-                    desserts: build(previewMenu?.desserts),
-                    boissons: build(previewMenu?.boissons),
-                  }}
-                  backgroundImage={bg?.image_url ?? null}
-                  periodStart={periodStart}
-                  debug={true}
-                />
-              ).toBlob()
-
-              const url = URL.createObjectURL(blob)
-              window.open(url)
-            }}
-            className="mt-2 text-xs text-red-600 underline"
-          >
-            🔧 Mode calibrage (voir les cadres de positionnement)
-          </button>
 
           {!sent && (
             <button
+              type="button"
               onClick={handleSend}
               disabled={sending}
-              className="py-2 px-5 bg-gray-900 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+              className="mt-2 py-2 px-5 bg-gray-900 text-white rounded-lg text-sm font-medium disabled:opacity-50"
             >
               {sending ? 'Envoi...' : sendToAll ? `Envoyer à ${clients.length} cliente(s)` : 'Envoyer à la cliente'}
             </button>
