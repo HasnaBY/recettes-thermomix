@@ -6,67 +6,69 @@ const styles = StyleSheet.create({
   background: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
   content: { padding: 30 },
 
-  brandName: { fontSize: 20, fontWeight: 700, fontStyle: 'italic', color: '#C9A44C', textAlign: 'center', letterSpacing: 0.5 },
-  mainTitle: { fontSize: 24, fontWeight: 700, color: '#3A3532', textAlign: 'center', marginTop: 6, letterSpacing: 2 },
-  dateBanner: { backgroundColor: '#C9A44C', borderRadius: 20, paddingVertical: 6, paddingHorizontal: 18, alignSelf: 'center', marginTop: 10 },
-  dateBannerText: { fontSize: 10, fontWeight: 700, color: '#FDFBF6', letterSpacing: 0.5 },
-  tagline: { fontSize: 10, fontStyle: 'italic', color: '#3A3532', opacity: 0.75, textAlign: 'center', marginTop: 10, marginBottom: 18 },
+  brandName: { fontSize: 18, fontWeight: 700, fontStyle: 'italic', color: '#C9A44C', textAlign: 'center', letterSpacing: 0.5 },
+  mainTitle: { fontSize: 20, fontWeight: 700, color: '#3A3532', textAlign: 'center', marginTop: 4, letterSpacing: 2 },
+  dateBanner: { backgroundColor: '#C9A44C', borderRadius: 20, paddingVertical: 5, paddingHorizontal: 16, alignSelf: 'center', marginTop: 8 },
+  dateBannerText: { fontSize: 9.5, fontWeight: 700, color: '#FDFBF6', letterSpacing: 0.5 },
+  tagline: { fontSize: 9, fontStyle: 'italic', color: '#3A3532', opacity: 0.75, textAlign: 'center', marginTop: 8, marginBottom: 16 },
 
-  dayBlock: { marginBottom: 12, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: '#F0EAE0' },
-  dayHeader: { backgroundColor: '#3A3532', paddingVertical: 5, paddingHorizontal: 12 },
-  dayHeaderText: { fontSize: 10.5, fontWeight: 700, color: '#FDFBF6', letterSpacing: 1 },
-  dayContent: { flexDirection: 'row' },
+  dayRow: { flexDirection: 'row', marginBottom: 8, borderRadius: 10, overflow: 'hidden', borderWidth: 1, borderColor: '#F0EAE0' },
+  dayLabelCell: { width: '16%', backgroundColor: '#F0EAE0', alignItems: 'center', justifyContent: 'center', paddingVertical: 6 },
+  dayLabelText: { fontSize: 8.5, fontWeight: 700, color: '#3A3532', textAlign: 'center' },
+  dayLabelDate: { fontSize: 7, color: '#3A3532', opacity: 0.6, marginTop: 2, textAlign: 'center' },
 
-  itemHalf: { width: '50%', padding: 10, flexDirection: 'column' },
-  itemHalfLeft: { backgroundColor: '#DCEAF0' },
-  itemHalfRight: { backgroundColor: '#F6DEE1' },
+  itemCell: { width: '42%', flexDirection: 'row', padding: 7, alignItems: 'center' },
+  itemCellPlat: { backgroundColor: '#DCEAF0' },
+  itemCellDessert: { backgroundColor: '#F6DEE1' },
 
-  badge: { alignSelf: 'flex-start', borderRadius: 10, paddingVertical: 2, paddingHorizontal: 8, marginBottom: 6 },
-  badgePlat: { backgroundColor: '#3A3532' },
-  badgeDessert: { backgroundColor: '#C9A44C' },
-  badgeText: { fontSize: 7, fontWeight: 700, color: '#FDFBF6', letterSpacing: 0.5 },
+  iconCircle: { width: 18, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center', marginRight: 6, flexShrink: 0 },
+  iconCirclePlat: { backgroundColor: '#3A3532' },
+  iconCircleDessert: { backgroundColor: '#C9A44C' },
+  iconCircleText: { fontSize: 8, fontWeight: 700, color: '#FDFBF6' },
 
-  itemImage: { width: '100%', height: 85, borderRadius: 8, marginBottom: 6, objectFit: 'cover' },
-  itemImagePlaceholder: { width: '100%', height: 85, borderRadius: 8, marginBottom: 6, backgroundColor: '#FFFFFF' },
-  itemTitle: { fontSize: 9.5, fontWeight: 700, color: '#3A3532', marginBottom: 3 },
-  itemLink: { fontSize: 7.5, color: '#3A3532', textDecoration: 'underline' },
+  itemImage: { width: 44, height: 44, borderRadius: 6, marginRight: 6, objectFit: 'cover', flexShrink: 0 },
+  itemImagePlaceholder: { width: 44, height: 44, borderRadius: 6, marginRight: 6, backgroundColor: '#FFFFFF', flexShrink: 0 },
 
-  extraSectionTitle: { fontSize: 13, fontWeight: 700, color: '#3A3532', marginTop: 10, marginBottom: 10 },
+  itemInfo: { flexDirection: 'column', flex: 1 },
+  itemTitle: { fontSize: 8, fontWeight: 700, color: '#3A3532', marginBottom: 2 },
+  itemLink: { fontSize: 6.5, color: '#3A3532', textDecoration: 'underline' },
+
+  extraSectionTitle: { fontSize: 12, fontWeight: 700, color: '#3A3532', marginTop: 12, marginBottom: 8 },
   extraGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   extraCard: { width: '100%', flexDirection: 'row', backgroundColor: '#F0EAE0', borderRadius: 8, padding: 8, marginBottom: 8, alignItems: 'center' },
-  extraImage: { width: 62, height: 62, borderRadius: 8, marginRight: 8, objectFit: 'cover' },
-  extraImagePlaceholder: { width: 62, height: 62, borderRadius: 8, marginRight: 8, backgroundColor: '#FFFFFF' },
+  extraImage: { width: 50, height: 50, borderRadius: 8, marginRight: 8, objectFit: 'cover' },
+  extraImagePlaceholder: { width: 50, height: 50, borderRadius: 8, marginRight: 8, backgroundColor: '#FFFFFF' },
   extraInfo: { flexDirection: 'column', flex: 1 },
-  extraTitle: { fontSize: 9.5, fontWeight: 700, color: '#3A3532', marginBottom: 3 },
+  extraTitle: { fontSize: 9, fontWeight: 700, color: '#3A3532', marginBottom: 2 },
 
-  footer: { position: 'absolute', bottom: 16, left: 30, right: 30, fontSize: 8, color: '#3A3532', textAlign: 'center', borderTop: 1, borderTopColor: '#F0EAE0', paddingTop: 6, opacity: 0.7 },
+  footer: { position: 'absolute', bottom: 14, left: 30, right: 30, fontSize: 7.5, color: '#3A3532', textAlign: 'center', borderTop: 1, borderTopColor: '#F0EAE0', paddingTop: 5, opacity: 0.7 },
 })
 
 type Recipe = { id: string; title: string; image_url: string | null; cookidoo_url: string | null }
 type CategorizedRecipes = Record<string, Recipe[]>
 
-function ItemCard({ recipe, badgeLabel, side }: { recipe: Recipe; badgeLabel: 'PLAT' | 'DESSERT' | 'BOISSON'; side: 'left' | 'right' }) {
-  const badgeStyle = badgeLabel === 'PLAT' ? styles.badgePlat : styles.badgeDessert
+function ItemCell({ recipe, kind }: { recipe: Recipe; kind: 'PLAT' | 'DESSERT' | 'BOISSON' }) {
+  const isDish = kind === 'PLAT'
+  const letter = kind === 'PLAT' ? 'P' : kind === 'DESSERT' ? 'D' : 'B'
+
   return (
-    <View style={[styles.itemHalf, side === 'left' ? styles.itemHalfLeft : styles.itemHalfRight]}>
-      <View style={[styles.badge, badgeStyle]}>
-        <Text style={styles.badgeText}>{badgeLabel}</Text>
+    <View style={[styles.itemCell, isDish ? styles.itemCellPlat : styles.itemCellDessert]}>
+      <View style={[styles.iconCircle, isDish ? styles.iconCirclePlat : styles.iconCircleDessert]}>
+        <Text style={styles.iconCircleText}>{letter}</Text>
       </View>
-      {recipe.cookidoo_url ? (
-        <Link src={recipe.cookidoo_url}>
-          {recipe.image_url ? <Image src={recipe.image_url} style={styles.itemImage} /> : <View style={styles.itemImagePlaceholder} />}
-        </Link>
-      ) : recipe.image_url ? (
+      {recipe.image_url ? (
         <Image src={recipe.image_url} style={styles.itemImage} />
       ) : (
         <View style={styles.itemImagePlaceholder} />
       )}
-      <Text style={styles.itemTitle}>{recipe.title}</Text>
-      {recipe.cookidoo_url && (
-        <Link src={recipe.cookidoo_url} style={styles.itemLink}>
-          Voir sur Cookidoo
-        </Link>
-      )}
+      <View style={styles.itemInfo}>
+        <Text style={styles.itemTitle}>{recipe.title}</Text>
+        {recipe.cookidoo_url && (
+          <Link src={recipe.cookidoo_url} style={styles.itemLink}>
+            Voir sur Cookidoo
+          </Link>
+        )}
+      </View>
     </View>
   )
 }
@@ -96,11 +98,16 @@ export default function MenuPdfDocument({
 
   const dayCount = distributeByDay ? Math.min(plats.length, 5) : 0
   const dayPairs = distributeByDay
-    ? Array.from({ length: dayCount }).map((_, i) => ({
-        label: periodStart ? formatDayLabel(periodStart, i + 1) : ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI'][i],
-        plat: plats[i],
-        accompaniment: accompaniments[i],
-      }))
+    ? Array.from({ length: dayCount }).map((_, i) => {
+        const fullLabel = periodStart ? formatDayLabel(periodStart, i + 1) : ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI'][i]
+        const [dayName, ...dateParts] = fullLabel.split(' ')
+        return {
+          dayName,
+          dateLabel: dateParts.join(' '),
+          plat: plats[i],
+          accompaniment: accompaniments[i],
+        }
+      })
     : []
 
   const usedPlatIds = new Set(dayPairs.map((p) => p.plat?.id).filter(Boolean))
@@ -134,16 +141,15 @@ export default function MenuPdfDocument({
 
           {distributeByDay &&
             dayPairs.map((pair, i) => (
-              <View key={i} style={styles.dayBlock} wrap={false}>
-                <View style={styles.dayHeader}>
-                  <Text style={styles.dayHeaderText}>{pair.label}</Text>
+              <View key={i} style={styles.dayRow} wrap={false}>
+                <View style={styles.dayLabelCell}>
+                  <Text style={styles.dayLabelText}>{pair.dayName}</Text>
+                  {pair.dateLabel && <Text style={styles.dayLabelDate}>{pair.dateLabel}</Text>}
                 </View>
-                <View style={styles.dayContent}>
-                  {pair.plat && <ItemCard recipe={pair.plat} badgeLabel="PLAT" side="left" />}
-                  {pair.accompaniment && (
-                    <ItemCard recipe={pair.accompaniment.recipe} badgeLabel={pair.accompaniment.label} side="right" />
-                  )}
-                </View>
+                {pair.plat && <ItemCell recipe={pair.plat} kind="PLAT" />}
+                {pair.accompaniment && (
+                  <ItemCell recipe={pair.accompaniment.recipe} kind={pair.accompaniment.label} />
+                )}
               </View>
             ))}
 
