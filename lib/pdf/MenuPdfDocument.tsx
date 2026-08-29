@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { Document, Page, Text, View, Image, StyleSheet, Link, Fragment } from '@react-pdf/renderer'
 import { formatDateRange } from '@/lib/dateHelpers'
 
