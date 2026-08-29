@@ -1,7 +1,9 @@
 import { Resend } from 'resend'
 import { NextRequest, NextResponse } from 'next/server'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 const LABELS: Record<string, { subject: string; adminPath: string }> = {
   new_account: { subject: 'Nouvelle demande de compte', adminPath: '/admin' },
@@ -64,7 +66,7 @@ export async function POST(request: NextRequest) {
       ? ` — ${CONTACT_TYPE_LABELS[record.request_type] ?? record.request_type}`
       : ''
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: 'onboarding@resend.dev',
     to: process.env.ADMIN_EMAIL!,
     subject: `${config.subject}${subjectSuffix} — Thermomix With Love`,

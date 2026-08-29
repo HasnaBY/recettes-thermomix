@@ -1,7 +1,9 @@
 import { Resend } from 'resend'
 import { NextRequest, NextResponse } from 'next/server'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 export async function POST(request: NextRequest) {
   const secret = request.headers.get('x-webhook-secret')
@@ -46,7 +48,7 @@ export async function POST(request: NextRequest) {
   </div>
   `
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: 'With Love, Hasna <onboarding@resend.dev>',
     to: record.email,
     subject: 'Ton compte est validé — Thermomix With Love, Hasna',
