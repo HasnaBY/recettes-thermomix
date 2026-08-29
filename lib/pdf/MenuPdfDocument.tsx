@@ -1,7 +1,6 @@
-import { Document, Page, Text, View, Image, StyleSheet, Link } from '@react-pdf/renderer'
+import { Document, Page, Text, View, Image, StyleSheet, Link, Fragment } from '@react-pdf/renderer'
 import { formatDateRange } from '@/lib/dateHelpers'
 
-// Coordonnées recalculées à partir de ta capture — à affiner si besoin.
 const DATE_TOP = 27.5
 const ROW_TOP = [31.5, 42.9, 54.3, 65.8, 77.2]
 const ROW_HEIGHT = 8.5
@@ -13,8 +12,6 @@ const DESSERT_WIDTH = 32.6
 const styles = StyleSheet.create({
   page: { backgroundColor: '#FDFBF6' },
   background: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
-
-  // Conteneur de référence indispensable pour que "top" en % fonctionne correctement.
   overlay: { position: 'relative', width: '100%', height: '100%' },
 
   dateBanner: { position: 'absolute', top: `${DATE_TOP}%`, left: '20%', width: '60%', textAlign: 'center' },
@@ -129,7 +126,7 @@ export default function MenuPdfDocument({
           </View>
 
           {ROW_TOP.map((top, i) => (
-            <View key={i}>
+            <Fragment key={i}>
               <Cell
                 recipe={plats[i]}
                 top={top}
@@ -148,7 +145,7 @@ export default function MenuPdfDocument({
                 debugLabel={`Dessert J${i + 1}`}
                 debug={debug}
               />
-            </View>
+            </Fragment>
           ))}
         </View>
       </Page>
