@@ -389,9 +389,63 @@ export default function AssignMenu() {
             <MenuPdfDownloadButton menu={previewMenu} origin="admin" periodStart={periodStart} />
             
             <button
-              type="button"
-              onClick={handleDebugPdf}
-              className="relative z-10 text-xs text-red-600 underline cursor-pointer hover:text-red-800 focus:outline-none py-1"
+              onClick={async () => {
+                const debugWindow = window.open('', '_blank')
+                if (debugWindow) {
+                  debugWindow.document.write('<p style="font-family:sans-serif;padding:20px;">Génération du PDF de calibrage en cours...</p>')
+                }
+
+                try {
+                  const { pdf } = await import('@react-pdf/renderer')
+                  const { default: MenuPdfDocument } = await import('@/lib/pdf/MenuPdfDocument')
+                  const { createClient } = await import('@/lib/supabase/client')
+                  const supabase = createClient()
+
+                  const ids = [
+                    ...(previewMenu?.plats ?? []),
+                    ...(previewMenu?.desserts ?? []),
+                    ...(previewMenu?.boissons ?? []),
+                  ].map((i) => i.recipe_id)
+
+                  const { data: recipes } = await supabase
+                    .from('recipes')
+                    .select('id, title, image_url, cookidoo_url')
+                    .in('id', ids)
+
+                  const { data: bg } = await supabase
+                    .from('brand_photos')
+                    .select('image_url')
+                    .eq('key', 'menu_pdf_background')
+                    .single()
+
+                  const recipeMap = new Map((recipes ?? []).map((r) => [r.id, r]))
+                  const build = (items: any) => (items ?? []).map((i: any) => recipeMap.get(i.recipe_id)).filter(Boolean)
+
+                  const blob = await pdf(
+                    <MenuPdfDocument
+                      categorizedRecipes={{
+                        plats: build(previewMenu?.plats),
+                        desserts: build(previewMenu?.desserts),
+                        boissons: build(previewMenu?.boissons),
+                      }}
+                      backgroundImage={bg?.image_url ?? null}
+                      periodStart={periodStart}
+                      debug={true}
+                    />
+                  ).toBlob()
+
+                  const url = URL.createObjectURL(blob)
+                  if (debugWindow) {
+                    debugWindow.location.href = url
+                  } else {
+                    alert("La fenêtre a été bloquée par le navigateur — autorise les popups pour ce site puis réessaie.")
+                  }
+                } catch (err) {
+                  if (debugWindow) debugWindow.close()
+                  alert('Erreur lors de la génération du PDF de calibrage.')
+                }
+              }}
+              className="mt-2 text-xs text-red-600 underline"
             >
               🔧 Mode calibrage (voir les cadres de positionnement)
             </button>

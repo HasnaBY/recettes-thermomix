@@ -1,18 +1,21 @@
 import { Document, Page, Text, View, Image, StyleSheet, Link } from '@react-pdf/renderer'
 import { formatDateRange } from '@/lib/dateHelpers'
 
-// Coordonnées à ajuster (en % de la page) une fois le calibrage vérifié.
-const ROW_TOP = [25.0, 38.0, 51.0, 64.0, 77.0]
-const ROW_HEIGHT = 11.3
-const PLAT_LEFT = 23.5
-const PLAT_WIDTH = 33.5
-const DESSERT_LEFT = 59.0
-const DESSERT_WIDTH = 33.5
-const DATE_TOP = 23.2
+// Coordonnées recalculées à partir de ta capture — à affiner si besoin.
+const DATE_TOP = 27.5
+const ROW_TOP = [31.5, 42.9, 54.3, 65.8, 77.2]
+const ROW_HEIGHT = 8.5
+const PLAT_LEFT = 23.4
+const PLAT_WIDTH = 33.6
+const DESSERT_LEFT = 58.7
+const DESSERT_WIDTH = 32.6
 
 const styles = StyleSheet.create({
   page: { backgroundColor: '#FDFBF6' },
   background: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
+
+  // Conteneur de référence indispensable pour que "top" en % fonctionne correctement.
+  overlay: { position: 'relative', width: '100%', height: '100%' },
 
   dateBanner: { position: 'absolute', top: `${DATE_TOP}%`, left: '20%', width: '60%', textAlign: 'center' },
   dateBannerText: { fontSize: 9, fontWeight: 700, color: '#3A3532', letterSpacing: 0.5 },
@@ -120,32 +123,34 @@ export default function MenuPdfDocument({
           )
         )}
 
-        <View style={[styles.dateBanner, debug ? { borderWidth: 1, borderColor: 'blue' } : {}]}>
-          <Text style={styles.dateBannerText}>{dateLabel.toUpperCase()}</Text>
-        </View>
-
-        {ROW_TOP.map((top, i) => (
-          <View key={i}>
-            <Cell
-              recipe={plats[i]}
-              top={top}
-              left={PLAT_LEFT}
-              width={PLAT_WIDTH}
-              height={ROW_HEIGHT}
-              debugLabel={`Plat J${i + 1}`}
-              debug={debug}
-            />
-            <Cell
-              recipe={accompaniments[i]}
-              top={top}
-              left={DESSERT_LEFT}
-              width={DESSERT_WIDTH}
-              height={ROW_HEIGHT}
-              debugLabel={`Dessert J${i + 1}`}
-              debug={debug}
-            />
+        <View style={styles.overlay}>
+          <View style={[styles.dateBanner, debug ? { borderWidth: 1, borderColor: 'blue' } : {}]}>
+            <Text style={styles.dateBannerText}>{dateLabel.toUpperCase()}</Text>
           </View>
-        ))}
+
+          {ROW_TOP.map((top, i) => (
+            <View key={i}>
+              <Cell
+                recipe={plats[i]}
+                top={top}
+                left={PLAT_LEFT}
+                width={PLAT_WIDTH}
+                height={ROW_HEIGHT}
+                debugLabel={`Plat J${i + 1}`}
+                debug={debug}
+              />
+              <Cell
+                recipe={accompaniments[i]}
+                top={top}
+                left={DESSERT_LEFT}
+                width={DESSERT_WIDTH}
+                height={ROW_HEIGHT}
+                debugLabel={`Dessert J${i + 1}`}
+                debug={debug}
+              />
+            </View>
+          ))}
+        </View>
       </Page>
     </Document>
   )
