@@ -11,11 +11,12 @@ const SLOTS = [
   { key: 'cuisine_action', label: '🏅 Ta cuisine, Thermomix en action', usage: 'Pourquoi commander' },
   { key: 'table_ete', label: '🎖️ Table de recettes d\'été', usage: 'Challenge + Anti-canicule' },
   { key: 'round_logo', label: '⭕ Logo rond', usage: 'Accueil, Qui suis-je, Pourquoi commander, Le Cercle, Elles m\'ont fait confiance, Challenge' },
-{ key: 'kids_cooking', label: '👩‍👧‍👦 Session cuisine avec les enfants', usage: 'Qui suis-je' },
-  { key: 'cercle_logo', label: '💛 Logo Le Cercle With Love', usage: 'PDF du menu (en-tête, à côté du logo principal)' },
-  { key: 'menu_pdf_background', label: '🌸 Fond décoratif du PDF menu', usage: 'PDF du menu de la semaine (image pleine page, sans texte, coins décorés)' },
-
+  { key: 'kids_cooking', label: '👩‍👧‍👦 Session cuisine avec les enfants', usage: 'Qui suis-je' },
+  { key: 'cercle_logo', label: '💛 Logo Le Cercle With Love', usage: 'PDF du menu (en-tête)' },
+  { key: 'menu_pdf_background', label: '🌸 Fond décoratif du PDF menu', usage: 'PDF du menu de la semaine — haute résolution requise, peu compressée' },
 ]
+
+const HIGH_RES_KEYS = ['menu_pdf_background']
 
 export default function AdminBrandPhotos() {
   const [photos, setPhotos] = useState<Record<string, string | null>>({})
@@ -38,12 +39,23 @@ export default function AdminBrandPhotos() {
     setUploadingKey(key)
     setMessage('')
     try {
-      const compressed = await imageCompression(file, {
-        maxWidthOrHeight: 1400,
-        maxSizeMB: 0.4,
-        fileType: 'image/webp',
-      })
-      const fileName = `${key}-${Date.now()}.webp`
+      const isHighRes = HIGH_RES_KEYS.includes(key)
+
+      const compressed = isHighRes
+        ? await imageCompression(file, {
+            maxWidthOrHeight: 2480, // largeur A4 à 300dpi
+            maxSizeMB: 4,
+            initialQuality: 0.95,
+            fileType: file.type, // garde le format d'origine, pas de conversion webp
+          })
+        : await imageCompression(file, {
+            maxWidthOrHeight: 1400,
+            maxSizeMB: 0.4,
+            fileType: 'image/webp',
+          })
+
+      const extension = isHighRes ? file.name.split('.').pop() || 'png' : 'webp'
+      const fileName = `${key}-${Date.now()}.${extension}`
       const { error: uploadError } = await supabase.storage.from('site-images').upload(fileName, compressed)
       if (uploadError) throw uploadError
       const { data } = supabase.storage.from('site-images').getPublicUrl(fileName)
@@ -100,7 +112,6 @@ export default function AdminBrandPhotos() {
             />
             {uploadingKey === slot.key && <p className="text-xs text-gray-500 mt-1">Envoi en cours...</p>}
           </div>
-          
         ))}
       </div>
     </div>
