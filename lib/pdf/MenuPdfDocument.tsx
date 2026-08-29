@@ -1,4 +1,6 @@
-import { Document, Page, Text, View, Image, StyleSheet, Link, Fragment } from '@react-pdf/renderer'
+import { Document, Page, Text, View, Image, StyleSheet, Link } from '@react-pdf/renderer'
+import { Fragment } from 'react'
+
 import { formatDateRange } from '@/lib/dateHelpers'
 
 // Recalibré à partir du visuel : la ligne "DU ___ AU ___" est plus haute que le bandeau
