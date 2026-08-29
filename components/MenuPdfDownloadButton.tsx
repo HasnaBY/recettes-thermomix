@@ -29,7 +29,7 @@ export default function MenuPdfDownloadButton({
     ...(menu.pains ?? []),
   ]
 
-  const fetchRecipesAndLogo = async () => {
+  const fetchRecipesAndAssets = async () => {
     const ids = allItems.map((i) => i.recipe_id)
 
     const { data: recipes, error: fetchError } = await supabase
@@ -42,19 +42,22 @@ export default function MenuPdfDownloadButton({
     const { data: logoData } = await supabase
       .from('brand_photos')
       .select('key, image_url')
-      .in('key', ['round_logo', 'cercle_logo'])
+      .in('key', ['round_logo', 'menu_pdf_background'])
 
     const siteLogo = logoData?.find((l) => l.key === 'round_logo')?.image_url ?? null
-    const cercleLogo = logoData?.find((l) => l.key === 'cercle_logo')?.image_url ?? siteLogo
+    const backgroundImage = logoData?.find((l) => l.key === 'menu_pdf_background')?.image_url ?? null
 
-    return { recipes, siteLogo, cercleLogo }
+    const { data: settings } = await supabase.from('site_settings').select('menu_pdf_tagline').eq('id', 1).single()
+    const tagline = settings?.menu_pdf_tagline ?? 'Idées gourmandes pour simplifier le quotidien'
+
+    return { recipes, siteLogo, backgroundImage, tagline }
   }
 
   const handleDownloadMenu = async () => {
     setGeneratingMenu(true)
     setError('')
     try {
-      const { recipes, siteLogo, cercleLogo } = await fetchRecipesAndLogo()
+      const { recipes, backgroundImage, tagline } = await fetchRecipesAndAssets()
 
       const { pdf } = await import('@react-pdf/renderer')
       const { default: MenuPdfDocument } = await import('@/lib/pdf/MenuPdfDocument')
@@ -74,20 +77,13 @@ export default function MenuPdfDownloadButton({
 
       const distributeByDay = origin === 'admin' || (menu.plats ?? []).length >= 5
 
-      const generatedAt = new Date().toLocaleDateString('fr-FR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
-
       const blob = await pdf(
         <MenuPdfDocument
           categorizedRecipes={categorizedRecipes}
-          siteLogo={siteLogo}
-          cercleLogo={cercleLogo}
-          generatedAt={generatedAt}
+          backgroundImage={backgroundImage}
           distributeByDay={distributeByDay}
           periodStart={periodStart ?? null}
+          tagline={tagline}
         />
       ).toBlob()
 
@@ -108,7 +104,7 @@ export default function MenuPdfDownloadButton({
     setGeneratingList(true)
     setError('')
     try {
-      const { recipes, siteLogo } = await fetchRecipesAndLogo()
+      const { recipes, siteLogo } = await fetchRecipesAndAssets()
 
       const { pdf } = await import('@react-pdf/renderer')
       const { default: ShoppingListPdfDocument } = await import('@/lib/pdf/ShoppingListPdfDocument')

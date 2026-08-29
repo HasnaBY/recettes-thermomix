@@ -1,20 +1,16 @@
 import { Document, Page, Text, View, Image, StyleSheet, Link } from '@react-pdf/renderer'
-import { formatDayLabel } from '@/lib/dateHelpers'
+import { formatDayLabel, formatDateRange } from '@/lib/dateHelpers'
 
 const styles = StyleSheet.create({
-  page: { padding: 26, backgroundColor: '#FDFBF6', fontSize: 10, color: '#3A3532' },
+  page: { backgroundColor: '#FDFBF6' },
+  background: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
+  content: { padding: 30 },
 
-  headerCard: { backgroundColor: '#FFFFFF', borderRadius: 14, padding: 18, marginBottom: 16, borderWidth: 1, borderColor: '#F0EAE0' },
-  headerTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  logo: { width: 42, height: 42, borderRadius: 21, marginRight: 10 },
-  headerTextWrap: { flexDirection: 'column', flex: 1 },
-  siteName: { fontSize: 13, fontWeight: 700, color: '#3A3532' },
-  siteTagline: { fontSize: 8, color: '#3A3532', opacity: 0.6, marginTop: 1 },
-  cercleLogoSmall: { width: 24, height: 24, borderRadius: 12, marginLeft: 8 },
-
-  mainTitle: { fontSize: 22, fontWeight: 700, color: '#3A3532', textAlign: 'center', marginBottom: 8 },
-  dateBanner: { backgroundColor: '#C9A44C', borderRadius: 20, paddingVertical: 6, paddingHorizontal: 16, alignSelf: 'center' },
-  dateBannerText: { fontSize: 10, fontWeight: 700, color: '#FDFBF6' },
+  brandName: { fontSize: 20, fontWeight: 700, fontStyle: 'italic', color: '#C9A44C', textAlign: 'center', letterSpacing: 0.5 },
+  mainTitle: { fontSize: 24, fontWeight: 700, color: '#3A3532', textAlign: 'center', marginTop: 6, letterSpacing: 2 },
+  dateBanner: { backgroundColor: '#C9A44C', borderRadius: 20, paddingVertical: 6, paddingHorizontal: 18, alignSelf: 'center', marginTop: 10 },
+  dateBannerText: { fontSize: 10, fontWeight: 700, color: '#FDFBF6', letterSpacing: 0.5 },
+  tagline: { fontSize: 10, fontStyle: 'italic', color: '#3A3532', opacity: 0.75, textAlign: 'center', marginTop: 10, marginBottom: 18 },
 
   dayBlock: { marginBottom: 12, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: '#F0EAE0' },
   dayHeader: { backgroundColor: '#3A3532', paddingVertical: 5, paddingHorizontal: 12 },
@@ -43,7 +39,7 @@ const styles = StyleSheet.create({
   extraInfo: { flexDirection: 'column', flex: 1 },
   extraTitle: { fontSize: 9.5, fontWeight: 700, color: '#3A3532', marginBottom: 3 },
 
-  footer: { position: 'absolute', bottom: 16, left: 26, right: 26, fontSize: 8, color: '#3A3532', textAlign: 'center', borderTop: 1, borderTopColor: '#F0EAE0', paddingTop: 6, opacity: 0.7 },
+  footer: { position: 'absolute', bottom: 16, left: 30, right: 30, fontSize: 8, color: '#3A3532', textAlign: 'center', borderTop: 1, borderTopColor: '#F0EAE0', paddingTop: 6, opacity: 0.7 },
 })
 
 type Recipe = { id: string; title: string; image_url: string | null; cookidoo_url: string | null }
@@ -77,18 +73,16 @@ function ItemCard({ recipe, badgeLabel, side }: { recipe: Recipe; badgeLabel: 'P
 
 export default function MenuPdfDocument({
   categorizedRecipes,
-  siteLogo,
-  cercleLogo,
-  generatedAt,
+  backgroundImage,
   distributeByDay,
   periodStart,
+  tagline,
 }: {
   categorizedRecipes: CategorizedRecipes
-  siteLogo: string | null
-  cercleLogo: string | null
-  generatedAt: string
+  backgroundImage: string | null
   distributeByDay: boolean
   periodStart: string | null
+  tagline: string
 }) {
   const plats = categorizedRecipes.plats ?? []
   const desserts = categorizedRecipes.desserts ?? []
@@ -121,65 +115,65 @@ export default function MenuPdfDocument({
       ]
     : [...plats, ...desserts, ...boissons, ...pains]
 
+  const dateLabel = periodStart
+    ? formatDateRange(periodStart, dayCount > 0 ? dayCount : 5)
+    : new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.headerCard}>
-          <View style={styles.headerTop}>
-            {siteLogo && <Image src={siteLogo} style={styles.logo} />}
-            <View style={styles.headerTextWrap}>
-              <Text style={styles.siteName}>Thermomix With Love, Hasna</Text>
-              <Text style={styles.siteTagline}>Le Cercle With Love</Text>
-            </View>
-            {cercleLogo && <Image src={cercleLogo} style={styles.cercleLogoSmall} />}
-          </View>
-          <Text style={styles.mainTitle}>Menu de la semaine</Text>
+      <Page size="A4">
+        {backgroundImage && <Image src={backgroundImage} style={styles.background} fixed />}
+
+        <View style={styles.content}>
+          <Text style={styles.brandName}>With Love, Hasna</Text>
+          <Text style={styles.mainTitle}>MENU DE LA SEMAINE</Text>
           <View style={styles.dateBanner}>
-            <Text style={styles.dateBannerText}>Genere le {generatedAt}</Text>
+            <Text style={styles.dateBannerText}>{dateLabel.toUpperCase()}</Text>
           </View>
-        </View>
+          <Text style={styles.tagline}>{tagline}</Text>
 
-        {distributeByDay &&
-          dayPairs.map((pair, i) => (
-            <View key={i} style={styles.dayBlock} wrap={false}>
-              <View style={styles.dayHeader}>
-                <Text style={styles.dayHeaderText}>{pair.label}</Text>
-              </View>
-              <View style={styles.dayContent}>
-                {pair.plat && <ItemCard recipe={pair.plat} badgeLabel="PLAT" side="left" />}
-                {pair.accompaniment && (
-                  <ItemCard recipe={pair.accompaniment.recipe} badgeLabel={pair.accompaniment.label} side="right" />
-                )}
-              </View>
-            </View>
-          ))}
-
-        {extraItems.length > 0 && (
-          <>
-            <Text style={styles.extraSectionTitle}>
-              {distributeByDay ? 'Recettes supplementaires' : 'Recettes du menu'}
-            </Text>
-            <View style={styles.extraGrid}>
-              {extraItems.map((r) => (
-                <View key={r.id} style={styles.extraCard} wrap={false}>
-                  {r.image_url ? (
-                    <Image src={r.image_url} style={styles.extraImage} />
-                  ) : (
-                    <View style={styles.extraImagePlaceholder} />
-                  )}
-                  <View style={styles.extraInfo}>
-                    <Text style={styles.extraTitle}>{r.title}</Text>
-                    {r.cookidoo_url && (
-                      <Link src={r.cookidoo_url} style={styles.itemLink}>
-                        Voir sur Cookidoo
-                      </Link>
-                    )}
-                  </View>
+          {distributeByDay &&
+            dayPairs.map((pair, i) => (
+              <View key={i} style={styles.dayBlock} wrap={false}>
+                <View style={styles.dayHeader}>
+                  <Text style={styles.dayHeaderText}>{pair.label}</Text>
                 </View>
-              ))}
-            </View>
-          </>
-        )}
+                <View style={styles.dayContent}>
+                  {pair.plat && <ItemCard recipe={pair.plat} badgeLabel="PLAT" side="left" />}
+                  {pair.accompaniment && (
+                    <ItemCard recipe={pair.accompaniment.recipe} badgeLabel={pair.accompaniment.label} side="right" />
+                  )}
+                </View>
+              </View>
+            ))}
+
+          {extraItems.length > 0 && (
+            <>
+              <Text style={styles.extraSectionTitle}>
+                {distributeByDay ? 'Recettes supplementaires' : 'Recettes du menu'}
+              </Text>
+              <View style={styles.extraGrid}>
+                {extraItems.map((r) => (
+                  <View key={r.id} style={styles.extraCard} wrap={false}>
+                    {r.image_url ? (
+                      <Image src={r.image_url} style={styles.extraImage} />
+                    ) : (
+                      <View style={styles.extraImagePlaceholder} />
+                    )}
+                    <View style={styles.extraInfo}>
+                      <Text style={styles.extraTitle}>{r.title}</Text>
+                      {r.cookidoo_url && (
+                        <Link src={r.cookidoo_url} style={styles.itemLink}>
+                          Voir sur Cookidoo
+                        </Link>
+                      )}
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </>
+          )}
+        </View>
 
         <Text style={styles.footer} fixed>
           Thermomix With Love, Hasna - www.withlovehasna.com

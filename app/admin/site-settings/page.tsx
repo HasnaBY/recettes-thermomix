@@ -17,6 +17,7 @@ export default function AdminSiteSettings() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
   const supabase = createClient()
+  const [menuPdfTagline, setMenuPdfTagline] = useState('')
 
   useEffect(() => {
     supabase
@@ -35,10 +36,19 @@ export default function AdminSiteSettings() {
           setTiktokUrl(data.tiktok_url ?? '')
           setSnapchatUrl(data.snapchat_url ?? '')
           setMenuGenerationLimit((data.menu_generation_limit ?? 3).toString())
+          setMenuPdfTagline(data.menu_pdf_tagline ?? 'Idées gourmandes pour simplifier le quotidien')
         }
         setLoading(false)
       })
   }, [])
+
+  const handleSaveTagline = async () => {
+  setSaving(true)
+  setMessage('')
+  const { error } = await supabase.from('site_settings').update({ menu_pdf_tagline: menuPdfTagline }).eq('id', 1)
+  setSaving(false)
+  setMessage(error ? error.message : 'Phrase enregistrée')
+}
 
   const toggle = async (field: string, value: boolean, setter: (v: boolean) => void) => {
     setter(value)
@@ -176,6 +186,22 @@ export default function AdminSiteSettings() {
           className="py-2.5 bg-gray-900 text-white rounded-lg font-medium disabled:opacity-50"
         >
           {saving ? 'Enregistrement...' : 'Enregistrer les réseaux sociaux'}
+        </button>
+      </div>
+
+      <h2 className="text-lg font-semibold text-gray-900 mb-3 mt-10">Phrase d'accroche du PDF menu</h2>
+      <div className="flex gap-2">
+        <input
+          value={menuPdfTagline}
+          onChange={(e) => setMenuPdfTagline(e.target.value)}
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+        />
+        <button
+          onClick={handleSaveTagline}
+          disabled={saving}
+          className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+        >
+          Enregistrer
         </button>
       </div>
 

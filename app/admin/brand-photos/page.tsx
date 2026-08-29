@@ -13,6 +13,7 @@ const SLOTS = [
   { key: 'round_logo', label: '⭕ Logo rond', usage: 'Accueil, Qui suis-je, Pourquoi commander, Le Cercle, Elles m\'ont fait confiance, Challenge' },
 { key: 'kids_cooking', label: '👩‍👧‍👦 Session cuisine avec les enfants', usage: 'Qui suis-je' },
   { key: 'cercle_logo', label: '💛 Logo Le Cercle With Love', usage: 'PDF du menu (en-tête, à côté du logo principal)' },
+  { key: 'menu_pdf_background', label: '🌸 Fond décoratif du PDF menu', usage: 'PDF du menu de la semaine (image pleine page, sans texte, coins décorés)' },
 
 ]
 
