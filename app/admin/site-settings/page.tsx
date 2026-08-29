@@ -18,6 +18,7 @@ export default function AdminSiteSettings() {
   const [message, setMessage] = useState('')
   const supabase = createClient()
   const [menuPdfTagline, setMenuPdfTagline] = useState('')
+  const [clientMenuPdfEnabled, setClientMenuPdfEnabled] = useState(true)
 
   useEffect(() => {
     supabase
@@ -37,6 +38,7 @@ export default function AdminSiteSettings() {
           setSnapchatUrl(data.snapchat_url ?? '')
           setMenuGenerationLimit((data.menu_generation_limit ?? 3).toString())
           setMenuPdfTagline(data.menu_pdf_tagline ?? 'Idées gourmandes pour simplifier le quotidien')
+          setClientMenuPdfEnabled(data.client_menu_pdf_enabled ?? true)
         }
         setLoading(false)
       })
@@ -136,6 +138,11 @@ export default function AdminSiteSettings() {
           label="Masquer étapes/ingrédients Cookidoo (admin voit toujours tout)"
           checked={hideCookidooSteps}
           onChange={(v) => toggle('hide_cookidoo_steps', v, setHideCookidooSteps)}
+        />
+        <Row
+          label="PDF du menu généré par les clientes"
+          checked={clientMenuPdfEnabled}
+          onChange={(v) => toggle('client_menu_pdf_enabled', v, setClientMenuPdfEnabled)}
         />
       </div>
 

@@ -13,6 +13,7 @@ type Menu = { plats: MenuItem[]; desserts: MenuItem[]; boissons: MenuItem[]; pai
 export default function AssignMenu() {
   const [clients, setClients] = useState<ClientProfile[]>([])
   const [selectedClient, setSelectedClient] = useState('')
+  const [sendToAll, setSendToAll] = useState(false)
   const [nbPlats, setNbPlats] = useState('5')
   const [nbDesserts, setNbDesserts] = useState('5')
   const [nbBoissons, setNbBoissons] = useState('0')
@@ -60,8 +61,8 @@ export default function AssignMenu() {
           nbDesserts: parseInt(nbDesserts),
           nbBoissons: parseInt(nbBoissons) || 0,
           nbPains: parseInt(nbPains) || 0,
-          source,
-          targetUserId: selectedClient,
+          source: sendToAll ? 'all' : source,
+          targetUserId: sendToAll ? clients[0]?.id : selectedClient,
           preview: true,
           periodStart,
         }),
@@ -98,8 +99,8 @@ export default function AssignMenu() {
           menu: previewMenu,
           itemType,
           oldRecipeId,
-          source,
-          targetUserId: selectedClient,
+          source: sendToAll ? 'all' : source,
+          targetUserId: sendToAll ? clients[0]?.id : selectedClient,
         }),
       })
 
@@ -131,14 +132,15 @@ export default function AssignMenu() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
         body: JSON.stringify({
-          targetUserId: selectedClient,
+          targetUserId: sendToAll ? undefined : selectedClient,
+          targetUserIds: sendToAll ? clients.map((c) => c.id) : undefined,
           menu: previewMenu,
           params: {
             nbPlats: parseInt(nbPlats),
             nbDesserts: parseInt(nbDesserts),
             nbBoissons: parseInt(nbBoissons),
             nbPains: parseInt(nbPains),
-            source,
+            source: sendToAll ? 'all' : source,
             periodStart,
           },
         }),
@@ -149,7 +151,11 @@ export default function AssignMenu() {
       if (!response.ok) {
         setError(data.error ?? 'Une erreur est survenue')
       } else {
-        setMessage('Menu envoyé à la cliente avec succès !')
+        setMessage(
+          sendToAll
+            ? `Menu envoyé à ${data.count} cliente(s) avec succès !`
+            : 'Menu envoyé à la cliente avec succès !'
+        )
         setSent(true)
       }
     } catch (err: any) {
@@ -190,31 +196,47 @@ export default function AssignMenu() {
     <div className="p-6 sm:p-8 max-w-lg mx-auto">
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Générer un menu pour une cliente</h1>
       <p className="text-gray-500 text-sm mb-6">
-        Prévisualise, ajuste et télécharge le menu avant de l'envoyer — la cliente ne le voit qu'une fois envoyé.
+        Prévisualise, ajuste et télécharge le menu avant de l'envoyer.
       </p>
 
       <form onSubmit={handlePreview} className="flex flex-col gap-4 mb-6">
-        <div>
-          <label className="block mb-1 text-sm text-gray-600">Cliente</label>
-          <select
-            value={selectedClient}
+        <label className="flex items-center gap-2 text-sm text-gray-700 border border-gray-200 rounded-lg p-3">
+          <input
+            type="checkbox"
+            checked={sendToAll}
             onChange={(e) => {
-              setSelectedClient(e.target.value)
+              setSendToAll(e.target.checked)
               setPreviewMenu(null)
               setMessage('')
               setSent(false)
             }}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-          >
-            <option value="">Choisir une cliente</option>
-            {clients.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.full_name ?? c.email} ({c.email})
-              </option>
-            ))}
-          </select>
-        </div>
+          />
+          Envoyer le même menu à toutes mes clientes ({clients.length})
+        </label>
+
+        {!sendToAll && (
+          <div>
+            <label className="block mb-1 text-sm text-gray-600">Cliente</label>
+            <select
+              value={selectedClient}
+              onChange={(e) => {
+                setSelectedClient(e.target.value)
+                setPreviewMenu(null)
+                setMessage('')
+                setSent(false)
+              }}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+            >
+              <option value="">Choisir une cliente</option>
+              {clients.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.full_name ?? c.email} ({c.email})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div>
           <label className="block mb-1 text-sm text-gray-600">Semaine du (lundi)</label>
@@ -226,17 +248,24 @@ export default function AssignMenu() {
           />
         </div>
 
-        <div>
-          <label className="block mb-1 text-sm text-gray-600">Recettes à utiliser</label>
-          <select
-            value={source}
-            onChange={(e) => setSource(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-          >
-            <option value="all">Toutes les recettes du site</option>
-            <option value="favorites">Favoris de la cliente</option>
-          </select>
-        </div>
+        {!sendToAll && (
+          <div>
+            <label className="block mb-1 text-sm text-gray-600">Recettes à utiliser</label>
+            <select
+              value={source}
+              onChange={(e) => setSource(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+            >
+              <option value="all">Toutes les recettes du site</option>
+              <option value="favorites">Favoris de la cliente</option>
+            </select>
+          </div>
+        )}
+        {sendToAll && (
+          <p className="text-xs text-gray-400 -mt-2">
+            Pour un envoi groupé, le menu est composé à partir de toutes les recettes du site.
+          </p>
+        )}
 
         <div className="flex gap-3">
           <div className="flex-1">
@@ -289,7 +318,7 @@ export default function AssignMenu() {
 
         <button
           type="submit"
-          disabled={generating || !selectedClient}
+          disabled={generating || (!sendToAll && !selectedClient) || (sendToAll && clients.length === 0)}
           className="py-2.5 bg-gray-900 text-white rounded-lg font-medium disabled:opacity-50"
         >
           {generating ? 'Génération...' : 'Prévisualiser le menu'}
@@ -298,7 +327,9 @@ export default function AssignMenu() {
 
       {previewMenu && (
         <div className="border border-gray-200 rounded-xl p-4">
-          <p className="text-sm font-bold text-gray-900 mb-3">{sent ? 'Menu envoyé' : 'Aperçu — non encore envoyé à la cliente'}</p>
+          <p className="text-sm font-bold text-gray-900 mb-3">
+            {sent ? 'Menu envoyé' : `Aperçu — ${sendToAll ? `sera envoyé à ${clients.length} cliente(s)` : 'non encore envoyé'}`}
+          </p>
 
           {renderSection('Plats', previewMenu.plats, 'bg-blue-50', 'plats')}
           {renderSection('Desserts / goûters', previewMenu.desserts, 'bg-pink-50', 'desserts')}
@@ -310,20 +341,14 @@ export default function AssignMenu() {
           </div>
 
           {!sent && (
-            <div className="flex gap-2 mt-2">
-              <button
-                onClick={handleSend}
-                disabled={sending}
-                className="py-2 px-5 bg-gray-900 text-white rounded-lg text-sm font-medium disabled:opacity-50"
-              >
-                {sending ? 'Envoi...' : "Envoyer à la cliente"}
-              </button>
-            </div>
+            <button
+              onClick={handleSend}
+              disabled={sending}
+              className="py-2 px-5 bg-gray-900 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+            >
+              {sending ? 'Envoi...' : sendToAll ? `Envoyer à ${clients.length} cliente(s)` : 'Envoyer à la cliente'}
+            </button>
           )}
-
-          <p className="text-xs text-gray-400 mt-3">
-            Astuce : télécharge le PDF ci-dessus pour l'envoyer directement par WhatsApp ou messagerie, avant ou après l'avoir envoyé à la cliente via le site.
-          </p>
         </div>
       )}
     </div>

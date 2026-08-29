@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { categorizeIngredient } from '@/lib/categorizeIngredient'
 
@@ -20,7 +20,21 @@ export default function MenuPdfDownloadButton({
   const [generatingMenu, setGeneratingMenu] = useState(false)
   const [generatingList, setGeneratingList] = useState(false)
   const [error, setError] = useState('')
+  const [clientPdfEnabled, setClientPdfEnabled] = useState(true)
+  const [checkingSetting, setCheckingSetting] = useState(true)
   const supabase = createClient()
+
+  useEffect(() => {
+    supabase
+      .from('site_settings')
+      .select('client_menu_pdf_enabled')
+      .eq('id', 1)
+      .single()
+      .then(({ data }) => {
+        setClientPdfEnabled(data?.client_menu_pdf_enabled ?? true)
+        setCheckingSetting(false)
+      })
+  }, [])
 
   const allItems = [
     ...(menu.plats ?? []),
@@ -47,17 +61,14 @@ export default function MenuPdfDownloadButton({
     const siteLogo = logoData?.find((l) => l.key === 'round_logo')?.image_url ?? null
     const backgroundImage = logoData?.find((l) => l.key === 'menu_pdf_background')?.image_url ?? null
 
-    const { data: settings } = await supabase.from('site_settings').select('menu_pdf_tagline').eq('id', 1).single()
-    const tagline = settings?.menu_pdf_tagline ?? 'Idées gourmandes pour simplifier le quotidien'
-
-    return { recipes, siteLogo, backgroundImage, tagline }
+    return { recipes, siteLogo, backgroundImage }
   }
 
   const handleDownloadMenu = async () => {
     setGeneratingMenu(true)
     setError('')
     try {
-      const { recipes, backgroundImage, tagline } = await fetchRecipesAndAssets()
+      const { recipes, backgroundImage } = await fetchRecipesAndAssets()
 
       const { pdf } = await import('@react-pdf/renderer')
       const { default: MenuPdfDocument } = await import('@/lib/pdf/MenuPdfDocument')
@@ -75,15 +86,11 @@ export default function MenuPdfDownloadButton({
         pains: buildCategoryList(menu.pains),
       }
 
-      const distributeByDay = origin === 'admin' || (menu.plats ?? []).length >= 5
-
       const blob = await pdf(
         <MenuPdfDocument
           categorizedRecipes={categorizedRecipes}
           backgroundImage={backgroundImage}
-          distributeByDay={distributeByDay}
           periodStart={periodStart ?? null}
-          tagline={tagline}
         />
       ).toBlob()
 
@@ -127,11 +134,7 @@ export default function MenuPdfDownloadButton({
         })
       })
 
-      const generatedAt = new Date().toLocaleDateString('fr-FR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
+      const generatedAt = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 
       const blob = await pdf(
         <ShoppingListPdfDocument
@@ -156,21 +159,31 @@ export default function MenuPdfDownloadButton({
     }
   }
 
+  if (checkingSetting) return null
+
+  const showMenuPdf = origin === 'admin' || clientPdfEnabled
+
   return (
     <div className="border border-[#F0EAE0] bg-white rounded-2xl p-4 mb-6">
       {error && <p className="text-red-600 text-xs mb-2">{error}</p>}
 
       <div className="flex flex-col gap-3">
-        <div>
-          <p className="text-sm text-[#3A3532] font-medium mb-2">Menu (recettes + liens Cookidoo)</p>
-          <button
-            onClick={handleDownloadMenu}
-            disabled={generatingMenu || allItems.length === 0}
-            className="py-2 px-5 bg-[#3A3532] text-[#FDFBF6] rounded-full text-sm font-medium disabled:opacity-50"
-          >
-            {generatingMenu ? 'Génération...' : 'Télécharger le menu en PDF'}
-          </button>
-        </div>
+        {showMenuPdf ? (
+          <div>
+            <p className="text-sm text-[#3A3532] font-medium mb-2">Menu (recettes + liens Cookidoo)</p>
+            <button
+              onClick={handleDownloadMenu}
+              disabled={generatingMenu || allItems.length === 0}
+              className="py-2 px-5 bg-[#3A3532] text-[#FDFBF6] rounded-full text-sm font-medium disabled:opacity-50"
+            >
+              {generatingMenu ? 'Génération...' : 'Télécharger le menu en PDF'}
+            </button>
+          </div>
+        ) : (
+          <p className="text-xs text-[#3A3532]/50 italic">
+            Le PDF du menu est temporairement indisponible, reviens bientôt !
+          </p>
+        )}
 
         <div className="pt-2 border-t border-[#F0EAE0]">
           <p className="text-sm text-[#3A3532] font-medium mb-2">Liste de courses</p>
