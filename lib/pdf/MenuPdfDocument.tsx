@@ -1,5 +1,5 @@
 import { Fragment } from 'react'
-import { Document, Page, Text, View, Image, StyleSheet, Link, Fragment } from '@react-pdf/renderer'
+import { Document, Page, Text, View, Image, StyleSheet, Link } from '@react-pdf/renderer'
 import { formatDateRange } from '@/lib/dateHelpers'
 
 const DATE_TOP = 27.5
