@@ -5,9 +5,9 @@ import { formatDateRange } from '@/lib/dateHelpers'
 
 // Recalibré à partir du visuel : la ligne "DU ___ AU ___" est plus haute que le bandeau
 // précédent, et chaque ligne de jour est plus basse et plus grande que l'estimation initiale.
-const DATE_TOP = 22.0
-const ROW_TOP = [28.4, 41.0, 53.6, 66.2, 78.8]
-const ROW_HEIGHT = 10.8
+const DATE_TOP = 25.5
+const ROW_TOP = [32.5, 44.1, 55.7, 67.3, 78.9]
+const ROW_HEIGHT = 10.5
 const PLAT_LEFT = 23.4
 const PLAT_WIDTH = 33.6
 const DESSERT_LEFT = 58.7
@@ -20,16 +20,19 @@ const styles = StyleSheet.create({
   overlay: { position: 'relative', width: '100%', height: '100%' },
 
   dateBanner: { position: 'absolute', top: `${DATE_TOP}%`, left: '18%', width: '64%', flexDirection: 'row', justifyContent: 'space-between' },
-  dateStart: { fontSize: 9, fontWeight: 700, color: '#3A3532', marginLeft: '14%' },
-  dateEnd: { fontSize: 9, fontWeight: 700, color: '#3A3532', marginRight: '8%' },
+  dateStart: { fontSize: 9, fontWeight: 700, color: '#4A5A45', marginLeft: '14%', fontStyle: 'italic' },
+  dateEnd: { fontSize: 9, fontWeight: 700, color: '#4A5A45', marginRight: '8%', fontStyle: 'italic' },
 
   cell: { position: 'absolute', flexDirection: 'column', alignItems: 'center' },
   cellDebugBorder: { borderWidth: 1.5, borderColor: '#FF0000', borderStyle: 'dashed' },
   cellDebugLabel: { fontSize: 7, color: '#FF0000', fontWeight: 700, marginBottom: 2 },
-  cellImage: { width: '100%', height: '80%', borderRadius: 8, objectFit: 'cover' },
-  cellImagePlaceholder: { width: '100%', height: '80%', borderRadius: 8, backgroundColor: '#E0E0E0' },
-  cellTitle: { fontSize: 7.5, fontWeight: 700, color: '#3A3532', textAlign: 'center', marginTop: 4 },
+  cellImage: { width: '100%', height: '80%', borderRadius: 10, objectFit: 'cover' },
+  cellImagePlaceholder: { width: '100%', height: '80%', borderRadius: 10, backgroundColor: '#F0EAE0' },
+  cellTitlePlat: { fontSize: 7.5, fontWeight: 700, color: '#4A5A45', textAlign: 'center', marginTop: 4 },
+  cellTitleDessert: { fontSize: 7.5, fontWeight: 700, color: '#C97064', textAlign: 'center', marginTop: 4 },
 })
+
+
 
 type Recipe = { id: string; title: string; image_url: string | null; cookidoo_url: string | null }
 
@@ -41,6 +44,7 @@ function Cell({
   height,
   debugLabel,
   debug,
+  kind,
 }: {
   recipe: Recipe | undefined
   top: number
@@ -49,6 +53,7 @@ function Cell({
   height: number
   debugLabel: string
   debug: boolean
+  kind: 'plat' | 'dessert'
 }) {
   const content = (
     <>
@@ -57,7 +62,7 @@ function Cell({
       ) : (
         <View style={styles.cellImagePlaceholder} />
       )}
-      {recipe && <Text style={styles.cellTitle}>{recipe.title}</Text>}
+      {recipe && <Text style={kind === 'plat' ? styles.cellTitlePlat : styles.cellTitleDessert}>{recipe.title}</Text>}
     </>
   )
 
@@ -140,6 +145,7 @@ export default function MenuPdfDocument({
                 height={ROW_HEIGHT}
                 debugLabel={`Plat J${i + 1}`}
                 debug={debug}
+                kind="plat"
               />
               <Cell
                 recipe={accompaniments[i]}
@@ -149,8 +155,9 @@ export default function MenuPdfDocument({
                 height={ROW_HEIGHT}
                 debugLabel={`Dessert J${i + 1}`}
                 debug={debug}
+                kind="dessert"
               />
-            </Fragment>
+                          </Fragment>
           ))}
         </View>
       </Page>
