@@ -5,7 +5,7 @@ import { formatDateRange } from '@/lib/dateHelpers'
 
 // Recalibré à partir du visuel : la ligne "DU ___ AU ___" est plus haute que le bandeau
 // précédent, et chaque ligne de jour est plus basse et plus grande que l'estimation initiale.
-const DATE_TOP = 22
+const DATE_TOP = 25
 const ROW_TOP = [29.5, 42, 55, 66.5, 80.5]
 const ROW_HEIGHT = 13.5
 const PLAT_LEFT = 24.4
