@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import MenuPdfDownloadButton from '@/components/MenuPdfDownloadButton'
 import { getNextMonday, toDateInputValue } from '@/lib/dateHelpers'
+import RecipePickerModal from '@/components/RecipePickerModal'
 
 type ClientProfile = { id: string; email: string; full_name: string | null }
 type MenuItem = { recipe_id: string; recipe_title: string }
@@ -29,6 +30,7 @@ export default function AssignMenu() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const supabase = createClient()
+  
 
   useEffect(() => {
     supabase
@@ -226,13 +228,27 @@ export default function AssignMenu() {
               </Link>
               {!sent && (
                 <button
-                  type="button"
-                  onClick={() => handleSwap(itemType, item.recipe_id)}
+                  onClick={() => handleSwap(menuRow, setMenuRow, itemType, item.recipe_id)}
                   disabled={swappingId === item.recipe_id}
-                  className="text-xs text-gray-600 underline ml-2 shrink-0 disabled:opacity-50"
+                  className="text-xs text-[#3A3532]/60 underline ml-2 shrink-0 disabled:opacity-50"
                 >
-                  {swappingId === item.recipe_id ? '...' : 'Remplacer'}
+                  {swappingId === item.recipe_id ? '...' : '🎲 Aléatoire'}
                 </button>
+                <button
+                  onClick={() =>
+                    setPickerFor({
+                      menuRow,
+                      setMenuRow,
+                      itemType,
+                      oldRecipeId: item.recipe_id,
+                    })
+                  }
+                  className="text-xs text-[#3A3532]/60 underline ml-2 shrink-0"
+                >
+                  🔍 Choisir
+                </button>
+
+
               )}
             </div>
           ))}
@@ -463,6 +479,22 @@ export default function AssignMenu() {
           )}
         </div>
       )}
+      {pickerFor && (
+        <RecipePickerModal
+          excludeIds={[
+            ...(pickerFor.menuRow.menu.plats ?? []).map((i) => i.recipe_id),
+            ...(pickerFor.menuRow.menu.desserts ?? []).map((i) => i.recipe_id),
+            ...(pickerFor.menuRow.menu.boissons ?? []).map((i) => i.recipe_id),
+            ...(pickerFor.menuRow.menu.pains ?? []).map((i) => i.recipe_id),
+          ]}
+          onSelect={(recipe) => {
+            handleSwap(pickerFor.menuRow, pickerFor.setMenuRow, pickerFor.itemType, pickerFor.oldRecipeId, recipe.id)
+            setPickerFor(null)
+          }}
+          onClose={() => setPickerFor(null)}
+        />
+      )}
+
     </div>
   )
 }

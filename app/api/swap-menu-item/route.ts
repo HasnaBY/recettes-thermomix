@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
   const { data: requesterProfile } = await supabase.from('profiles').select('is_admin').eq('id', userData.user.id).single()
 
   const body = await request.json()
-  const { menuId, itemType, oldRecipeId } = body
+  const { menuId, itemType, oldRecipeId, newRecipeId } = body
 
   let menuQuery = supabase.from('generated_menus').select('*').eq('id', menuId)
   if (!requesterProfile?.is_admin) {
@@ -39,48 +39,69 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Menu introuvable' }, { status: 404 })
   }
 
-  const source = menuRow.params?.source ?? 'all'
-  const kind = typeToKind[itemType]
-
-  const { data: allRecipes } = await supabase
-    .from('recipes')
-    .select('id, title, category, ingredients')
-    .eq('status', 'published')
-
-  const withIngredients = (allRecipes ?? []).filter((r) => r.ingredients && r.ingredients.length > 0)
-
-  let favoriteIds: string[] = []
-  if (source === 'favorites') {
-    const { data: favIds } = await supabase.from('favorites').select('recipe_id').eq('user_id', menuRow.user_id)
-    favoriteIds = (favIds ?? []).map((f) => f.recipe_id)
-  }
-
-  const priorityPool = source === 'favorites' ? withIngredients.filter((r) => favoriteIds.includes(r.id)) : withIngredients
-  const fallbackPool = source === 'favorites' ? withIngredients.filter((r) => !favoriteIds.includes(r.id)) : []
-
   const currentIds = Object.values(menuRow.menu)
     .filter((v: any) => Array.isArray(v))
     .flat()
     .map((i: any) => i.recipe_id)
 
-  const matches = (r: any) => classify(r.category) === kind && !currentIds.includes(r.id)
+  let replacement: { id: string; title: string } | null = null
 
-  const priorityCandidates = priorityPool.filter(matches)
-  const fallbackCandidates = fallbackPool.filter(matches)
-  const candidates = priorityCandidates.length > 0 ? priorityCandidates : fallbackCandidates
+  if (newRecipeId) {
+    // Choix manuel : n'importe quelle recette publiée, sans contrainte de catégorie
+    if (currentIds.includes(newRecipeId)) {
+      return NextResponse.json({ error: 'Cette recette est déjà présente dans le menu.' }, { status: 400 })
+    }
+    const { data: chosen } = await supabase
+      .from('recipes')
+      .select('id, title, status')
+      .eq('id', newRecipeId)
+      .single()
 
-  if (candidates.length === 0) {
-    return NextResponse.json(
-      { error: 'Aucune autre recette disponible sur tout le site pour remplacer celle-ci.' },
-      { status: 400 }
-    )
+    if (!chosen || chosen.status !== 'published') {
+      return NextResponse.json({ error: 'Recette introuvable ou non publiée.' }, { status: 400 })
+    }
+    replacement = { id: chosen.id, title: chosen.title }
+  } else {
+    // Remplacement aléatoire dans la même catégorie, comme avant
+    const source = menuRow.params?.source ?? 'all'
+    const kind = typeToKind[itemType]
+
+    const { data: allRecipes } = await supabase
+      .from('recipes')
+      .select('id, title, category, ingredients')
+      .eq('status', 'published')
+
+    const withIngredients = (allRecipes ?? []).filter((r) => r.ingredients && r.ingredients.length > 0)
+
+    let favoriteIds: string[] = []
+    if (source === 'favorites') {
+      const { data: favIds } = await supabase.from('favorites').select('recipe_id').eq('user_id', menuRow.user_id)
+      favoriteIds = (favIds ?? []).map((f) => f.recipe_id)
+    }
+
+    const priorityPool = source === 'favorites' ? withIngredients.filter((r) => favoriteIds.includes(r.id)) : withIngredients
+    const fallbackPool = source === 'favorites' ? withIngredients.filter((r) => !favoriteIds.includes(r.id)) : []
+
+    const matches = (r: any) => classify(r.category) === kind && !currentIds.includes(r.id)
+
+    const priorityCandidates = priorityPool.filter(matches)
+    const fallbackCandidates = fallbackPool.filter(matches)
+    const candidates = priorityCandidates.length > 0 ? priorityCandidates : fallbackCandidates
+
+    if (candidates.length === 0) {
+      return NextResponse.json(
+        { error: 'Aucune autre recette disponible sur tout le site pour remplacer celle-ci.' },
+        { status: 400 }
+      )
+    }
+
+    const picked = candidates[Math.floor(Math.random() * candidates.length)]
+    replacement = { id: picked.id, title: picked.title }
   }
-
-  const replacement = candidates[Math.floor(Math.random() * candidates.length)]
 
   const updatedMenu = { ...menuRow.menu }
   updatedMenu[itemType] = updatedMenu[itemType].map((item: any) =>
-    item.recipe_id === oldRecipeId ? { recipe_id: replacement.id, recipe_title: replacement.title } : item
+    item.recipe_id === oldRecipeId ? { recipe_id: replacement!.id, recipe_title: replacement!.title } : item
   )
 
   await supabase.from('generated_menus').update({ menu: updatedMenu }).eq('id', menuId)

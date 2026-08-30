@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import MenuPdfDownloadButton from '@/components/MenuPdfDownloadButton'
+import RecipePickerModal from '@/components/RecipePickerModal'
 
 type MenuItem = { recipe_id: string; recipe_title: string }
 type Menu = { plats: MenuItem[]; desserts: MenuItem[]; boissons: MenuItem[]; pains: MenuItem[]; notes?: string[] }
@@ -33,6 +34,8 @@ export default function GenerateurMenu() {
   const [periodStart, setPeriodStart] = useState(toDateInputValue(getNextMonday()))
 
   const supabase = createClient()
+  const [pickerFor, setPickerFor] = useState<{ menuRow: MenuRow; setMenuRow: (m: MenuRow) => void; itemType: 'plats' | 'desserts' | 'boissons' | 'pains'; oldRecipeId: string } | null>(null)
+
 
   const loadMenus = async (userId: string) => {
     const { data: admin } = await supabase
@@ -144,7 +147,8 @@ export default function GenerateurMenu() {
     menuRow: MenuRow,
     setMenuRow: (m: MenuRow) => void,
     itemType: 'plats' | 'desserts' | 'boissons' | 'pains',
-    oldRecipeId: string
+    oldRecipeId: string,
+    newRecipeId?: string
   ) => {
     setSwappingId(oldRecipeId)
     setError('')
@@ -157,7 +161,7 @@ export default function GenerateurMenu() {
       const response = await fetch('/api/swap-menu-item', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
-        body: JSON.stringify({ menuId: menuRow.id, itemType, oldRecipeId }),
+        body: JSON.stringify({ menuId: menuRow.id, itemType, oldRecipeId, newRecipeId }),
       })
 
       const data = await response.json()
@@ -173,6 +177,7 @@ export default function GenerateurMenu() {
       setSwappingId(null)
     }
   }
+
 
   if (checkingAccess) return <div className="p-8 text-center text-[#3A3532]/60">Chargement...</div>
 
@@ -217,6 +222,28 @@ export default function GenerateurMenu() {
                 >
                   {swappingId === item.recipe_id ? '...' : 'Remplacer'}
                 </button>
+                <button
+                  onClick={() => handleSwap(menuRow, setMenuRow, itemType, item.recipe_id)}
+                  disabled={swappingId === item.recipe_id}
+                  className="text-xs text-[#3A3532]/60 underline ml-2 shrink-0 disabled:opacity-50"
+                >
+                  {swappingId === item.recipe_id ? '...' : '🎲 Aléatoire'}
+                </button>
+                <button
+                  onClick={() =>
+                    setPickerFor({
+                      menuRow,
+                      setMenuRow,
+                      itemType,
+                      oldRecipeId: item.recipe_id,
+                    })
+                  }
+                  className="text-xs text-[#3A3532]/60 underline ml-2 shrink-0"
+                >
+                  🔍 Choisir
+                </button>
+
+
               </div>
             ))}
           </div>
@@ -373,6 +400,22 @@ export default function GenerateurMenu() {
           Générer un nouveau menu (remplace mon menu personnel ci-dessus)
         </button>
       )}
+      {pickerFor && (
+        <RecipePickerModal
+          excludeIds={[
+            ...(pickerFor.menuRow.menu.plats ?? []).map((i) => i.recipe_id),
+            ...(pickerFor.menuRow.menu.desserts ?? []).map((i) => i.recipe_id),
+            ...(pickerFor.menuRow.menu.boissons ?? []).map((i) => i.recipe_id),
+            ...(pickerFor.menuRow.menu.pains ?? []).map((i) => i.recipe_id),
+          ]}
+          onSelect={(recipe) => {
+            handleSwap(pickerFor.menuRow, pickerFor.setMenuRow, pickerFor.itemType, pickerFor.oldRecipeId, recipe.id)
+            setPickerFor(null)
+          }}
+          onClose={() => setPickerFor(null)}
+        />
+      )}
+
     </div>
   )
 }
