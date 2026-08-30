@@ -176,8 +176,9 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
     if (imageFile) {
       try {
         const compressed = await imageCompression(imageFile, {
-          maxWidthOrHeight: 1200,
-          maxSizeMB: 0.3,
+          maxWidthOrHeight: 1920,
+          maxSizeMB: 1.5,
+          initialQuality: 0.85,
           fileType: 'image/webp',
         })
 
@@ -401,7 +402,6 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
             onCancel={() => setRawFileToCrop(null)}
           />
         )}
-
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
 
