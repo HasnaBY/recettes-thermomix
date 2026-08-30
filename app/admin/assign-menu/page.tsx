@@ -29,8 +29,12 @@ export default function AssignMenu() {
   const [sent, setSent] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [pickerFor, setPickerFor] = useState<{
+    itemType: 'plats' | 'desserts' | 'boissons' | 'pains'
+    oldRecipeId: string
+  } | null>(null)
+
   const supabase = createClient()
-  
 
   useEffect(() => {
     supabase
@@ -84,7 +88,11 @@ export default function AssignMenu() {
     }
   }
 
-  const handleSwap = async (itemType: 'plats' | 'desserts' | 'boissons' | 'pains', oldRecipeId: string) => {
+  const handleSwap = async (
+    itemType: 'plats' | 'desserts' | 'boissons' | 'pains',
+    oldRecipeId: string,
+    newRecipeId?: string
+  ) => {
     if (!previewMenu) return
     setSwappingId(oldRecipeId)
     setError('')
@@ -101,6 +109,7 @@ export default function AssignMenu() {
           menu: previewMenu,
           itemType,
           oldRecipeId,
+          newRecipeId,
           source: sendToAll ? 'all' : source,
           targetUserId: sendToAll ? clients[0]?.id : selectedClient,
         }),
@@ -167,55 +176,12 @@ export default function AssignMenu() {
     }
   }
 
-  const handleDebugPdf = async () => {
-    try {
-      const { pdf } = await import('@react-pdf/renderer')
-      const { default: MenuPdfDocument } = await import('@/lib/pdf/MenuPdfDocument')
-      const { createClient } = await import('@/lib/supabase/client')
-      const supabase = createClient()
-
-      const ids = [
-        ...(previewMenu?.plats ?? []),
-        ...(previewMenu?.desserts ?? []),
-        ...(previewMenu?.boissons ?? []),
-      ].map((i) => i.recipe_id)
-
-      const { data: recipes } = await supabase
-        .from('recipes')
-        .select('id, title, image_url, cookidoo_url')
-        .in('id', ids)
-
-      const { data: bg } = await supabase
-        .from('brand_photos')
-        .select('image_url')
-        .eq('key', 'menu_pdf_background')
-        .single()
-
-      const recipeMap = new Map((recipes ?? []).map((r) => [r.id, r]))
-      const build = (items: any) => (items ?? []).map((i: any) => recipeMap.get(i.recipe_id)).filter(Boolean)
-
-      const blob = await pdf(
-        <MenuPdfDocument
-          categorizedRecipes={{
-            plats: build(previewMenu?.plats),
-            desserts: build(previewMenu?.desserts),
-            boissons: build(previewMenu?.boissons),
-          }}
-          backgroundImage={bg?.image_url ?? null}
-          periodStart={periodStart}
-          debug={true}
-        />
-      ).toBlob()
-
-      const url = URL.createObjectURL(blob)
-      window.open(url, '_blank')
-    } catch (err: any) {
-      console.error('Erreur mode calibrage PDF:', err)
-      setError("Erreur lors de la génération du PDF de calibrage : " + err.message)
-    }
-  }
-
-  const renderSection = (title: string, items: MenuItem[] | undefined, bg: string, itemType: 'plats' | 'desserts' | 'boissons' | 'pains') => {
+  const renderSection = (
+    title: string,
+    items: MenuItem[] | undefined,
+    bg: string,
+    itemType: 'plats' | 'desserts' | 'boissons' | 'pains'
+  ) => {
     if (!items || items.length === 0) return null
     return (
       <div className="mb-4">
@@ -227,28 +193,26 @@ export default function AssignMenu() {
                 {item.recipe_title}
               </Link>
               {!sent && (
-                <button
-                  onClick={() => handleSwap(menuRow, setMenuRow, itemType, item.recipe_id)}
-                  disabled={swappingId === item.recipe_id}
-                  className="text-xs text-[#3A3532]/60 underline ml-2 shrink-0 disabled:opacity-50"
-                >
-                  {swappingId === item.recipe_id ? '...' : '🎲 Aléatoire'}
-                </button>
-                <button
-                  onClick={() =>
-                    setPickerFor({
-                      menuRow,
-                      setMenuRow,
-                      itemType,
-                      oldRecipeId: item.recipe_id,
-                    })
-                  }
-                  className="text-xs text-[#3A3532]/60 underline ml-2 shrink-0"
-                >
-                  🔍 Choisir
-                </button>
-
-
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => handleSwap(itemType, item.recipe_id)}
+                    disabled={swappingId === item.recipe_id}
+                    className="text-xs text-[#3A3532]/60 underline disabled:opacity-50"
+                  >
+                    {swappingId === item.recipe_id ? '...' : '🎲 Aléatoire'}
+                  </button>
+                  <button
+                    onClick={() =>
+                      setPickerFor({
+                        itemType,
+                        oldRecipeId: item.recipe_id,
+                      })
+                    }
+                    className="text-xs text-[#3A3532]/60 underline"
+                  >
+                    🔍 Choisir
+                  </button>
+                </div>
               )}
             </div>
           ))}
@@ -403,7 +367,7 @@ export default function AssignMenu() {
 
           <div className="mt-2 flex flex-col gap-2 items-start">
             <MenuPdfDownloadButton menu={previewMenu} origin="admin" periodStart={periodStart} />
-            
+
             <button
               onClick={async () => {
                 const debugWindow = window.open('', '_blank')
@@ -421,6 +385,7 @@ export default function AssignMenu() {
                     ...(previewMenu?.plats ?? []),
                     ...(previewMenu?.desserts ?? []),
                     ...(previewMenu?.boissons ?? []),
+                    ...(previewMenu?.pains ?? []),
                   ].map((i) => i.recipe_id)
 
                   const { data: recipes } = await supabase
@@ -443,6 +408,7 @@ export default function AssignMenu() {
                         plats: build(previewMenu?.plats),
                         desserts: build(previewMenu?.desserts),
                         boissons: build(previewMenu?.boissons),
+                        pains: build(previewMenu?.pains),
                       }}
                       backgroundImage={bg?.image_url ?? null}
                       periodStart={periodStart}
@@ -454,7 +420,7 @@ export default function AssignMenu() {
                   if (debugWindow) {
                     debugWindow.location.href = url
                   } else {
-                    alert("La fenêtre a été bloquée par le navigateur — autorise les popups pour ce site puis réessaie.")
+                    alert('La fenêtre a été bloquée par le navigateur — autorise les popups pour ce site puis réessaie.')
                   }
                 } catch (err) {
                   if (debugWindow) debugWindow.close()
@@ -479,22 +445,22 @@ export default function AssignMenu() {
           )}
         </div>
       )}
+
       {pickerFor && (
         <RecipePickerModal
           excludeIds={[
-            ...(pickerFor.menuRow.menu.plats ?? []).map((i) => i.recipe_id),
-            ...(pickerFor.menuRow.menu.desserts ?? []).map((i) => i.recipe_id),
-            ...(pickerFor.menuRow.menu.boissons ?? []).map((i) => i.recipe_id),
-            ...(pickerFor.menuRow.menu.pains ?? []).map((i) => i.recipe_id),
+            ...(previewMenu?.plats ?? []).map((i) => i.recipe_id),
+            ...(previewMenu?.desserts ?? []).map((i) => i.recipe_id),
+            ...(previewMenu?.boissons ?? []).map((i) => i.recipe_id),
+            ...(previewMenu?.pains ?? []).map((i) => i.recipe_id),
           ]}
           onSelect={(recipe) => {
-            handleSwap(pickerFor.menuRow, pickerFor.setMenuRow, pickerFor.itemType, pickerFor.oldRecipeId, recipe.id)
+            handleSwap(pickerFor.itemType, pickerFor.oldRecipeId, recipe.id)
             setPickerFor(null)
           }}
           onClose={() => setPickerFor(null)}
         />
       )}
-
     </div>
   )
 }
