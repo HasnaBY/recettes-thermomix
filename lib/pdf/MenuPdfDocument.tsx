@@ -77,7 +77,9 @@ function Cell({
       {debug && <Text style={styles.cellDebugLabel}>{debugLabel}</Text>}
 
       {!recipe ? (
-        debug && <Text style={styles.cellTitle}>(vide)</Text>
+        debug && <Text style={kind === 'plat' ? styles.cellTitlePlat : styles.cellTitleDessert}>(vide)</Text>
+
+
       ) : recipe.cookidoo_url ? (
         <Link src={recipe.cookidoo_url} style={{ width: '100%', textDecoration: 'none' }}>
           {content}
