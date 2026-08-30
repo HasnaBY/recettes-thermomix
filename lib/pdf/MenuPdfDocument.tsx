@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
   background: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
   overlay: { position: 'relative', width: '100%', height: '100%' },
 
-  dateBanner: { position: 'absolute', top: `${DATE_TOP}%`, left: '18%', width: '64%', flexDirection: 'row', justifyContent: 'space-between' },
+  dateBanner: { position: 'absolute', top: `${DATE_TOP}%`, left: '25%', width: '64%', flexDirection: 'row', justifyContent: 'space-between' },
   dateStart: { fontSize: 9, fontWeight: 700, color: '#4A5A45', marginLeft: '14%', fontStyle: 'italic' },
   dateEnd: { fontSize: 9, fontWeight: 700, color: '#4A5A45', marginRight: '8%', fontStyle: 'italic' },
 
