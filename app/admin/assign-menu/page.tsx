@@ -109,7 +109,7 @@ export default function AssignMenu() {
           menu: previewMenu,
           itemType,
           oldRecipeId,
-          newRecipeId,
+          newRecipeId, // Transmis au backend pour le remplacement manuel
           source: sendToAll ? 'all' : source,
           targetUserId: sendToAll ? clients[0]?.id : selectedClient,
         }),
@@ -195,6 +195,7 @@ export default function AssignMenu() {
               {!sent && (
                 <div className="flex items-center gap-2 shrink-0">
                   <button
+                    type="button"
                     onClick={() => handleSwap(itemType, item.recipe_id)}
                     disabled={swappingId === item.recipe_id}
                     className="text-xs text-[#3A3532]/60 underline disabled:opacity-50"
@@ -202,6 +203,7 @@ export default function AssignMenu() {
                     {swappingId === item.recipe_id ? '...' : '🎲 Aléatoire'}
                   </button>
                   <button
+                    type="button"
                     onClick={() =>
                       setPickerFor({
                         itemType,
@@ -369,6 +371,7 @@ export default function AssignMenu() {
             <MenuPdfDownloadButton menu={previewMenu} origin="admin" periodStart={periodStart} />
 
             <button
+              type="button"
               onClick={async () => {
                 const debugWindow = window.open('', '_blank')
                 if (debugWindow) {
