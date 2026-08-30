@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import imageCompression from 'browser-image-compression'
 import TagSelect from '@/components/TagSelect'
 import RelatedRecipesSelect from '@/components/RelatedRecipesSelect'
+import ImageCropper from '@/components/ImageCropper'
+
 
 export default function NewRecipe() {
   const [title, setTitle] = useState('')
@@ -28,6 +30,8 @@ export default function NewRecipe() {
   const [error, setError] = useState('')
   const router = useRouter()
   const supabase = createClient()
+  const [rawFileToCrop, setRawFileToCrop] = useState<File | null>(null)
+
 
   const handleAutoTag = async () => {
     setTagging(true)
@@ -239,8 +243,29 @@ export default function NewRecipe() {
 
         <div>
           <label className="block mb-2 text-sm text-gray-600">Photo de la recette</label>
-          <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)} />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) setRawFileToCrop(file)
+            }}
+          />
+          {imageFile && <p className="text-xs text-green-700 mt-1">✓ Photo recadrée prête</p>}
         </div>
+
+        {rawFileToCrop && (
+          <ImageCropper
+            file={rawFileToCrop}
+            aspect={4 / 3}
+            onConfirm={(cropped) => {
+              setImageFile(cropped)
+              setRawFileToCrop(null)
+            }}
+            onCancel={() => setRawFileToCrop(null)}
+          />
+        )}
+
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
 
