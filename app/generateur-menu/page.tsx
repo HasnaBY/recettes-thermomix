@@ -1,6 +1,5 @@
 'use client'
 
-import { getNextMonday, toDateInputValue } from '@/lib/dateHelpers'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
@@ -9,7 +8,8 @@ import RecipePickerModal from '@/components/RecipePickerModal'
 
 type MenuItem = { recipe_id: string; recipe_title: string }
 type Menu = { plats: MenuItem[]; desserts: MenuItem[]; boissons: MenuItem[]; pains: MenuItem[]; notes?: string[] }
-type MenuRow = { id: string; menu: Menu; created_at: string; origin: string }
+type MenuRow = { id: string; menu: Menu; created_at: string; origin: string; params?: any }
+type ItemType = 'plats' | 'desserts' | 'boissons' | 'pains'
 
 export default function GenerateurMenu() {
   const [checkingAccess, setCheckingAccess] = useState(true)
@@ -31,11 +31,13 @@ export default function GenerateurMenu() {
   const [limit, setLimit] = useState(3)
   const [showForm, setShowForm] = useState(false)
 
-  const [periodStart, setPeriodStart] = useState(toDateInputValue(getNextMonday()))
+  const [pickerFor, setPickerFor] = useState<{
+    which: 'admin' | 'client'
+    itemType: ItemType
+    oldRecipeId: string
+  } | null>(null)
 
   const supabase = createClient()
-  const [pickerFor, setPickerFor] = useState<{ menuRow: MenuRow; setMenuRow: (m: MenuRow) => void; itemType: 'plats' | 'desserts' | 'boissons' | 'pains'; oldRecipeId: string } | null>(null)
-
 
   const loadMenus = async (userId: string) => {
     const { data: admin } = await supabase
@@ -108,22 +110,21 @@ export default function GenerateurMenu() {
     setError('')
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const userId = session?.user?.id
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      const userId = session?.user.id
 
       const response = await fetch('/api/generate-menu', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json', 
-          Authorization: `Bearer ${session?.access_token}` 
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
         body: JSON.stringify({
           nbPlats: parseInt(nbPlats),
           nbDesserts: parseInt(nbDesserts),
           nbBoissons: parseInt(nbBoissons) || 0,
           nbPains: parseInt(nbPains) || 0,
           source,
-          periodStart,
         }),
       })
 
@@ -143,13 +144,11 @@ export default function GenerateurMenu() {
     }
   }
 
-  const handleSwap = async (
-    menuRow: MenuRow,
-    setMenuRow: (m: MenuRow) => void,
-    itemType: 'plats' | 'desserts' | 'boissons' | 'pains',
-    oldRecipeId: string,
-    newRecipeId?: string
-  ) => {
+  // Remplacement aléatoire (dans la même catégorie)
+  const handleRandomSwap = async (which: 'admin' | 'client', itemType: ItemType, oldRecipeId: string) => {
+    const menuRow = which === 'admin' ? adminMenu : clientMenu
+    if (!menuRow) return
+
     setSwappingId(oldRecipeId)
     setError('')
 
@@ -161,7 +160,7 @@ export default function GenerateurMenu() {
       const response = await fetch('/api/swap-menu-item', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
-        body: JSON.stringify({ menuId: menuRow.id, itemType, oldRecipeId, newRecipeId }),
+        body: JSON.stringify({ menuId: menuRow.id, itemType, oldRecipeId }),
       })
 
       const data = await response.json()
@@ -169,7 +168,9 @@ export default function GenerateurMenu() {
       if (!response.ok) {
         setError(data.error ?? 'Une erreur est survenue')
       } else {
-        setMenuRow({ ...menuRow, menu: { ...menuRow.menu, ...data.menu } })
+        const updated = { ...menuRow, menu: { ...menuRow.menu, ...data.menu } }
+        if (which === 'admin') setAdminMenu(updated)
+        else setClientMenu(updated)
       }
     } catch (err: any) {
       setError(err.message)
@@ -178,6 +179,43 @@ export default function GenerateurMenu() {
     }
   }
 
+  // Remplacement manuel (choix précis dans le picker)
+  const handleManualSwap = async (recipeId: string, recipeTitle: string) => {
+    if (!pickerFor) return
+    const { which, itemType, oldRecipeId } = pickerFor
+    const menuRow = which === 'admin' ? adminMenu : clientMenu
+    if (!menuRow) return
+
+    setPickerFor(null)
+    setSwappingId(oldRecipeId)
+    setError('')
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      const response = await fetch('/api/swap-menu-item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ menuId: menuRow.id, itemType, oldRecipeId, newRecipeId: recipeId }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error ?? 'Une erreur est survenue')
+      } else {
+        const updated = { ...menuRow, menu: { ...menuRow.menu, ...data.menu } }
+        if (which === 'admin') setAdminMenu(updated)
+        else setClientMenu(updated)
+      }
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setSwappingId(null)
+    }
+  }
 
   if (checkingAccess) return <div className="p-8 text-center text-[#3A3532]/60">Chargement...</div>
 
@@ -195,14 +233,19 @@ export default function GenerateurMenu() {
   const remaining = isAdmin ? null : Math.max(limit - usedCount, 0)
   const canGenerate = isAdmin || remaining! > 0
 
-  const renderMenuBlock = (menuRow: MenuRow, setMenuRow: (m: MenuRow) => void, title: string) => {
-    const renderSection = (
-      sectionTitle: string,
-      emoji: string,
-      items: MenuItem[] | undefined,
-      itemType: 'plats' | 'desserts' | 'boissons' | 'pains',
-      bg: string
-    ) => {
+  const currentExcludeIds = (which: 'admin' | 'client') => {
+    const menuRow = which === 'admin' ? adminMenu : clientMenu
+    if (!menuRow) return []
+    return [
+      ...(menuRow.menu.plats ?? []).map((i) => i.recipe_id),
+      ...(menuRow.menu.desserts ?? []).map((i) => i.recipe_id),
+      ...(menuRow.menu.boissons ?? []).map((i) => i.recipe_id),
+      ...(menuRow.menu.pains ?? []).map((i) => i.recipe_id),
+    ]
+  }
+
+  const renderMenuBlock = (which: 'admin' | 'client', menuRow: MenuRow, title: string) => {
+    const renderSection = (sectionTitle: string, emoji: string, items: MenuItem[] | undefined, itemType: ItemType, bg: string) => {
       if (!items || items.length === 0) return null
       return (
         <div className="mb-4">
@@ -215,35 +258,21 @@ export default function GenerateurMenu() {
                 <Link href={`/recipes/${item.recipe_id}`} className="text-sm font-medium text-[#3A3532] no-underline flex-1">
                   {item.recipe_title}
                 </Link>
-                <button
-                  onClick={() => handleSwap(menuRow, setMenuRow, itemType, item.recipe_id)}
-                  disabled={swappingId === item.recipe_id}
-                  className="text-xs text-[#3A3532]/60 underline ml-2 shrink-0 disabled:opacity-50"
-                >
-                  {swappingId === item.recipe_id ? '...' : 'Remplacer'}
-                </button>
-                <button
-                  onClick={() => handleSwap(menuRow, setMenuRow, itemType, item.recipe_id)}
-                  disabled={swappingId === item.recipe_id}
-                  className="text-xs text-[#3A3532]/60 underline ml-2 shrink-0 disabled:opacity-50"
-                >
-                  {swappingId === item.recipe_id ? '...' : '🎲 Aléatoire'}
-                </button>
-                <button
-                  onClick={() =>
-                    setPickerFor({
-                      menuRow,
-                      setMenuRow,
-                      itemType,
-                      oldRecipeId: item.recipe_id,
-                    })
-                  }
-                  className="text-xs text-[#3A3532]/60 underline ml-2 shrink-0"
-                >
-                  🔍 Choisir
-                </button>
-
-
+                <div className="flex gap-2 shrink-0 ml-2">
+                  <button
+                    onClick={() => handleRandomSwap(which, itemType, item.recipe_id)}
+                    disabled={swappingId === item.recipe_id}
+                    className="text-xs text-[#3A3532]/60 underline disabled:opacity-50"
+                  >
+                    {swappingId === item.recipe_id ? '...' : '🎲 Aléatoire'}
+                  </button>
+                  <button
+                    onClick={() => setPickerFor({ which, itemType, oldRecipeId: item.recipe_id })}
+                    className="text-xs text-[#3A3532]/60 underline"
+                  >
+                    🔍 Choisir
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -255,9 +284,7 @@ export default function GenerateurMenu() {
       <div className="mb-10 border border-[#F0EAE0] bg-white rounded-2xl p-5">
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-display text-xl text-[#3A3532]">{title}</h3>
-          <p className="text-xs text-[#3A3532]/40">
-            {new Date(menuRow.created_at).toLocaleDateString('fr-FR')}
-          </p>
+          <p className="text-xs text-[#3A3532]/40">{new Date(menuRow.created_at).toLocaleDateString('fr-FR')}</p>
         </div>
 
         {menuRow.menu.notes && menuRow.menu.notes.length > 0 && (
@@ -270,7 +297,8 @@ export default function GenerateurMenu() {
           </div>
         )}
 
-        <MenuPdfDownloadButton menu={menuRow.menu} origin={menuRow.origin} periodStart={(menuRow as any).params?.periodStart} />
+        <MenuPdfDownloadButton menu={menuRow.menu} origin={menuRow.origin} periodStart={menuRow.params?.periodStart} />
+
         {renderSection('Plats', '🍽️', menuRow.menu.plats, 'plats', 'bg-[#DCEAF0]/30')}
         {renderSection('Desserts / goûters', '🍰', menuRow.menu.desserts, 'desserts', 'bg-[#F6DEE1]/30')}
         {renderSection('Boissons', '🥤', menuRow.menu.boissons, 'boissons', 'bg-[#E3ECDD]/40')}
@@ -287,9 +315,7 @@ export default function GenerateurMenu() {
           Historique
         </Link>
       </div>
-      <p className="text-[#3A3532]/70 text-center mb-2">
-        Génère ton menu à partir des recettes du site.
-      </p>
+      <p className="text-[#3A3532]/70 text-center mb-2">Génère ton menu à partir des recettes du site.</p>
       {remaining !== null && (
         <p className="text-sm text-[#3A3532]/50 text-center mb-8">
           {remaining} génération{remaining > 1 ? 's' : ''} restante{remaining > 1 ? 's' : ''}
@@ -298,29 +324,18 @@ export default function GenerateurMenu() {
 
       {error && <p className="text-red-600 text-sm text-center mb-4">{error}</p>}
 
-      {adminMenu && renderMenuBlock(adminMenu, setAdminMenu, '💛 Le menu que Hasna t\'a préparé')}
+      {adminMenu && renderMenuBlock('admin', adminMenu, "💛 Le menu que Hasna t'a préparé")}
 
-      {clientMenu && !showForm && renderMenuBlock(clientMenu, setClientMenu, 'Ton menu')}
+      {clientMenu && !showForm && renderMenuBlock('client', clientMenu, 'Ton menu')}
 
       {(!clientMenu || showForm) && (
         <>
           {!canGenerate ? (
-            <p className="text-red-600 text-center mb-8">
-              Tu as atteint ta limite de {limit} générations de menu.
-            </p>
+            <p className="text-red-600 text-center mb-8">Tu as atteint ta limite de {limit} générations de menu.</p>
           ) : (
             <form onSubmit={handleGenerate} className="border border-[#F0EAE0] bg-white rounded-2xl p-5 mb-10 flex flex-col gap-4">
               <h2 className="font-display text-lg text-[#3A3532]">Générer mon propre menu</h2>
 
-              <div>
-                <label className="block mb-1 text-sm text-[#3A3532]/70">Semaine du (lundi)</label>
-                <input
-                  type="date"
-                  value={periodStart}
-                  onChange={(e) => setPeriodStart(e.target.value)}
-                  className="w-full px-4 py-2 border border-[#F0EAE0] rounded-xl"
-                />
-              </div>
               <div>
                 <label className="block mb-1 text-sm text-[#3A3532]/70">Recettes à utiliser</label>
                 <select
@@ -400,22 +415,14 @@ export default function GenerateurMenu() {
           Générer un nouveau menu (remplace mon menu personnel ci-dessus)
         </button>
       )}
+
       {pickerFor && (
         <RecipePickerModal
-          excludeIds={[
-            ...(pickerFor.menuRow.menu.plats ?? []).map((i) => i.recipe_id),
-            ...(pickerFor.menuRow.menu.desserts ?? []).map((i) => i.recipe_id),
-            ...(pickerFor.menuRow.menu.boissons ?? []).map((i) => i.recipe_id),
-            ...(pickerFor.menuRow.menu.pains ?? []).map((i) => i.recipe_id),
-          ]}
-          onSelect={(recipe) => {
-            handleSwap(pickerFor.menuRow, pickerFor.setMenuRow, pickerFor.itemType, pickerFor.oldRecipeId, recipe.id)
-            setPickerFor(null)
-          }}
+          excludeIds={currentExcludeIds(pickerFor.which)}
+          onSelect={(recipe) => handleManualSwap(recipe.id, recipe.title)}
           onClose={() => setPickerFor(null)}
         />
       )}
-
     </div>
   )
 }

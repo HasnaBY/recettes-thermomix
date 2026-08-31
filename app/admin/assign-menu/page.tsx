@@ -4,12 +4,13 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import MenuPdfDownloadButton from '@/components/MenuPdfDownloadButton'
-import { getNextMonday, toDateInputValue } from '@/lib/dateHelpers'
 import RecipePickerModal from '@/components/RecipePickerModal'
+import { getNextMonday, toDateInputValue } from '@/lib/dateHelpers'
 
 type ClientProfile = { id: string; email: string; full_name: string | null }
 type MenuItem = { recipe_id: string; recipe_title: string }
 type Menu = { plats: MenuItem[]; desserts: MenuItem[]; boissons: MenuItem[]; pains: MenuItem[] }
+type ItemType = 'plats' | 'desserts' | 'boissons' | 'pains'
 
 export default function AssignMenu() {
   const [clients, setClients] = useState<ClientProfile[]>([])
@@ -29,10 +30,8 @@ export default function AssignMenu() {
   const [sent, setSent] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
-  const [pickerFor, setPickerFor] = useState<{
-    itemType: 'plats' | 'desserts' | 'boissons' | 'pains'
-    oldRecipeId: string
-  } | null>(null)
+
+  const [pickerFor, setPickerFor] = useState<{ itemType: ItemType; oldRecipeId: string } | null>(null)
 
   const supabase = createClient()
 
@@ -88,11 +87,7 @@ export default function AssignMenu() {
     }
   }
 
-  const handleSwap = async (
-    itemType: 'plats' | 'desserts' | 'boissons' | 'pains',
-    oldRecipeId: string,
-    newRecipeId?: string
-  ) => {
+  const handleRandomSwap = async (itemType: ItemType, oldRecipeId: string) => {
     if (!previewMenu) return
     setSwappingId(oldRecipeId)
     setError('')
@@ -109,7 +104,46 @@ export default function AssignMenu() {
           menu: previewMenu,
           itemType,
           oldRecipeId,
-          newRecipeId, // Transmis au backend pour le remplacement manuel
+          source: sendToAll ? 'all' : source,
+          targetUserId: sendToAll ? clients[0]?.id : selectedClient,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error ?? 'Une erreur est survenue')
+      } else {
+        setPreviewMenu(data.menu)
+      }
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setSwappingId(null)
+    }
+  }
+
+  const handleManualSwap = async (recipeId: string) => {
+    if (!pickerFor || !previewMenu) return
+    const { itemType, oldRecipeId } = pickerFor
+
+    setPickerFor(null)
+    setSwappingId(oldRecipeId)
+    setError('')
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      const response = await fetch('/api/swap-preview-item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({
+          menu: previewMenu,
+          itemType,
+          oldRecipeId,
+          newRecipeId: recipeId,
           source: sendToAll ? 'all' : source,
           targetUserId: sendToAll ? clients[0]?.id : selectedClient,
         }),
@@ -162,11 +196,7 @@ export default function AssignMenu() {
       if (!response.ok) {
         setError(data.error ?? 'Une erreur est survenue')
       } else {
-        setMessage(
-          sendToAll
-            ? `Menu envoyé à ${data.count} cliente(s) avec succès !`
-            : 'Menu envoyé à la cliente avec succès !'
-        )
+        setMessage(sendToAll ? `Menu envoyé à ${data.count} cliente(s) avec succès !` : 'Menu envoyé à la cliente avec succès !')
         setSent(true)
       }
     } catch (err: any) {
@@ -176,12 +206,16 @@ export default function AssignMenu() {
     }
   }
 
-  const renderSection = (
-    title: string,
-    items: MenuItem[] | undefined,
-    bg: string,
-    itemType: 'plats' | 'desserts' | 'boissons' | 'pains'
-  ) => {
+  const excludeIds = previewMenu
+    ? [
+        ...(previewMenu.plats ?? []).map((i) => i.recipe_id),
+        ...(previewMenu.desserts ?? []).map((i) => i.recipe_id),
+        ...(previewMenu.boissons ?? []).map((i) => i.recipe_id),
+        ...(previewMenu.pains ?? []).map((i) => i.recipe_id),
+      ]
+    : []
+
+  const renderSection = (title: string, items: MenuItem[] | undefined, bg: string, itemType: ItemType) => {
     if (!items || items.length === 0) return null
     return (
       <div className="mb-4">
@@ -193,24 +227,17 @@ export default function AssignMenu() {
                 {item.recipe_title}
               </Link>
               {!sent && (
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex gap-2 shrink-0 ml-2">
                   <button
-                    type="button"
-                    onClick={() => handleSwap(itemType, item.recipe_id)}
+                    onClick={() => handleRandomSwap(itemType, item.recipe_id)}
                     disabled={swappingId === item.recipe_id}
-                    className="text-xs text-[#3A3532]/60 underline disabled:opacity-50"
+                    className="text-xs text-gray-600 underline disabled:opacity-50"
                   >
-                    {swappingId === item.recipe_id ? '...' : '🎲 Aléatoire'}
+                    {swappingId === item.recipe_id ? '...' : '🎲'}
                   </button>
                   <button
-                    type="button"
-                    onClick={() =>
-                      setPickerFor({
-                        itemType,
-                        oldRecipeId: item.recipe_id,
-                      })
-                    }
-                    className="text-xs text-[#3A3532]/60 underline"
+                    onClick={() => setPickerFor({ itemType, oldRecipeId: item.recipe_id })}
+                    className="text-xs text-gray-600 underline"
                   >
                     🔍 Choisir
                   </button>
@@ -226,9 +253,7 @@ export default function AssignMenu() {
   return (
     <div className="p-6 sm:p-8 max-w-lg mx-auto">
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Générer un menu pour une cliente</h1>
-      <p className="text-gray-500 text-sm mb-6">
-        Prévisualise, ajuste et télécharge le menu avant de l'envoyer.
-      </p>
+      <p className="text-gray-500 text-sm mb-6">Prévisualise, ajuste et télécharge le menu avant de l'envoyer.</p>
 
       <form onSubmit={handlePreview} className="flex flex-col gap-4 mb-6">
         <label className="flex items-center gap-2 text-sm text-gray-700 border border-gray-200 rounded-lg p-3">
@@ -292,11 +317,6 @@ export default function AssignMenu() {
             </select>
           </div>
         )}
-        {sendToAll && (
-          <p className="text-xs text-gray-400 -mt-2">
-            Pour un envoi groupé, le menu est composé à partir de toutes les recettes du site.
-          </p>
-        )}
 
         <div className="flex gap-3">
           <div className="flex-1">
@@ -357,8 +377,8 @@ export default function AssignMenu() {
       </form>
 
       {previewMenu && (
-        <div className="border border-gray-200 rounded-xl p-4 flex flex-col gap-3">
-          <p className="text-sm font-bold text-gray-900 mb-1">
+        <div className="border border-gray-200 rounded-xl p-4">
+          <p className="text-sm font-bold text-gray-900 mb-3">
             {sent ? 'Menu envoyé' : `Aperçu — ${sendToAll ? `sera envoyé à ${clients.length} cliente(s)` : 'non encore envoyé'}`}
           </p>
 
@@ -367,81 +387,15 @@ export default function AssignMenu() {
           {renderSection('Boissons', previewMenu.boissons, 'bg-green-50', 'boissons')}
           {renderSection('Pains', previewMenu.pains, 'bg-gray-100', 'pains')}
 
-          <div className="mt-2 flex flex-col gap-2 items-start">
+          <div className="mt-4">
             <MenuPdfDownloadButton menu={previewMenu} origin="admin" periodStart={periodStart} />
-
-            <button
-              type="button"
-              onClick={async () => {
-                const debugWindow = window.open('', '_blank')
-                if (debugWindow) {
-                  debugWindow.document.write('<p style="font-family:sans-serif;padding:20px;">Génération du PDF de calibrage en cours...</p>')
-                }
-
-                try {
-                  const { pdf } = await import('@react-pdf/renderer')
-                  const { default: MenuPdfDocument } = await import('@/lib/pdf/MenuPdfDocument')
-                  const { createClient } = await import('@/lib/supabase/client')
-                  const supabase = createClient()
-
-                  const ids = [
-                    ...(previewMenu?.plats ?? []),
-                    ...(previewMenu?.desserts ?? []),
-                    ...(previewMenu?.boissons ?? []),
-                    ...(previewMenu?.pains ?? []),
-                  ].map((i) => i.recipe_id)
-
-                  const { data: recipes } = await supabase
-                    .from('recipes')
-                    .select('id, title, image_url, cookidoo_url')
-                    .in('id', ids)
-
-                  const { data: bg } = await supabase
-                    .from('brand_photos')
-                    .select('image_url')
-                    .eq('key', 'menu_pdf_background')
-                    .single()
-
-                  const recipeMap = new Map((recipes ?? []).map((r) => [r.id, r]))
-                  const build = (items: any) => (items ?? []).map((i: any) => recipeMap.get(i.recipe_id)).filter(Boolean)
-
-                  const blob = await pdf(
-                    <MenuPdfDocument
-                      categorizedRecipes={{
-                        plats: build(previewMenu?.plats),
-                        desserts: build(previewMenu?.desserts),
-                        boissons: build(previewMenu?.boissons),
-                        pains: build(previewMenu?.pains),
-                      }}
-                      backgroundImage={bg?.image_url ?? null}
-                      periodStart={periodStart}
-                      debug={true}
-                    />
-                  ).toBlob()
-
-                  const url = URL.createObjectURL(blob)
-                  if (debugWindow) {
-                    debugWindow.location.href = url
-                  } else {
-                    alert('La fenêtre a été bloquée par le navigateur — autorise les popups pour ce site puis réessaie.')
-                  }
-                } catch (err) {
-                  if (debugWindow) debugWindow.close()
-                  alert('Erreur lors de la génération du PDF de calibrage.')
-                }
-              }}
-              className="mt-2 text-xs text-red-600 underline"
-            >
-              🔧 Mode calibrage (voir les cadres de positionnement)
-            </button>
           </div>
 
           {!sent && (
             <button
-              type="button"
               onClick={handleSend}
               disabled={sending}
-              className="mt-2 py-2 px-5 bg-gray-900 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+              className="py-2 px-5 bg-gray-900 text-white rounded-lg text-sm font-medium disabled:opacity-50"
             >
               {sending ? 'Envoi...' : sendToAll ? `Envoyer à ${clients.length} cliente(s)` : 'Envoyer à la cliente'}
             </button>
@@ -451,16 +405,8 @@ export default function AssignMenu() {
 
       {pickerFor && (
         <RecipePickerModal
-          excludeIds={[
-            ...(previewMenu?.plats ?? []).map((i) => i.recipe_id),
-            ...(previewMenu?.desserts ?? []).map((i) => i.recipe_id),
-            ...(previewMenu?.boissons ?? []).map((i) => i.recipe_id),
-            ...(previewMenu?.pains ?? []).map((i) => i.recipe_id),
-          ]}
-          onSelect={(recipe) => {
-            handleSwap(pickerFor.itemType, pickerFor.oldRecipeId, recipe.id)
-            setPickerFor(null)
-          }}
+          excludeIds={excludeIds}
+          onSelect={(recipe) => handleManualSwap(recipe.id)}
           onClose={() => setPickerFor(null)}
         />
       )}
