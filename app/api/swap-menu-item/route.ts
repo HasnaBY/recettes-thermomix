@@ -23,10 +23,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Non connectée' }, { status: 401 })
   }
 
-  const { data: requesterProfile } = await supabase.from('profiles').select('is_admin').eq('id', userData.user.id).single()
+  const { data: requesterProfile } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', userData.user.id)
+    .single()
 
   const body = await request.json()
   const { menuId, itemType, oldRecipeId, newRecipeId } = body
+
+  console.log('[swap-menu-item] payload reçu:', { menuId, itemType, oldRecipeId, newRecipeId })
 
   let menuQuery = supabase.from('generated_menus').select('*').eq('id', menuId)
   if (!requesterProfile?.is_admin) {
@@ -39,7 +45,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Menu introuvable' }, { status: 404 })
   }
 
-  const currentIds = Object.values(menuRow.menu)
+  const currentIds: string[] = Object.values(menuRow.menu)
     .filter((v: any) => Array.isArray(v))
     .flat()
     .map((i: any) => i.recipe_id)
@@ -47,22 +53,27 @@ export async function POST(request: NextRequest) {
   let replacement: { id: string; title: string } | null = null
 
   if (newRecipeId) {
-    // Choix manuel : n'importe quelle recette publiée, sans contrainte de catégorie
+    // --- Chemin manuel : priorité absolue à ce que la personne a choisi ---
     if (currentIds.includes(newRecipeId)) {
       return NextResponse.json({ error: 'Cette recette est déjà présente dans le menu.' }, { status: 400 })
     }
-    const { data: chosen } = await supabase
+
+    const { data: chosen, error: chosenError } = await supabase
       .from('recipes')
       .select('id, title, status')
       .eq('id', newRecipeId)
       .single()
 
-    if (!chosen || chosen.status !== 'published') {
-      return NextResponse.json({ error: 'Recette introuvable ou non publiée.' }, { status: 400 })
+    if (chosenError || !chosen) {
+      return NextResponse.json({ error: 'Recette introuvable.' }, { status: 400 })
     }
+    if (chosen.status !== 'published') {
+      return NextResponse.json({ error: 'Cette recette est en brouillon et ne peut pas être ajoutée.' }, { status: 400 })
+    }
+
     replacement = { id: chosen.id, title: chosen.title }
   } else {
-    // Remplacement aléatoire dans la même catégorie, comme avant
+    // --- Chemin aléatoire : uniquement si aucun newRecipeId fourni ---
     const source = menuRow.params?.source ?? 'all'
     const kind = typeToKind[itemType]
 
@@ -97,6 +108,10 @@ export async function POST(request: NextRequest) {
 
     const picked = candidates[Math.floor(Math.random() * candidates.length)]
     replacement = { id: picked.id, title: picked.title }
+  }
+
+  if (!replacement) {
+    return NextResponse.json({ error: 'Erreur interne : aucun remplacement déterminé.' }, { status: 500 })
   }
 
   const updatedMenu = { ...menuRow.menu }
