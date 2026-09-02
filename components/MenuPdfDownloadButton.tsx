@@ -46,12 +46,18 @@ export default function MenuPdfDownloadButton({
   const fetchRecipesAndAssets = async () => {
     const ids = allItems.map((i) => i.recipe_id)
 
-    const { data: recipes, error: fetchError } = await supabase
+    const { data: rawRecipes, error: fetchError } = await supabase
       .from('recipes')
-      .select('id, title, image_url, cookidoo_url, ingredients')
+      .select('id, title, image_url, menu_image_url, cookidoo_url, ingredients')
       .in('id', ids)
 
-    if (fetchError || !recipes) throw new Error(fetchError?.message ?? 'Erreur de récupération des recettes')
+    if (fetchError || !rawRecipes) throw new Error(fetchError?.message ?? 'Erreur de récupération des recettes')
+
+    // Pour le PDF : priorité à la photo recadrée dédiée au menu, sinon la photo classique.
+    const recipes = rawRecipes.map((r) => ({
+      ...r,
+      image_url: r.menu_image_url || r.image_url,
+    }))
 
     const { data: logoData } = await supabase
       .from('brand_photos')
@@ -124,7 +130,7 @@ export default function MenuPdfDownloadButton({
       const shoppingByRecipe: { recipeTitle: string; items: string[] }[] = []
       const shoppingByCategory: Record<string, { ingredient: string; recipeTitle: string }[]> = {}
 
-      orderedRecipes.forEach((r) => {
+      orderedRecipes.forEach((r: any) => {
         const ingredients: string[] = r.ingredients ?? []
         shoppingByRecipe.push({ recipeTitle: r.title, items: ingredients })
         ingredients.forEach((ing) => {

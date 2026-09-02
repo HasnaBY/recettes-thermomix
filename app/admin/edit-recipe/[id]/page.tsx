@@ -7,6 +7,7 @@ import imageCompression from 'browser-image-compression'
 import TagSelect from '@/components/TagSelect'
 import RelatedRecipesSelect from '@/components/RelatedRecipesSelect'
 import ImageCropper from '@/components/ImageCropper'
+import { MENU_PHOTO_ASPECT } from '@/lib/pdfImageAspect'
 
 export default function EditRecipe({ params }: { params: Promise<{ id: string }> }) {
   const [id, setId] = useState('')
@@ -24,8 +25,15 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
   const [relatedIds, setRelatedIds] = useState<string[]>([])
   const [isFeatured, setIsFeatured] = useState(false)
   const [published, setPublished] = useState(true)
+
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [rawFileToCrop, setRawFileToCrop] = useState<File | null>(null)
+
+  const [menuImageUrl, setMenuImageUrl] = useState<string | null>(null)
+  const [menuImageFile, setMenuImageFile] = useState<File | null>(null)
+  const [rawMenuFileToCrop, setRawMenuFileToCrop] = useState<File | null>(null)
+
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [tagging, setTagging] = useState(false)
@@ -35,7 +43,6 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
   const [error, setError] = useState('')
   const router = useRouter()
   const supabase = createClient()
-  const [rawFileToCrop, setRawFileToCrop] = useState<File | null>(null)
 
   useEffect(() => {
     const load = async () => {
@@ -65,6 +72,7 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
       setIsFeatured(data.is_featured ?? false)
       setPublished((data.status ?? 'published') === 'published')
       setImageUrl(data.image_url)
+      setMenuImageUrl(data.menu_image_url ?? null)
 
       const { data: features } = await supabase
         .from('ai_features')
@@ -166,34 +174,38 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
     }
   }
 
+  const uploadImage = async (file: File, prefix: string) => {
+    const compressed = await imageCompression(file, {
+      maxWidthOrHeight: 1200,
+      maxSizeMB: 0.3,
+      fileType: 'image/webp',
+    })
+    const fileName = `${prefix}-${Date.now()}.webp`
+    const { error: uploadError } = await supabase.storage.from('recipe-images').upload(fileName, compressed)
+    if (uploadError) throw uploadError
+    const { data: urlData } = supabase.storage.from('recipe-images').getPublicUrl(fileName)
+    return urlData.publicUrl
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
     setError('')
 
     let finalImageUrl = imageUrl
+    let finalMenuImageUrl = menuImageUrl
 
-    if (imageFile) {
-      try {
-        const compressed = await imageCompression(imageFile, {
-          maxWidthOrHeight: 1920,
-          maxSizeMB: 1.5,
-          initialQuality: 0.85,
-          fileType: 'image/webp',
-        })
-
-        const fileName = `${Date.now()}-${imageFile.name.replace(/\.[^.]+$/, '')}.webp`
-
-        const { error: uploadError } = await supabase.storage.from('recipe-images').upload(fileName, compressed)
-        if (uploadError) throw uploadError
-
-        const { data: urlData } = supabase.storage.from('recipe-images').getPublicUrl(fileName)
-        finalImageUrl = urlData.publicUrl
-      } catch (err: any) {
-        setError('Erreur upload image : ' + err.message)
-        setSaving(false)
-        return
+    try {
+      if (imageFile) {
+        finalImageUrl = await uploadImage(imageFile, 'recipe')
       }
+      if (menuImageFile) {
+        finalMenuImageUrl = await uploadImage(menuImageFile, 'menu')
+      }
+    } catch (err: any) {
+      setError('Erreur upload image : ' + err.message)
+      setSaving(false)
+      return
     }
 
     const ingredientsList = ingredients
@@ -219,6 +231,7 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
         is_featured: isFeatured,
         status: published ? 'published' : 'draft',
         image_url: finalImageUrl,
+        menu_image_url: finalMenuImageUrl,
       })
       .eq('id', id)
 
@@ -241,8 +254,6 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
   return (
     <div className="p-6 sm:p-8 max-w-lg mx-auto">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Modifier la recette</h1>
-
-      {imageUrl && <img src={imageUrl} alt={title} className="w-full h-48 object-cover rounded-lg mb-4" />}
 
       {aiFeatures.translate_enabled && (
         <button
@@ -378,8 +389,12 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
           Publiée (décoche pour repasser en brouillon)
         </label>
 
-        <div>
-          <label className="block mb-2 text-sm text-gray-600">Remplacer la photo (optionnel)</label>
+        <div className="border-t border-gray-200 pt-4">
+          <label className="block mb-2 text-sm text-gray-600">Photo principale (site)</label>
+          {imageUrl && !imageFile && (
+            <img src={imageUrl} alt="" className="w-32 h-32 object-cover rounded-lg mb-2" />
+          )}
+          {imageFile && <p className="text-xs text-green-700 mb-1">✓ Nouvelle photo recadrée prête</p>}
           <input
             type="file"
             accept="image/*"
@@ -388,20 +403,34 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
               if (file) setRawFileToCrop(file)
             }}
           />
-          {imageFile && <p className="text-xs text-green-700 mt-1">✓ Photo recadrée prête</p>}
         </div>
 
-        {rawFileToCrop && (
-          <ImageCropper
-            file={rawFileToCrop}
-            aspect={4 / 3}
-            onConfirm={(cropped) => {
-              setImageFile(cropped)
-              setRawFileToCrop(null)
+        <div className="border-t border-gray-200 pt-4">
+          <label className="block mb-2 text-sm text-gray-600">
+            Photo dédiée au PDF menu (optionnel — sinon la photo principale sera utilisée)
+          </label>
+          {menuImageUrl && !menuImageFile && (
+            <img src={menuImageUrl} alt="" className="w-full max-w-xs h-24 object-cover rounded-lg mb-2" />
+          )}
+          {menuImageFile && <p className="text-xs text-green-700 mb-1">✓ Nouvelle photo menu recadrée prête</p>}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) setRawMenuFileToCrop(file)
             }}
-            onCancel={() => setRawFileToCrop(null)}
           />
-        )}
+          {menuImageUrl && !menuImageFile && (
+            <button
+              type="button"
+              onClick={() => setMenuImageUrl(null)}
+              className="block text-xs text-red-600 mt-1"
+            >
+              Retirer la photo menu (revenir à la photo principale)
+            </button>
+          )}
+        </div>
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
 
@@ -420,6 +449,31 @@ export default function EditRecipe({ params }: { params: Promise<{ id: string }>
       >
         Supprimer cette recette
       </button>
+
+      {rawFileToCrop && (
+        <ImageCropper
+          file={rawFileToCrop}
+          aspect={4 / 3}
+          onConfirm={(cropped) => {
+            setImageFile(cropped)
+            setRawFileToCrop(null)
+          }}
+          onCancel={() => setRawFileToCrop(null)}
+        />
+      )}
+
+      {rawMenuFileToCrop && (
+        <ImageCropper
+          file={rawMenuFileToCrop}
+          aspect={MENU_PHOTO_ASPECT}
+          onConfirm={(cropped) => {
+            setMenuImageFile(cropped)
+            setMenuImageUrl(URL.createObjectURL(cropped))
+            setRawMenuFileToCrop(null)
+          }}
+          onCancel={() => setRawMenuFileToCrop(null)}
+        />
+      )}
     </div>
   )
 }
