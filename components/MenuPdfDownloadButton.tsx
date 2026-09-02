@@ -11,10 +11,12 @@ export default function MenuPdfDownloadButton({
   menu,
   origin,
   periodStart,
+  menuId,
 }: {
   menu: Menu
   origin?: string
   periodStart?: string | null
+  menuId?: string | null
 }) {
   const [grouping, setGrouping] = useState<'recipe' | 'category'>('recipe')
   const [generatingMenu, setGeneratingMenu] = useState(false)
@@ -53,11 +55,7 @@ export default function MenuPdfDownloadButton({
 
     if (fetchError || !rawRecipes) throw new Error(fetchError?.message ?? 'Erreur de récupération des recettes')
 
-    // Pour le PDF : priorité à la photo recadrée dédiée au menu, sinon la photo classique.
-    const recipes = rawRecipes.map((r) => ({
-      ...r,
-      image_url: r.menu_image_url || r.image_url,
-    }))
+    const recipes = rawRecipes.map((r) => ({ ...r, image_url: r.menu_image_url || r.image_url }))
 
     const { data: logoData } = await supabase
       .from('brand_photos')
@@ -100,12 +98,32 @@ export default function MenuPdfDownloadButton({
         />
       ).toBlob()
 
+      // Téléchargement immédiat pour la personne
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
       a.download = 'menu-thermomix.pdf'
       a.click()
       URL.revokeObjectURL(url)
+
+      // Sauvegarde du PDF pour l'historique, si on a un menuId
+      if (menuId) {
+        const fileName = `${menuId}-${Date.now()}.pdf`
+        const { error: uploadError } = await supabase.storage.from('menu-pdfs').upload(fileName, blob, {
+          contentType: 'application/pdf',
+        })
+        if (!uploadError) {
+          const { data: publicUrlData } = supabase.storage.from('menu-pdfs').getPublicUrl(fileName)
+          const {
+            data: { session },
+          } = await supabase.auth.getSession()
+          await fetch('/api/save-menu-pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+            body: JSON.stringify({ menuId, pdfUrl: publicUrlData.publicUrl }),
+          })
+        }
+      }
     } catch (err: any) {
       setError(err.message)
     } finally {

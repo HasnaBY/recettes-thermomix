@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import MenuPdfDownloadButton from '@/components/MenuPdfDownloadButton'
 import RecipePickerModal from '@/components/RecipePickerModal'
+import { getMondayOfWeek, toDateInputValue } from '@/lib/dateHelpers'
 
 type MenuItem = { recipe_id: string; recipe_title: string }
 type Menu = { plats: MenuItem[]; desserts: MenuItem[]; boissons: MenuItem[]; pains: MenuItem[]; notes?: string[] }
@@ -21,6 +22,7 @@ export default function GenerateurMenu() {
   const [nbBoissons, setNbBoissons] = useState('0')
   const [nbPains, setNbPains] = useState('0')
   const [source, setSource] = useState('favorites')
+  const [periodStart, setPeriodStart] = useState(toDateInputValue(getMondayOfWeek()))
 
   const [adminMenu, setAdminMenu] = useState<MenuRow | null>(null)
   const [clientMenu, setClientMenu] = useState<MenuRow | null>(null)
@@ -63,6 +65,17 @@ export default function GenerateurMenu() {
     if (!client) setShowForm(true)
   }
 
+  const loadWeeklyUsage = async (userId: string) => {
+    const currentWeekStart = toDateInputValue(getMondayOfWeek())
+    const { count } = await supabase
+      .from('generated_menus')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('origin', 'client')
+      .eq('week_start', currentWeekStart)
+    setUsedCount(count ?? 0)
+  }
+
   useEffect(() => {
     const load = async () => {
       const { data: userData } = await supabase.auth.getUser()
@@ -83,13 +96,7 @@ export default function GenerateurMenu() {
 
       if (profile?.approved) {
         await loadMenus(userData.user.id)
-
-        const { count } = await supabase
-          .from('generated_menus')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', userData.user.id)
-          .eq('origin', 'client')
-        setUsedCount(count ?? 0)
+        await loadWeeklyUsage(userData.user.id)
 
         const { data: settings } = await supabase
           .from('site_settings')
@@ -125,6 +132,7 @@ export default function GenerateurMenu() {
           nbBoissons: parseInt(nbBoissons) || 0,
           nbPains: parseInt(nbPains) || 0,
           source,
+          periodStart,
         }),
       })
 
@@ -134,8 +142,10 @@ export default function GenerateurMenu() {
         setError(data.error ?? 'Une erreur est survenue')
       } else {
         setShowForm(false)
-        setUsedCount((prev) => prev + 1)
-        if (userId) await loadMenus(userId)
+        if (userId) {
+          await loadMenus(userId)
+          await loadWeeklyUsage(userId)
+        }
       }
     } catch (err: any) {
       setError(err.message)
@@ -144,7 +154,6 @@ export default function GenerateurMenu() {
     }
   }
 
-  // Remplacement aléatoire (dans la même catégorie)
   const handleRandomSwap = async (which: 'admin' | 'client', itemType: ItemType, oldRecipeId: string) => {
     const menuRow = which === 'admin' ? adminMenu : clientMenu
     if (!menuRow) return
@@ -179,8 +188,7 @@ export default function GenerateurMenu() {
     }
   }
 
-  // Remplacement manuel (choix précis dans le picker)
-  const handleManualSwap = async (recipeId: string, recipeTitle: string) => {
+  const handleManualSwap = async (recipeId: string) => {
     if (!pickerFor) return
     const { which, itemType, oldRecipeId } = pickerFor
     const menuRow = which === 'admin' ? adminMenu : clientMenu
@@ -297,7 +305,12 @@ export default function GenerateurMenu() {
           </div>
         )}
 
-        <MenuPdfDownloadButton menu={menuRow.menu} origin={menuRow.origin} periodStart={menuRow.params?.periodStart} />
+        <MenuPdfDownloadButton
+          menu={menuRow.menu}
+          origin={menuRow.origin}
+          periodStart={menuRow.params?.periodStart}
+          menuId={menuRow.id}
+        />
 
         {renderSection('Plats', '🍽️', menuRow.menu.plats, 'plats', 'bg-[#DCEAF0]/30')}
         {renderSection('Desserts / goûters', '🍰', menuRow.menu.desserts, 'desserts', 'bg-[#F6DEE1]/30')}
@@ -318,7 +331,7 @@ export default function GenerateurMenu() {
       <p className="text-[#3A3532]/70 text-center mb-2">Génère ton menu à partir des recettes du site.</p>
       {remaining !== null && (
         <p className="text-sm text-[#3A3532]/50 text-center mb-8">
-          {remaining} génération{remaining > 1 ? 's' : ''} restante{remaining > 1 ? 's' : ''}
+          {remaining} génération{remaining > 1 ? 's' : ''} restante{remaining > 1 ? 's' : ''} cette semaine
         </p>
       )}
 
@@ -331,10 +344,22 @@ export default function GenerateurMenu() {
       {(!clientMenu || showForm) && (
         <>
           {!canGenerate ? (
-            <p className="text-red-600 text-center mb-8">Tu as atteint ta limite de {limit} générations de menu.</p>
+            <p className="text-red-600 text-center mb-8">
+              Tu as atteint ta limite de {limit} générations de menu cette semaine — reviens la semaine prochaine !
+            </p>
           ) : (
             <form onSubmit={handleGenerate} className="border border-[#F0EAE0] bg-white rounded-2xl p-5 mb-10 flex flex-col gap-4">
               <h2 className="font-display text-lg text-[#3A3532]">Générer mon propre menu</h2>
+
+              <div>
+                <label className="block mb-1 text-sm text-[#3A3532]/70">Semaine du (lundi)</label>
+                <input
+                  type="date"
+                  value={periodStart}
+                  onChange={(e) => setPeriodStart(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#F0EAE0] rounded-xl"
+                />
+              </div>
 
               <div>
                 <label className="block mb-1 text-sm text-[#3A3532]/70">Recettes à utiliser</label>
@@ -419,7 +444,7 @@ export default function GenerateurMenu() {
       {pickerFor && (
         <RecipePickerModal
           excludeIds={currentExcludeIds(pickerFor.which)}
-          onSelect={(recipe) => handleManualSwap(recipe.id, recipe.title)}
+          onSelect={(recipe) => handleManualSwap(recipe.id)}
           onClose={() => setPickerFor(null)}
         />
       )}

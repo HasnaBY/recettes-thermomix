@@ -7,6 +7,15 @@ export function getNextMonday(from: Date = new Date()): Date {
   return d
 }
 
+export function getMondayOfWeek(from: Date = new Date()): Date {
+  const d = new Date(from)
+  const day = d.getDay()
+  const diff = day === 0 ? -6 : 1 - day
+  d.setDate(d.getDate() + diff)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
 export function toDateInputValue(date: Date): string {
   return date.toISOString().split('T')[0]
 }
@@ -29,4 +38,8 @@ export function formatDateRange(startDate: string, numDays: number): string {
   const endStr = end.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
 
   return `Du ${startStr} au ${endStr}`
+}
+
+export function formatWeekLabel(weekStart: string): string {
+  return formatDateRange(weekStart, 5)
 }

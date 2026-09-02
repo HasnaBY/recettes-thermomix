@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getMondayOfWeek, toDateInputValue } from '@/lib/dateHelpers'
 
 type Kind = 'dessert' | 'boisson' | 'pain' | 'plat' | 'autre'
 
@@ -54,6 +55,10 @@ export async function POST(request: NextRequest) {
   const isAdminAssigning = !!targetUserId && requesterProfile?.is_admin
   const ownerId = isAdminAssigning ? targetUserId : userData.user.id
 
+  // week_start : le lundi choisi (admin) ou le lundi de la semaine en cours (cliente)
+  const weekStart = toDateInputValue(getMondayOfWeek(periodStart ? new Date(periodStart + 'T00:00:00') : new Date()))
+  const finalPeriodStart = periodStart ?? weekStart
+
   if (!isAdminAssigning) {
     if (!requesterProfile?.approved) {
       return NextResponse.json({ error: 'Compte non approuvé' }, { status: 403 })
@@ -67,16 +72,18 @@ export async function POST(request: NextRequest) {
         .single()
 
       const limit = settings?.menu_generation_limit ?? 3
+      const currentWeekStart = toDateInputValue(getMondayOfWeek())
 
       const { count } = await supabase
         .from('generated_menus')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userData.user.id)
         .eq('origin', 'client')
+        .eq('week_start', currentWeekStart)
 
       if ((count ?? 0) >= limit) {
         return NextResponse.json(
-          { error: `Tu as atteint ta limite de ${limit} générations de menu.` },
+          { error: `Tu as atteint ta limite de ${limit} générations de menu cette semaine. Reviens la semaine prochaine !` },
           { status: 403 }
         )
       }
@@ -147,23 +154,28 @@ export async function POST(request: NextRequest) {
   }
 
   const menuJson = { ...result, notes }
-  const params = { nbPlats, nbDesserts, nbBoissons, nbPains, source, periodStart: periodStart ?? null }
+  const params = { nbPlats, nbDesserts, nbBoissons, nbPains, source, periodStart: finalPeriodStart }
 
   if (preview) {
-    return NextResponse.json({ menu: menuJson, params })
+    return NextResponse.json({ menu: menuJson, params, weekStart })
   }
 
-  const { error: insertError } = await supabase.from('generated_menus').insert({
-    user_id: ownerId,
-    created_by: userData.user.id,
-    origin: isAdminAssigning ? 'admin' : 'client',
-    params,
-    menu: menuJson,
-  })
+  const { data: inserted, error: insertError } = await supabase
+    .from('generated_menus')
+    .insert({
+      user_id: ownerId,
+      created_by: userData.user.id,
+      origin: isAdminAssigning ? 'admin' : 'client',
+      params,
+      menu: menuJson,
+      week_start: weekStart,
+    })
+    .select('id')
+    .single()
 
   if (insertError) {
     return NextResponse.json({ error: insertError.message }, { status: 500 })
   }
 
-  return NextResponse.json({ menu: menuJson })
+  return NextResponse.json({ menu: menuJson, menuId: inserted?.id })
 }
