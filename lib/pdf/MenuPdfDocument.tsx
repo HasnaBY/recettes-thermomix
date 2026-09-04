@@ -7,11 +7,10 @@ const ROW_TOP = [31.5, 45, 58.2, 71.5, 85]
 const ROW_HEIGHT = 13.5
 const PLAT_LEFT = 24.4
 const PLAT_WIDTH = 32.6
+const PLAT_WIDTH = 33.6
 const DESSERT_LEFT = 58.7
 const DESSERT_WIDTH = 32.6
 
-// Zones cliquables invisibles superposées sur les éléments déjà présents dans l'image de fond.
-// À ajuster si le lien ne tombe pas exactement sur le logo/texte selon ton fond.
 const SITE_URL = 'https://www.withlovehasna.com'
 const LOGO_LINK = { top: 1, left: 30, width: 40, height: 18 }
 const FOOTER_LINK = { top: 96.5, left: 20, width: 60, height: 3.5 }
@@ -21,7 +20,7 @@ const styles = StyleSheet.create({
   background: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
   overlay: { position: 'relative', width: '100%', height: '100%' },
 
-  dateBanner: { position: 'absolute', top: `${DATE_TOP}%`, left: '30%', width: '40%', flexDirection: 'row', justifyContent: 'space-between' },
+  dateBanner: { position: 'absolute', top: `${DATE_TOP}%`, left: '18%', width: '64%', flexDirection: 'row', justifyContent: 'space-between' },
   dateStart: { fontSize: 9, fontWeight: 700, color: '#4A5A45', marginLeft: '14%', fontStyle: 'italic' },
   dateEnd: { fontSize: 9, fontWeight: 700, color: '#4A5A45', marginRight: '8%', fontStyle: 'italic' },
 
@@ -78,23 +77,16 @@ function Cell({
 }
 
 export default function MenuPdfDocument({
-  categorizedRecipes,
+  orderedPlats,
+  orderedAccompaniments,
   backgroundImage,
   periodStart,
 }: {
-  categorizedRecipes: Record<string, Recipe[]>
+  orderedPlats: Recipe[]
+  orderedAccompaniments: Recipe[]
   backgroundImage: string | null
   periodStart: string | null
 }) {
-  const plats = categorizedRecipes.plats ?? []
-
-  const accompaniments: Recipe[] = [
-    ...(categorizedRecipes.desserts ?? []),
-    ...(categorizedRecipes.boissons ?? []),
-    ...(categorizedRecipes.entrees ?? []),
-    ...(categorizedRecipes.pains ?? []),
-  ]
-
   let startLabel = ''
   let endLabel = ''
   if (periodStart) {
@@ -112,17 +104,11 @@ export default function MenuPdfDocument({
         {backgroundImage && <Image src={backgroundImage} style={styles.background} fixed />}
 
         <View style={styles.overlay}>
-          {/* Zone cliquable invisible sur le logo/nom de marque en haut */}
           <Link
             src={SITE_URL}
             style={[
               styles.invisibleLink,
-              {
-                top: `${LOGO_LINK.top}%`,
-                left: `${LOGO_LINK.left}%`,
-                width: `${LOGO_LINK.width}%`,
-                height: `${LOGO_LINK.height}%`,
-              },
+              { top: `${LOGO_LINK.top}%`, left: `${LOGO_LINK.left}%`, width: `${LOGO_LINK.width}%`, height: `${LOGO_LINK.height}%` },
             ]}
           >
             <Text> </Text>
@@ -135,9 +121,9 @@ export default function MenuPdfDocument({
 
           {ROW_TOP.map((top, i) => (
             <Fragment key={i}>
-              <Cell recipe={plats[i]} top={top} left={PLAT_LEFT} width={PLAT_WIDTH} height={ROW_HEIGHT} kind="plat" />
+              <Cell recipe={orderedPlats[i]} top={top} left={PLAT_LEFT} width={PLAT_WIDTH} height={ROW_HEIGHT} kind="plat" />
               <Cell
-                recipe={accompaniments[i]}
+                recipe={orderedAccompaniments[i]}
                 top={top}
                 left={DESSERT_LEFT}
                 width={DESSERT_WIDTH}
@@ -147,17 +133,11 @@ export default function MenuPdfDocument({
             </Fragment>
           ))}
 
-          {/* Zone cliquable invisible sur "www.WithLoveHasna.com" en bas */}
           <Link
             src={SITE_URL}
             style={[
               styles.invisibleLink,
-              {
-                top: `${FOOTER_LINK.top}%`,
-                left: `${FOOTER_LINK.left}%`,
-                width: `${FOOTER_LINK.width}%`,
-                height: `${FOOTER_LINK.height}%`,
-              },
+              { top: `${FOOTER_LINK.top}%`, left: `${FOOTER_LINK.left}%`, width: `${FOOTER_LINK.width}%`, height: `${FOOTER_LINK.height}%` },
             ]}
           >
             <Text> </Text>

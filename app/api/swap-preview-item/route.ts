@@ -91,10 +91,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Erreur interne : aucun remplacement déterminé.' }, { status: 500 })
   }
 
-  const updatedMenu = { ...menu }
+    const updatedMenu = { ...menu }
   updatedMenu[itemType] = updatedMenu[itemType].map((item: any) =>
     item.recipe_id === oldRecipeId ? { recipe_id: replacement!.id, recipe_title: replacement!.title } : item
   )
+
+  // Maintient l'ordre choisi : remplace l'ancien id par le nouveau à la même position.
+  if (itemType === 'plats' && Array.isArray(updatedMenu.plat_order)) {
+    updatedMenu.plat_order = updatedMenu.plat_order.map((id: string) =>
+      id === oldRecipeId ? replacement!.id : id
+    )
+  } else if (itemType !== 'plats' && Array.isArray(updatedMenu.accomp_order)) {
+    updatedMenu.accomp_order = updatedMenu.accomp_order.map((id: string) =>
+      id === oldRecipeId ? replacement!.id : id
+    )
+  }
 
   return NextResponse.json({ menu: updatedMenu })
 }

@@ -5,7 +5,9 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import MenuPdfDownloadButton from '@/components/MenuPdfDownloadButton'
 import RecipePickerModal from '@/components/RecipePickerModal'
+import MenuDayOrganizer from '@/components/MenuDayOrganizer'
 import { getNextMonday, toDateInputValue } from '@/lib/dateHelpers'
+import { getOrderedPlats, getOrderedAccompaniments } from '@/lib/menuOrder'
 
 type ClientProfile = { id: string; email: string; full_name: string | null }
 type MenuItem = { recipe_id: string; recipe_title: string }
@@ -15,6 +17,8 @@ type Menu = {
   boissons: MenuItem[]
   pains: MenuItem[]
   entrees: MenuItem[]
+  plat_order?: string[]
+  accomp_order?: string[]
 }
 type ItemType = 'plats' | 'desserts' | 'boissons' | 'pains' | 'entrees'
 
@@ -169,6 +173,16 @@ export default function AssignMenu() {
     } finally {
       setSwappingId(null)
     }
+  }
+
+  const handleReorderPlats = (newPlats: MenuItem[]) => {
+    if (!previewMenu) return
+    setPreviewMenu({ ...previewMenu, plat_order: newPlats.map((p) => p.recipe_id) })
+  }
+
+  const handleReorderAccompaniments = (newAccomp: MenuItem[]) => {
+    if (!previewMenu) return
+    setPreviewMenu({ ...previewMenu, accomp_order: newAccomp.map((p) => p.recipe_id) })
   }
 
   const handleSend = async () => {
@@ -409,6 +423,15 @@ export default function AssignMenu() {
           <p className="text-sm font-bold text-gray-900 mb-3">
             {sent ? 'Menu envoyé' : `Aperçu — ${sendToAll ? `sera envoyé à ${clients.length} cliente(s)` : 'non encore envoyé'}`}
           </p>
+
+          {!sent && (
+            <MenuDayOrganizer
+              plats={getOrderedPlats(previewMenu)}
+              accompaniments={getOrderedAccompaniments(previewMenu)}
+              onPlatsChange={handleReorderPlats}
+              onAccompanimentsChange={handleReorderAccompaniments}
+            />
+          )}
 
           {renderSection('Plats', previewMenu.plats, 'bg-blue-50', 'plats')}
           {renderSection('Desserts / goûters', previewMenu.desserts, 'bg-pink-50', 'desserts')}

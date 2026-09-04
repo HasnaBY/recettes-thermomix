@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { categorizeIngredient } from '@/lib/categorizeIngredient'
+import { getOrderedPlats, getOrderedAccompaniments } from '@/lib/menuOrder'
 
 type MenuItem = { recipe_id: string; recipe_title: string }
 type Menu = {
@@ -11,6 +12,8 @@ type Menu = {
   boissons?: MenuItem[]
   pains?: MenuItem[]
   entrees?: MenuItem[]
+  plat_order?: string[]
+  accomp_order?: string[]
 }
 
 export default function MenuPdfDownloadButton({
@@ -85,22 +88,19 @@ export default function MenuPdfDownloadButton({
       const { default: MenuPdfDocument } = await import('@/lib/pdf/MenuPdfDocument')
 
       const recipeMap = new Map(recipes.map((r) => [r.id, r]))
-      const buildCategoryList = (items: MenuItem[] | undefined) =>
-        (items ?? [])
-          .map((i) => recipeMap.get(i.recipe_id))
-          .filter((r): r is NonNullable<typeof r> => Boolean(r))
 
-      const categorizedRecipes = {
-        plats: buildCategoryList(menu.plats),
-        desserts: buildCategoryList(menu.desserts),
-        boissons: buildCategoryList(menu.boissons),
-        pains: buildCategoryList(menu.pains),
-        entrees: buildCategoryList(menu.entrees),
-      }
+      const orderedPlats = getOrderedPlats(menu)
+        .map((i) => recipeMap.get(i.recipe_id))
+        .filter((r): r is NonNullable<typeof r> => Boolean(r))
+
+      const orderedAccompaniments = getOrderedAccompaniments(menu)
+        .map((i) => recipeMap.get(i.recipe_id))
+        .filter((r): r is NonNullable<typeof r> => Boolean(r))
 
       const blob = await pdf(
         <MenuPdfDocument
-          categorizedRecipes={categorizedRecipes}
+          orderedPlats={orderedPlats}
+          orderedAccompaniments={orderedAccompaniments}
           backgroundImage={backgroundImage}
           periodStart={periodStart ?? null}
         />

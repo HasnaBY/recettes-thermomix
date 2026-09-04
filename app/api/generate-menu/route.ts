@@ -172,7 +172,17 @@ export async function POST(request: NextRequest) {
     result[resultKeyMap[k.key]] = chosen.map((r) => ({ recipe_id: r.id, recipe_title: r.title }))
   }
 
-  const menuJson = { ...result, notes }
+  const menuJson = {
+    ...result,
+    notes,
+    plat_order: result.plats.map((r) => r.recipe_id),
+    accomp_order: [
+      ...result.desserts,
+      ...result.boissons,
+      ...result.entrees,
+      ...result.pains,
+    ].map((r) => r.recipe_id),
+  }
   const params = { nbPlats, nbDesserts, nbBoissons, nbPains, nbEntrees, source, periodStart: finalPeriodStart }
 
   if (preview) {

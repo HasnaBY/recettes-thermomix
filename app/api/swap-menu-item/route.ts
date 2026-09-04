@@ -94,10 +94,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Erreur interne : aucun remplacement déterminé.' }, { status: 500 })
   }
 
-  const updatedMenu = { ...menu }
+  const updatedMenu = { ...menuRow.menu }
   updatedMenu[itemType] = updatedMenu[itemType].map((item: any) =>
     item.recipe_id === oldRecipeId ? { recipe_id: replacement!.id, recipe_title: replacement!.title } : item
   )
+
+  if (itemType === 'plats' && Array.isArray(updatedMenu.plat_order)) {
+    updatedMenu.plat_order = updatedMenu.plat_order.map((id: string) =>
+      id === oldRecipeId ? replacement!.id : id
+    )
+  } else if (itemType !== 'plats' && Array.isArray(updatedMenu.accomp_order)) {
+    updatedMenu.accomp_order = updatedMenu.accomp_order.map((id: string) =>
+      id === oldRecipeId ? replacement!.id : id
+    )
+  }
+
+  await supabase.from('generated_menus').update({ menu: updatedMenu }).eq('id', menuId)
 
   return NextResponse.json({ menu: updatedMenu })
 }
