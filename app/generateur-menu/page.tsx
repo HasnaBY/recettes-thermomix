@@ -8,9 +8,16 @@ import RecipePickerModal from '@/components/RecipePickerModal'
 import { getMondayOfWeek, toDateInputValue } from '@/lib/dateHelpers'
 
 type MenuItem = { recipe_id: string; recipe_title: string }
-type Menu = { plats?: MenuItem[]; desserts?: MenuItem[]; boissons?: MenuItem[]; pains?: MenuItem[]; entrees?: MenuItem[] }
+type Menu = {
+  plats?: MenuItem[]
+  desserts?: MenuItem[]
+  boissons?: MenuItem[]
+  pains?: MenuItem[]
+  entrees?: MenuItem[]
+  notes?: string[]
+}
 type MenuRow = { id: string; menu: Menu; created_at: string; origin: string; params?: any }
-type ItemType = 'plats' | 'desserts' | 'boissons' | 'pains'
+type ItemType = 'plats' | 'desserts' | 'boissons' | 'pains' | 'entrees'
 
 export default function GenerateurMenu() {
   const [checkingAccess, setCheckingAccess] = useState(true)
@@ -252,6 +259,7 @@ export default function GenerateurMenu() {
       ...(menuRow.menu.desserts ?? []).map((i) => i.recipe_id),
       ...(menuRow.menu.boissons ?? []).map((i) => i.recipe_id),
       ...(menuRow.menu.pains ?? []).map((i) => i.recipe_id),
+      ...(menuRow.menu.entrees ?? []).map((i) => i.recipe_id),
     ]
   }
 
@@ -319,8 +327,7 @@ export default function GenerateurMenu() {
         {renderSection('Desserts / goûters', '🍰', menuRow.menu.desserts, 'desserts', 'bg-[#F6DEE1]/30')}
         {renderSection('Boissons', '🥤', menuRow.menu.boissons, 'boissons', 'bg-[#E3ECDD]/40')}
         {renderSection('Pains', '🍞', menuRow.menu.pains, 'pains', 'bg-[#F0EAE0]')}
-        {renderSection('Entrées', '🥗', menuRow.menu.entrees, 'entrees' as any, 'bg-[#E3ECDD]/60')}
-
+        {renderSection('Entrées', '🥗', menuRow.menu.entrees, 'entrees', 'bg-[#E3ECDD]/60')}
       </div>
     )
   }
@@ -438,7 +445,6 @@ export default function GenerateurMenu() {
                     className="w-full px-4 py-2 border border-[#F0EAE0] rounded-xl"
                   />
                 </div>
-
               </div>
 
               <button
