@@ -5,7 +5,13 @@ import { createClient } from '@/lib/supabase/client'
 import { categorizeIngredient } from '@/lib/categorizeIngredient'
 
 type MenuItem = { recipe_id: string; recipe_title: string }
-type Menu = { plats?: MenuItem[]; desserts?: MenuItem[]; boissons?: MenuItem[]; pains?: MenuItem[]; entrees?: MenuItem[] }
+type Menu = {
+  plats?: MenuItem[]
+  desserts?: MenuItem[]
+  boissons?: MenuItem[]
+  pains?: MenuItem[]
+  entrees?: MenuItem[]
+}
 
 export default function MenuPdfDownloadButton({
   menu,
@@ -89,7 +95,7 @@ export default function MenuPdfDownloadButton({
         desserts: buildCategoryList(menu.desserts),
         boissons: buildCategoryList(menu.boissons),
         pains: buildCategoryList(menu.pains),
-        entrees: buildCategoryList((menu as any).entrees),
+        entrees: buildCategoryList(menu.entrees),
       }
 
       const blob = await pdf(
@@ -100,7 +106,6 @@ export default function MenuPdfDownloadButton({
         />
       ).toBlob()
 
-      // Téléchargement immédiat pour la personne
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -108,7 +113,6 @@ export default function MenuPdfDownloadButton({
       a.click()
       URL.revokeObjectURL(url)
 
-      // Sauvegarde du PDF pour l'historique, si on a un menuId
       if (menuId) {
         const fileName = `${menuId}-${Date.now()}.pdf`
         const { error: uploadError } = await supabase.storage.from('menu-pdfs').upload(fileName, blob, {

@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import MenuPdfDownloadButton from '@/components/MenuPdfDownloadButton'
 import RecipePickerModal from '@/components/RecipePickerModal'
-import { getMondayOfWeek, toDateInputValue } from '@/lib/dateHelpers'
+import { getNextMonday, toDateInputValue } from '@/lib/dateHelpers'
 
 type MenuItem = { recipe_id: string; recipe_title: string }
 type Menu = {
@@ -29,7 +29,7 @@ export default function GenerateurMenu() {
   const [nbBoissons, setNbBoissons] = useState('0')
   const [nbPains, setNbPains] = useState('0')
   const [source, setSource] = useState('favorites')
-  const [periodStart, setPeriodStart] = useState(toDateInputValue(getMondayOfWeek()))
+  const [periodStart, setPeriodStart] = useState(toDateInputValue(getNextMonday()))
 
   const [adminMenu, setAdminMenu] = useState<MenuRow | null>(null)
   const [clientMenu, setClientMenu] = useState<MenuRow | null>(null)
