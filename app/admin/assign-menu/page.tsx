@@ -9,8 +9,14 @@ import { getNextMonday, toDateInputValue } from '@/lib/dateHelpers'
 
 type ClientProfile = { id: string; email: string; full_name: string | null }
 type MenuItem = { recipe_id: string; recipe_title: string }
-type Menu = { plats: MenuItem[]; desserts: MenuItem[]; boissons: MenuItem[]; pains: MenuItem[] }
-type ItemType = 'plats' | 'desserts' | 'boissons' | 'pains'
+type Menu = {
+  plats: MenuItem[]
+  desserts: MenuItem[]
+  boissons: MenuItem[]
+  pains: MenuItem[]
+  entrees: MenuItem[]
+}
+type ItemType = 'plats' | 'desserts' | 'boissons' | 'pains' | 'entrees'
 
 export default function AssignMenu() {
   const [clients, setClients] = useState<ClientProfile[]>([])
@@ -20,6 +26,7 @@ export default function AssignMenu() {
   const [nbDesserts, setNbDesserts] = useState('5')
   const [nbBoissons, setNbBoissons] = useState('0')
   const [nbPains, setNbPains] = useState('0')
+  const [nbEntrees, setNbEntrees] = useState('0')
   const [source, setSource] = useState('all')
   const [periodStart, setPeriodStart] = useState(toDateInputValue(getNextMonday()))
 
@@ -33,8 +40,6 @@ export default function AssignMenu() {
 
   const [pickerFor, setPickerFor] = useState<{ itemType: ItemType; oldRecipeId: string } | null>(null)
 
-  const [nbEntrees, setNbEntrees] = useState('0')
-  
   const supabase = createClient()
 
   useEffect(() => {
@@ -68,6 +73,7 @@ export default function AssignMenu() {
           nbDesserts: parseInt(nbDesserts),
           nbBoissons: parseInt(nbBoissons) || 0,
           nbPains: parseInt(nbPains) || 0,
+          nbEntrees: parseInt(nbEntrees) || 0,
           source: sendToAll ? 'all' : source,
           targetUserId: sendToAll ? clients[0]?.id : selectedClient,
           preview: true,
@@ -187,6 +193,7 @@ export default function AssignMenu() {
             nbDesserts: parseInt(nbDesserts),
             nbBoissons: parseInt(nbBoissons),
             nbPains: parseInt(nbPains),
+            nbEntrees: parseInt(nbEntrees),
             source: sendToAll ? 'all' : source,
             periodStart,
           },
@@ -214,6 +221,7 @@ export default function AssignMenu() {
         ...(previewMenu.desserts ?? []).map((i) => i.recipe_id),
         ...(previewMenu.boissons ?? []).map((i) => i.recipe_id),
         ...(previewMenu.pains ?? []).map((i) => i.recipe_id),
+        ...(previewMenu.entrees ?? []).map((i) => i.recipe_id),
       ]
     : []
 
@@ -319,6 +327,11 @@ export default function AssignMenu() {
             </select>
           </div>
         )}
+        {sendToAll && (
+          <p className="text-xs text-gray-400 -mt-2">
+            Pour un envoi groupé, le menu est composé à partir de toutes les recettes du site.
+          </p>
+        )}
 
         <div className="flex gap-3">
           <div className="flex-1">
@@ -366,6 +379,17 @@ export default function AssignMenu() {
           </div>
         </div>
 
+        <div>
+          <label className="block mb-1 text-sm text-gray-600">Entrées</label>
+          <input
+            type="number"
+            min="0"
+            value={nbEntrees}
+            onChange={(e) => setNbEntrees(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+          />
+        </div>
+
         {error && <p className="text-red-600 text-sm">{error}</p>}
         {message && <p className="text-green-700 text-sm">{message}</p>}
 
@@ -388,30 +412,6 @@ export default function AssignMenu() {
           {renderSection('Desserts / goûters', previewMenu.desserts, 'bg-pink-50', 'desserts')}
           {renderSection('Boissons', previewMenu.boissons, 'bg-green-50', 'boissons')}
           {renderSection('Pains', previewMenu.pains, 'bg-gray-100', 'pains')}
+          {renderSection('Entrées', previewMenu.entrees, 'bg-teal-50', 'entrees')}
 
-          <div className="mt-4">
-            <MenuPdfDownloadButton menu={previewMenu} origin="admin" periodStart={periodStart} />
-          </div>
-
-          {!sent && (
-            <button
-              onClick={handleSend}
-              disabled={sending}
-              className="py-2 px-5 bg-gray-900 text-white rounded-lg text-sm font-medium disabled:opacity-50"
-            >
-              {sending ? 'Envoi...' : sendToAll ? `Envoyer à ${clients.length} cliente(s)` : 'Envoyer à la cliente'}
-            </button>
-          )}
-        </div>
-      )}
-
-      {pickerFor && (
-        <RecipePickerModal
-          excludeIds={excludeIds}
-          onSelect={(recipe) => handleManualSwap(recipe.id)}
-          onClose={() => setPickerFor(null)}
-        />
-      )}
-    </div>
-  )
-}
+          <div
