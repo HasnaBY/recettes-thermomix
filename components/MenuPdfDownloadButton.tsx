@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { categorizeIngredient } from '@/lib/categorizeIngredient'
 import { getOrderedPlats, getOrderedAccompaniments } from '@/lib/menuOrder'
+import { categorizeIngredient, isPlainWaterIngredient } from '@/lib/categorizeIngredient'
+
 
 type MenuItem = { recipe_id: string; recipe_title: string }
 type Menu = {
@@ -187,7 +189,7 @@ export default function MenuPdfDownloadButton({
     const allIngredientEntries: { ingredient: string; recipeTitle: string }[] = []
 
     orderedRecipes.forEach((r: any) => {
-      const ingredients: string[] = r.ingredients ?? []
+      const ingredients: string[] = (r.ingredients ?? []).filter((ing: string) => !isPlainWaterIngredient(ing))
       shoppingByRecipe.push({ recipeTitle: r.title, items: ingredients })
       ingredients.forEach((ing) => {
         allIngredientEntries.push({ ingredient: ing, recipeTitle: r.title })

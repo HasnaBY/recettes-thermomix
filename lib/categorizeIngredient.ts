@@ -65,3 +65,30 @@ export function categorizeIngredient(ingredient: string): string {
   }
   return 'Autres'
 }
+const PLAIN_WATER_VARIANTS = [
+  'eau',
+  'eau froide',
+  'eau chaude',
+  'eau tiede',
+  'eau tiède',
+  'eau tres chaude',
+  'eau très chaude',
+  'eau du robinet',
+  'eau minerale',
+  'eau minérale',
+  'eau plate',
+  'eau gazeuse',
+  'eau bouillante',
+]
+
+export function isPlainWaterIngredient(ingredient: string): boolean {
+  const cleaned = ingredient
+    .toLowerCase()
+    .replace(/[\d.,]+/g, '')
+    .replace(/\b(g|kg|ml|cl|l|litre|litres|verre|verres|tasse|tasses|cuillere|cuillère|cuilleres|cuillères|cs|cc|pincee|pincée|pincees|pincées)\b/g, '')
+    .replace(/\bd['’]?\s*/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  return PLAIN_WATER_VARIANTS.includes(cleaned)
+}
