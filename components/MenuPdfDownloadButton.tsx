@@ -55,35 +55,35 @@ export default function MenuPdfDownloadButton({
     ...(menu.entrees ?? []),
   ]
 
-  const fetchRecipesAndAssets = async () => {
-    const ids = allItems.map((i) => i.recipe_id)
+const fetchRecipesAndAssets = async () => {
+  const ids = allItems.map((i) => i.recipe_id)
 
-    const { data: rawRecipes, error: fetchError } = await supabase
-      .from('recipes')
-      .select('id, title, image_url, menu_image_url, cookidoo_url, ingredients')
-      .in('id', ids)
+  const { data: rawRecipes, error: fetchError } = await supabase
+    .from('recipes')
+    .select('id, title, image_url, menu_image_url, cookidoo_url, ingredients')
+    .in('id', ids)
 
-    if (fetchError || !rawRecipes) throw new Error(fetchError?.message ?? 'Erreur de récupération des recettes')
+  if (fetchError || !rawRecipes) throw new Error(fetchError?.message ?? 'Erreur de récupération des recettes')
 
-    const recipes = rawRecipes.map((r) => ({ ...r, image_url: r.menu_image_url || r.image_url }))
+  const recipes = rawRecipes.map((r) => ({ ...r, image_url: r.menu_image_url || r.image_url }))
 
-    const { data: logoData } = await supabase
-      .from('brand_photos')
-      .select('key, image_url')
-      .in('key', ['round_logo', 'menu_pdf_background'])
+  const { data: logoData } = await supabase
+    .from('brand_photos')
+    .select('key, image_url')
+    .in('key', ['round_logo', 'menu_pdf_background', 'shopping_list_pdf_background'])
 
-    const siteLogo = logoData?.find((l) => l.key === 'round_logo')?.image_url ?? null
-    const backgroundImage = logoData?.find((l) => l.key === 'menu_pdf_background')?.image_url ?? null
+  const siteLogo = logoData?.find((l) => l.key === 'round_logo')?.image_url ?? null
+  const backgroundImage = logoData?.find((l) => l.key === 'menu_pdf_background')?.image_url ?? null
+  const shoppingListBackground = logoData?.find((l) => l.key === 'shopping_list_pdf_background')?.image_url ?? null
 
-    return { recipes, siteLogo, backgroundImage }
-  }
+  return { recipes, siteLogo, backgroundImage, shoppingListBackground }
+}
 
   const handleDownloadMenu = async () => {
     setGeneratingMenu(true)
     setError('')
     try {
       const { recipes, backgroundImage } = await fetchRecipesAndAssets()
-
       const { pdf } = await import('@react-pdf/renderer')
       const { default: MenuPdfDocument } = await import('@/lib/pdf/MenuPdfDocument')
 
@@ -138,56 +138,56 @@ export default function MenuPdfDownloadButton({
   }
 
   const handleDownloadShoppingList = async () => {
-    setGeneratingList(true)
-    setError('')
-    try {
-      const { recipes, siteLogo } = await fetchRecipesAndAssets()
+  setGeneratingList(true)
+  setError('')
+  try {
+    const { recipes, shoppingListBackground } = await fetchRecipesAndAssets()
 
-      const { pdf } = await import('@react-pdf/renderer')
-      const { default: ShoppingListPdfDocument } = await import('@/lib/pdf/ShoppingListPdfDocument')
+    const { pdf } = await import('@react-pdf/renderer')
+    const { default: ShoppingListPdfDocument } = await import('@/lib/pdf/ShoppingListPdfDocument')
 
-      const recipeMap = new Map(recipes.map((r) => [r.id, r]))
-      const orderedRecipes = allItems
-        .map((i) => recipeMap.get(i.recipe_id))
-        .filter((r): r is NonNullable<typeof r> => Boolean(r))
+    const recipeMap = new Map(recipes.map((r) => [r.id, r]))
+    const orderedRecipes = allItems
+      .map((i) => recipeMap.get(i.recipe_id))
+      .filter((r): r is NonNullable<typeof r> => Boolean(r))
 
-      const shoppingByRecipe: { recipeTitle: string; items: string[] }[] = []
-      const shoppingByCategory: Record<string, { ingredient: string; recipeTitle: string }[]> = {}
+    const shoppingByRecipe: { recipeTitle: string; items: string[] }[] = []
+    const shoppingByCategory: Record<string, { ingredient: string; recipeTitle: string }[]> = {}
 
-      orderedRecipes.forEach((r: any) => {
-        const ingredients: string[] = r.ingredients ?? []
-        shoppingByRecipe.push({ recipeTitle: r.title, items: ingredients })
-        ingredients.forEach((ing) => {
-          const cat = categorizeIngredient(ing)
-          if (!shoppingByCategory[cat]) shoppingByCategory[cat] = []
-          shoppingByCategory[cat].push({ ingredient: ing, recipeTitle: r.title })
-        })
+    orderedRecipes.forEach((r: any) => {
+      const ingredients: string[] = r.ingredients ?? []
+      shoppingByRecipe.push({ recipeTitle: r.title, items: ingredients })
+      ingredients.forEach((ing) => {
+        const cat = categorizeIngredient(ing)
+        if (!shoppingByCategory[cat]) shoppingByCategory[cat] = []
+        shoppingByCategory[cat].push({ ingredient: ing, recipeTitle: r.title })
       })
+    })
 
-      const generatedAt = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+    const generatedAt = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 
-      const blob = await pdf(
-        <ShoppingListPdfDocument
-          shoppingByRecipe={shoppingByRecipe}
-          shoppingByCategory={shoppingByCategory}
-          grouping={grouping}
-          siteLogo={siteLogo}
-          generatedAt={generatedAt}
-        />
-      ).toBlob()
+    const blob = await pdf(
+      <ShoppingListPdfDocument
+        shoppingByRecipe={shoppingByRecipe}
+        shoppingByCategory={shoppingByCategory}
+        grouping={grouping}
+        backgroundImage={shoppingListBackground}
+        generatedAt={generatedAt}
+      />
+    ).toBlob()
 
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'liste-de-courses.pdf'
-      a.click()
-      URL.revokeObjectURL(url)
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setGeneratingList(false)
-    }
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'liste-de-courses.pdf'
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch (err: any) {
+    setError(err.message)
+  } finally {
+    setGeneratingList(false)
   }
+}
 
   if (checkingSetting) return null
 
