@@ -170,56 +170,85 @@ export default function MenuPdfDownloadButton({
   }
 
   const handleDownloadShoppingList = async () => {
-    setGeneratingList(true)
-    setError('')
+  setGeneratingList(true)
+  setError('')
+  try {
+    const { recipes, shoppingListBackground } = await fetchRecipesAndAssets()
+
+    const { pdf } = await import('@react-pdf/renderer')
+    const { default: ShoppingListPdfDocument } = await import('@/lib/pdf/ShoppingListPdfDocument')
+
+    const recipeMap = new Map(recipes.map((r) => [r.id, r]))
+    const orderedRecipes = allItems
+      .map((i) => recipeMap.get(i.recipe_id))
+      .filter((r): r is NonNullable<typeof r> => Boolean(r))
+
+    const shoppingByRecipe: { recipeTitle: string; items: string[] }[] = []
+    const allIngredientEntries: { ingredient: string; recipeTitle: string }[] = []
+
+    orderedRecipes.forEach((r: any) => {
+      const ingredients: string[] = r.ingredients ?? []
+      shoppingByRecipe.push({ recipeTitle: r.title, items: ingredients })
+      ingredients.forEach((ing) => {
+        allIngredientEntries.push({ ingredient: ing, recipeTitle: r.title })
+      })
+    })
+
+    // Catégorisation : essaie l'IA en premier, se replie sur les mots-clés si désactivée ou en erreur.
+    let categoryOf: (ingredient: string) => string
+
     try {
-      const { recipes, shoppingListBackground } = await fetchRecipesAndAssets()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
 
-      const { pdf } = await import('@react-pdf/renderer')
-      const { default: ShoppingListPdfDocument } = await import('@/lib/pdf/ShoppingListPdfDocument')
+      const uniqueIngredients = [...new Set(allIngredientEntries.map((e) => e.ingredient))]
 
-      const recipeMap = new Map(recipes.map((r) => [r.id, r]))
-      const orderedRecipes = allItems
-        .map((i) => recipeMap.get(i.recipe_id))
-        .filter((r): r is NonNullable<typeof r> => Boolean(r))
-
-      const shoppingByRecipe: { recipeTitle: string; items: string[] }[] = []
-      const shoppingByCategory: Record<string, { ingredient: string; recipeTitle: string }[]> = {}
-
-      orderedRecipes.forEach((r: any) => {
-        const ingredients: string[] = r.ingredients ?? []
-        shoppingByRecipe.push({ recipeTitle: r.title, items: ingredients })
-        ingredients.forEach((ing) => {
-          const cat = categorizeIngredient(ing)
-          if (!shoppingByCategory[cat]) shoppingByCategory[cat] = []
-          shoppingByCategory[cat].push({ ingredient: ing, recipeTitle: r.title })
-        })
+      const response = await fetch('/api/categorize-ingredients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ ingredients: uniqueIngredients }),
       })
 
-      const generatedAt = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+      if (!response.ok) throw new Error('IA indisponible')
 
-      const blob = await pdf(
-        <ShoppingListPdfDocument
-          shoppingByRecipe={shoppingByRecipe}
-          shoppingByCategory={shoppingByCategory}
-          grouping={grouping}
-          backgroundImage={shoppingListBackground}
-          generatedAt={generatedAt}
-        />
-      ).toBlob()
-
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'liste-de-courses.pdf'
-      a.click()
-      URL.revokeObjectURL(url)
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setGeneratingList(false)
+      const { mapping } = await response.json()
+      categoryOf = (ingredient: string) => mapping[ingredient] ?? categorizeIngredient(ingredient)
+    } catch {
+      categoryOf = (ingredient: string) => categorizeIngredient(ingredient)
     }
+
+    const shoppingByCategory: Record<string, { ingredient: string; recipeTitle: string }[]> = {}
+    allIngredientEntries.forEach(({ ingredient, recipeTitle }) => {
+      const cat = categoryOf(ingredient)
+      if (!shoppingByCategory[cat]) shoppingByCategory[cat] = []
+      shoppingByCategory[cat].push({ ingredient, recipeTitle })
+    })
+
+    const generatedAt = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+
+    const blob = await pdf(
+      <ShoppingListPdfDocument
+        shoppingByRecipe={shoppingByRecipe}
+        shoppingByCategory={shoppingByCategory}
+        grouping={grouping}
+        backgroundImage={shoppingListBackground}
+        generatedAt={generatedAt}
+      />
+    ).toBlob()
+
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'liste-de-courses.pdf'
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch (err: any) {
+    setError(err.message)
+  } finally {
+    setGeneratingList(false)
   }
+}
 
   if (checkingSetting) return null
 

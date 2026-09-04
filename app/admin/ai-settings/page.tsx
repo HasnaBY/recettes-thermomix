@@ -11,6 +11,7 @@ type AiFeatures = {
   chatbot_enabled: boolean
   recipe_import_enabled: boolean
   translate_enabled: boolean
+  ingredient_categorization_enabled: boolean
 }
 
 const FEATURES: { key: keyof AiFeatures; label: string; description: string }[] = [
@@ -21,6 +22,7 @@ const FEATURES: { key: keyof AiFeatures; label: string; description: string }[] 
   { key: 'recipe_import_enabled', label: 'Import de recette (lien ou texte collé)', description: "Colle un lien ou le texte d'une recette, l'IA extrait titre/ingrédients/étapes tels quels." },
   { key: 'translate_enabled', label: 'Traduction de recette vers le français', description: 'Traduit titre, description, ingrédients, étapes et conseils d\'une recette existante.' },
   { key: 'chatbot_enabled', label: 'Chatbot culinaire pour les clientes', description: 'Assistant conversationnel pour répondre aux questions Thermomix.' },
+  { key: 'ingredient_categorization_enabled', label: 'Catégorisation IA de la liste de courses', description: 'Classe les ingrédients par type de produit (fruits/légumes, viandes...) via IA, plus fiable que le classement par mots-clés.' },
 ]
 
 export default function AdminAiSettings() {
