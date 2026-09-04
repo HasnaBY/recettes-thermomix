@@ -108,7 +108,7 @@ export default function AdminMenus() {
 
                     {row.pdf_url && (
                       
-                        href={row.pdf_url}
+                      <a  href={row.pdf_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-block mb-2 text-xs text-gray-700 underline"
