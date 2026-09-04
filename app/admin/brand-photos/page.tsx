@@ -15,9 +15,11 @@ const SLOTS = [
   { key: 'cercle_logo', label: '💛 Logo Le Cercle With Love', usage: 'PDF du menu (en-tête)' },
   { key: 'menu_pdf_background', label: '🌸 Fond décoratif du PDF menu', usage: 'PDF du menu de la semaine — haute résolution requise, peu compressée' },
   { key: 'shopping_list_pdf_background', label: '🛒 Fond décoratif du PDF liste de courses', usage: 'PDF de la liste de courses — haute résolution requise, se répète sur toutes les pages' },
+  { key: 'client_menu_pdf_background', label: '📋 Fond décoratif du PDF "Ton menu" (clientes)', usage: 'PDF du menu généré par les clientes — haute résolution, se répète sur plusieurs pages' },
+
 ]
 
-const HIGH_RES_KEYS = ['menu_pdf_background', 'shopping_list_pdf_background']
+const HIGH_RES_KEYS = ['menu_pdf_background', 'shopping_list_pdf_background', 'client_menu_pdf_background']
 
 export default function AdminBrandPhotos() {
   const [photos, setPhotos] = useState<Record<string, string | null>>({})
