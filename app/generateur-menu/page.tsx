@@ -33,6 +33,8 @@ export default function GenerateurMenu() {
   const [limit, setLimit] = useState(3)
   const [showForm, setShowForm] = useState(false)
 
+  const [nbEntrees, setNbEntrees] = useState('0')
+
   const [pickerFor, setPickerFor] = useState<{
     which: 'admin' | 'client'
     itemType: ItemType
@@ -133,6 +135,7 @@ export default function GenerateurMenu() {
           nbPains: parseInt(nbPains) || 0,
           source,
           periodStart,
+          nbEntrees: parseInt(nbEntrees) || 0,
         }),
       })
 
@@ -316,6 +319,8 @@ export default function GenerateurMenu() {
         {renderSection('Desserts / goûters', '🍰', menuRow.menu.desserts, 'desserts', 'bg-[#F6DEE1]/30')}
         {renderSection('Boissons', '🥤', menuRow.menu.boissons, 'boissons', 'bg-[#E3ECDD]/40')}
         {renderSection('Pains', '🍞', menuRow.menu.pains, 'pains', 'bg-[#F0EAE0]')}
+        {renderSection('Entrées', '🥗', menuRow.menu.entrees, 'entrees' as any, 'bg-[#E3ECDD]/60')}
+        
       </div>
     )
   }
@@ -421,6 +426,19 @@ export default function GenerateurMenu() {
                     className="w-full px-4 py-2 border border-[#F0EAE0] rounded-xl"
                   />
                 </div>
+
+                <div className="flex-1">
+                  <label className="block mb-1 text-sm text-[#3A3532]/70">Entrées</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="14"
+                    value={nbEntrees}
+                    onChange={(e) => setNbEntrees(e.target.value)}
+                    className="w-full px-4 py-2 border border-[#F0EAE0] rounded-xl"
+                  />
+                </div>
+
               </div>
 
               <button

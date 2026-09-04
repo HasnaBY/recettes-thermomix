@@ -33,6 +33,8 @@ export default function AssignMenu() {
 
   const [pickerFor, setPickerFor] = useState<{ itemType: ItemType; oldRecipeId: string } | null>(null)
 
+  const [nbEntrees, setNbEntrees] = useState('0')
+  
   const supabase = createClient()
 
   useEffect(() => {

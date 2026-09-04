@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { categorizeIngredient } from '@/lib/categorizeIngredient'
 
 type MenuItem = { recipe_id: string; recipe_title: string }
-type Menu = { plats?: MenuItem[]; desserts?: MenuItem[]; boissons?: MenuItem[]; pains?: MenuItem[] }
+type Menu = { plats?: MenuItem[]; desserts?: MenuItem[]; boissons?: MenuItem[]; pains?: MenuItem[]; entrees?: MenuItem[] }
 
 export default function MenuPdfDownloadButton({
   menu,
@@ -43,6 +43,7 @@ export default function MenuPdfDownloadButton({
     ...(menu.desserts ?? []),
     ...(menu.boissons ?? []),
     ...(menu.pains ?? []),
+    ...(menu.entrees ?? []),
   ]
 
   const fetchRecipesAndAssets = async () => {
@@ -88,6 +89,7 @@ export default function MenuPdfDownloadButton({
         desserts: buildCategoryList(menu.desserts),
         boissons: buildCategoryList(menu.boissons),
         pains: buildCategoryList(menu.pains),
+        entrees: buildCategoryList((menu as any).entrees),
       }
 
       const blob = await pdf(

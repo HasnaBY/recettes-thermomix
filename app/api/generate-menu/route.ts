@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getMondayOfWeek, toDateInputValue } from '@/lib/dateHelpers'
 
-type Kind = 'dessert' | 'boisson' | 'pain' | 'plat' | 'autre'
+type Kind = 'dessert' | 'boisson' | 'pain' | 'entree' | 'plat' | 'autre'
 
 function classify(category: string | null): Kind {
   if (!category) return 'autre'
@@ -10,6 +10,7 @@ function classify(category: string | null): Kind {
   if (c.includes('dessert') || c.includes('goûter') || c.includes('gouter')) return 'dessert'
   if (c.includes('boisson')) return 'boisson'
   if (c.includes('pain')) return 'pain'
+  if (c.includes('entrée') || c.includes('entree')) return 'entree'
   if (c.includes('plat') || c.includes('salade')) return 'plat'
   return 'autre'
 }
@@ -50,12 +51,21 @@ export async function POST(request: NextRequest) {
     .single()
 
   const body = await request.json()
-  const { nbPlats, nbDesserts, nbBoissons = 0, nbPains = 0, source, targetUserId, preview = false, periodStart } = body
+  const {
+    nbPlats,
+    nbDesserts,
+    nbBoissons = 0,
+    nbPains = 0,
+    nbEntrees = 0,
+    source,
+    targetUserId,
+    preview = false,
+    periodStart,
+  } = body
 
   const isAdminAssigning = !!targetUserId && requesterProfile?.is_admin
   const ownerId = isAdminAssigning ? targetUserId : userData.user.id
 
-  // week_start : le lundi choisi (admin) ou le lundi de la semaine en cours (cliente)
   const weekStart = toDateInputValue(getMondayOfWeek(periodStart ? new Date(periodStart + 'T00:00:00') : new Date()))
   const finalPeriodStart = periodStart ?? weekStart
 
@@ -118,6 +128,7 @@ export async function POST(request: NextRequest) {
     { key: 'dessert', requested: nbDesserts, label: 'dessert(s)/goûter(s)' },
     { key: 'boisson', requested: nbBoissons, label: 'boisson(s)' },
     { key: 'pain', requested: nbPains, label: 'pain(s)' },
+    { key: 'entree', requested: nbEntrees, label: 'entrée(s)' },
   ]
 
   const notes: string[] = []
@@ -126,8 +137,16 @@ export async function POST(request: NextRequest) {
     desserts: [],
     boissons: [],
     pains: [],
+    entrees: [],
   }
-  const resultKeyMap: Record<Kind, string> = { plat: 'plats', dessert: 'desserts', boisson: 'boissons', pain: 'pains', autre: '' }
+  const resultKeyMap: Record<Kind, string> = {
+    plat: 'plats',
+    dessert: 'desserts',
+    boisson: 'boissons',
+    pain: 'pains',
+    entree: 'entrees',
+    autre: '',
+  }
 
   for (const k of kinds) {
     if (k.requested <= 0) continue
@@ -154,7 +173,7 @@ export async function POST(request: NextRequest) {
   }
 
   const menuJson = { ...result, notes }
-  const params = { nbPlats, nbDesserts, nbBoissons, nbPains, source, periodStart: finalPeriodStart }
+  const params = { nbPlats, nbDesserts, nbBoissons, nbPains, nbEntrees, source, periodStart: finalPeriodStart }
 
   if (preview) {
     return NextResponse.json({ menu: menuJson, params, weekStart })
