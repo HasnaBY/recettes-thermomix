@@ -16,8 +16,15 @@ export function getMondayOfWeek(from: Date = new Date()): Date {
   return d
 }
 
+// Utilise les composants locaux (année/mois/jour) au lieu de toISOString(),
+// pour éviter que le passage en UTC ne fasse reculer la date d'un jour
+// selon le fuseau horaire (ex: en France, minuit local peut devenir
+// la veille en UTC).
 export function toDateInputValue(date: Date): string {
-  return date.toISOString().split('T')[0]
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 export function formatDayLabel(startDate: string, dayIndex: number): string {
