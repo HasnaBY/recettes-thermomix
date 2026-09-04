@@ -119,7 +119,7 @@ export default function MesMenus() {
 
                     {row.pdf_url && (
                       
-                        href={row.pdf_url}
+                      <a  href={row.pdf_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-block mb-3 text-xs text-[#3A3532] underline"
