@@ -75,7 +75,7 @@ export default function GenerateurMenu() {
   }
 
   const loadWeeklyUsage = async (userId: string) => {
-    const currentWeekStart = toDateInputValue(getMondayOfWeek())
+    const currentWeekStart = toDateInputValue(getNextMonday())
     const { count } = await supabase
       .from('generated_menus')
       .select('*', { count: 'exact', head: true })
