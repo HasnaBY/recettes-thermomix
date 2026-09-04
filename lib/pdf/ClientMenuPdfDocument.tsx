@@ -4,9 +4,8 @@ const SITE_URL = 'https://www.withlovehasna.com'
 const LOGO_LINK = { top: 1, left: 30, width: 40, height: 17 }
 const FOOTER_LINK = { top: 96, left: 20, width: 60, height: 3.5 }
 
-// Réserve l'espace de l'entête décoratif ("LE CERCLE / With Love, Hasna / TON MENU")
-// sur CHAQUE page générée, pas seulement la première.
-const HEADER_SPACE = 250
+// Espace réservé en haut de CHAQUE page pour laisser voir l'entête décoratif du fond.
+const HEADER_SPACE = 195
 const FOOTER_SPACE = 60
 
 const styles = StyleSheet.create({
@@ -22,21 +21,24 @@ const styles = StyleSheet.create({
   cardImagePlaceholder: { width: 60, height: 60, borderRadius: 8, marginRight: 10, backgroundColor: '#F0EAE0' },
   cardInfo: { flexDirection: 'column', flex: 1 },
   cardBadge: { alignSelf: 'flex-start', borderRadius: 8, paddingVertical: 2, paddingHorizontal: 7, marginBottom: 4 },
-  cardBadgePlat: { backgroundColor: '#3A3532' },
-  cardBadgeAccomp: { backgroundColor: '#C9A44C' },
-  cardBadgeText: { fontSize: 6.5, fontWeight: 700, color: '#FDFBF6' },
   cardTitle: { fontSize: 9.5, fontWeight: 700, color: '#3A3532', marginBottom: 2 },
   cardLink: { fontSize: 7, color: '#3A3532', textDecoration: 'underline' },
 
   sectionTitle: { fontSize: 12, fontWeight: 700, color: '#4A5A45', marginTop: 6, marginBottom: 8 },
 })
 
+const CATEGORY_STYLES: Record<string, { bg: string; label: string; badgeBg: string }> = {
+  plats: { bg: '#DCEAF0', label: 'Plats', badgeBg: '#3A3532' },
+  desserts: { bg: '#F6DEE1', label: 'Desserts / goûters', badgeBg: '#C97064' },
+  boissons: { bg: '#E3ECDD', label: 'Boissons', badgeBg: '#7A9471' },
+  entrees: { bg: '#F0EAE0', label: 'Entrées', badgeBg: '#B08A5A' },
+  pains: { bg: '#F0EAE0', label: 'Pains', badgeBg: '#B08A5A' },
+}
+
 type Recipe = { id: string; title: string; image_url: string | null; cookidoo_url: string | null }
+type CategorizedRecipes = Record<string, Recipe[]>
 
-function RecipeCard({ recipe, kind }: { recipe: Recipe; kind: 'plat' | 'accomp' }) {
-  const badgeStyle = kind === 'plat' ? styles.cardBadgePlat : styles.cardBadgeAccomp
-  const badgeLabel = kind === 'plat' ? 'PLAT' : 'ACCOMPAGNEMENT'
-
+function RecipeCard({ recipe, badgeBg, badgeLabel }: { recipe: Recipe; badgeBg: string; badgeLabel: string }) {
   return (
     <View style={styles.card} wrap={false}>
       {recipe.image_url ? (
@@ -45,8 +47,8 @@ function RecipeCard({ recipe, kind }: { recipe: Recipe; kind: 'plat' | 'accomp' 
         <View style={styles.cardImagePlaceholder} />
       )}
       <View style={styles.cardInfo}>
-        <View style={[styles.cardBadge, badgeStyle]}>
-          <Text style={styles.cardBadgeText}>{badgeLabel}</Text>
+        <View style={[styles.cardBadge, { backgroundColor: badgeBg }]}>
+          <Text style={{ fontSize: 6.5, fontWeight: 700, color: '#FDFBF6' }}>{badgeLabel.toUpperCase()}</Text>
         </View>
         <Text style={styles.cardTitle}>{recipe.title}</Text>
         {recipe.cookidoo_url && (
@@ -60,16 +62,16 @@ function RecipeCard({ recipe, kind }: { recipe: Recipe; kind: 'plat' | 'accomp' 
 }
 
 export default function ClientMenuPdfDocument({
-  orderedPlats,
-  orderedAccompaniments,
+  categorizedRecipes,
   backgroundImage,
   generatedAt,
 }: {
-  orderedPlats: Recipe[]
-  orderedAccompaniments: Recipe[]
+  categorizedRecipes: CategorizedRecipes
   backgroundImage: string | null
   generatedAt: string
 }) {
+  const orderedCategoryKeys = ['plats', 'entrees', 'desserts', 'boissons', 'pains']
+
   return (
     <Document>
       <Page size="A4" wrap>
@@ -89,38 +91,12 @@ export default function ClientMenuPdfDocument({
         <View style={styles.headerSpacer} fixed />
 
         <View style={styles.content}>
-          <Text style={styles.dateText}>Genere le {generatedAt}</Text>
+          <Text style={styles.dateText}>Généré le {generatedAt}</Text>
 
-          {orderedPlats.length > 0 && (
-            <>
-              <Text style={styles.sectionTitle}>Plats</Text>
-              {orderedPlats.map((r) => (
-                <RecipeCard key={r.id} recipe={r} kind="plat" />
-              ))}
-            </>
-          )}
+          {orderedCategoryKeys.map((key) => {
+            const recipes = categorizedRecipes[key] ?? []
+            if (recipes.length === 0) return null
+            const style = CATEGORY_STYLES[key]
 
-          {orderedAccompaniments.length > 0 && (
-            <>
-              <Text style={styles.sectionTitle}>Accompagnements</Text>
-              {orderedAccompaniments.map((r) => (
-                <RecipeCard key={r.id} recipe={r} kind="accomp" />
-              ))}
-            </>
-          )}
-        </View>
-
-        <Link
-          src={SITE_URL}
-          style={[
-            styles.invisibleLink,
-            { top: `${FOOTER_LINK.top}%`, left: `${FOOTER_LINK.left}%`, width: `${FOOTER_LINK.width}%`, height: `${FOOTER_LINK.height}%` },
-          ]}
-          fixed
-        >
-          <Text> </Text>
-        </Link>
-      </Page>
-    </Document>
-  )
-}
+            return (
+              <View key={key}></View>
