@@ -8,7 +8,7 @@ import RecipePickerModal from '@/components/RecipePickerModal'
 import { getMondayOfWeek, toDateInputValue } from '@/lib/dateHelpers'
 
 type MenuItem = { recipe_id: string; recipe_title: string }
-type Menu = { plats: MenuItem[]; desserts: MenuItem[]; boissons: MenuItem[]; pains: MenuItem[]; notes?: string[] }
+type Menu = { plats?: MenuItem[]; desserts?: MenuItem[]; boissons?: MenuItem[]; pains?: MenuItem[]; entrees?: MenuItem[] }
 type MenuRow = { id: string; menu: Menu; created_at: string; origin: string; params?: any }
 type ItemType = 'plats' | 'desserts' | 'boissons' | 'pains'
 
@@ -320,7 +320,7 @@ export default function GenerateurMenu() {
         {renderSection('Boissons', '🥤', menuRow.menu.boissons, 'boissons', 'bg-[#E3ECDD]/40')}
         {renderSection('Pains', '🍞', menuRow.menu.pains, 'pains', 'bg-[#F0EAE0]')}
         {renderSection('Entrées', '🥗', menuRow.menu.entrees, 'entrees' as any, 'bg-[#E3ECDD]/60')}
-        
+
       </div>
     )
   }
