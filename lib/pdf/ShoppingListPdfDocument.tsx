@@ -5,7 +5,7 @@ const LOGO_LINK = { top: 1, left: 30, width: 40, height: 17 }
 const FOOTER_LINK = { top: 96, left: 20, width: 60, height: 3.5 }
 
 const HEADER_SPACE = 260
-const FOOTER_SPACE = 50
+const FOOTER_SPACE = 90
 
 const styles = StyleSheet.create({
   background: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
