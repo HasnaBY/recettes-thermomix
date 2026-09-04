@@ -2,8 +2,8 @@ import { Document, Page, Text, View, Image, StyleSheet, Link } from '@react-pdf/
 import { Fragment } from 'react'
 import { formatDateRange } from '@/lib/dateHelpers'
 
-const DATE_TOP = 20
-const ROW_TOP = [31.5, 45, 58.2, 71.5, 84]
+const DATE_TOP = 22
+const ROW_TOP = [31.5, 45, 58.2, 71.5, 86]
 const ROW_HEIGHT = 13.5
 const PLAT_LEFT = 24.4
 const PLAT_WIDTH = 32.6
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   background: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
   overlay: { position: 'relative', width: '100%', height: '100%' },
 
-  dateBanner: { position: 'absolute', top: `${DATE_TOP}%`, left: '35%', width: '40%', flexDirection: 'row', justifyContent: 'space-between' },
+  dateBanner: { position: 'absolute', top: `${DATE_TOP}%`, left: '32%', width: '40%', flexDirection: 'row', justifyContent: 'space-between' },
   dateStart: { fontSize: 9, fontWeight: 700, color: '#4A5A45', marginLeft: '14%', fontStyle: 'italic' },
   dateEnd: { fontSize: 9, fontWeight: 700, color: '#4A5A45', marginRight: '8%', fontStyle: 'italic' },
 
