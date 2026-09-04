@@ -25,14 +25,32 @@ const typeToKind: Record<string, Kind> = {
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: userData } = await supabase.auth.getUser()
-  if (!userData.user) return NextResponse.json({ error: 'Non connectée' }, { status: 401 })
 
-  const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', userData.user.id).single()
-  if (!profile?.is_admin) return NextResponse.json({ error: 'Réservé aux admins' }, { status: 403 })
+  if (!userData.user) {
+    return NextResponse.json({ error: 'Non connectée' }, { status: 401 })
+  }
 
-  const { menu, itemType, oldRecipeId, source, targetUserId, newRecipeId } = await request.json()
+  const { data: requesterProfile } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', userData.user.id)
+    .single()
 
-  const currentIds: string[] = Object.values(menu)
+  const body = await request.json()
+  const { menuId, itemType, oldRecipeId, newRecipeId } = body
+
+  let menuQuery = supabase.from('generated_menus').select('*').eq('id', menuId)
+  if (!requesterProfile?.is_admin) {
+    menuQuery = menuQuery.eq('user_id', userData.user.id)
+  }
+
+  const { data: menuRow, error: menuError } = await menuQuery.single()
+
+  if (menuError || !menuRow) {
+    return NextResponse.json({ error: 'Menu introuvable' }, { status: 404 })
+  }
+
+  const currentIds: string[] = Object.values(menuRow.menu)
     .filter((v: any) => Array.isArray(v))
     .flat()
     .map((i: any) => i.recipe_id)
@@ -59,7 +77,9 @@ export async function POST(request: NextRequest) {
 
     replacement = { id: chosen.id, title: chosen.title }
   } else {
+    const source = menuRow.params?.source ?? 'all'
     const kind = typeToKind[itemType]
+
     const { data: allRecipes } = await supabase
       .from('recipes')
       .select('id, title, category, ingredients')
@@ -68,8 +88,8 @@ export async function POST(request: NextRequest) {
     const withIngredients = (allRecipes ?? []).filter((r) => r.ingredients && r.ingredients.length > 0)
 
     let favoriteIds: string[] = []
-    if (source === 'favorites' && targetUserId) {
-      const { data: favIds } = await supabase.from('favorites').select('recipe_id').eq('user_id', targetUserId)
+    if (source === 'favorites') {
+      const { data: favIds } = await supabase.from('favorites').select('recipe_id').eq('user_id', menuRow.user_id)
       favoriteIds = (favIds ?? []).map((f) => f.recipe_id)
     }
 
@@ -83,7 +103,10 @@ export async function POST(request: NextRequest) {
     const candidates = priorityCandidates.length > 0 ? priorityCandidates : fallbackCandidates
 
     if (candidates.length === 0) {
-      return NextResponse.json({ error: 'Aucune autre recette disponible pour remplacer celle-ci.' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Aucune autre recette disponible sur tout le site pour remplacer celle-ci.' },
+        { status: 400 }
+      )
     }
 
     const picked = candidates[Math.floor(Math.random() * candidates.length)]
