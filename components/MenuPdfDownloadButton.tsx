@@ -101,17 +101,18 @@ export default function MenuPdfDownloadButton({
       let blob: Blob
 
       if (origin === 'admin') {
-        // Menu envoyé par toi : calibrage fixe jour par jour, une seule page
-        const { pdf } = await import('@react-pdf/renderer')
-        const { default: MenuPdfDocument } = await import('@/lib/pdf/MenuPdfDocument')
-        blob = await pdf(
-          <MenuPdfDocument
-            categorizedRecipes={{ plats: orderedPlats, desserts: orderedAccompaniments }}
-            backgroundImage={adminBackgroundImage}
-            periodStart={periodStart ?? null}
-          />
-        ).toBlob()
-      } else {
+      // Menu envoyé par toi : calibrage fixe jour par jour, une seule page
+      const { pdf } = await import('@react-pdf/renderer')
+      const { default: MenuPdfDocument } = await import('@/lib/pdf/MenuPdfDocument')
+      blob = await pdf(
+        <MenuPdfDocument
+          orderedPlats={orderedPlats}
+          orderedAccompaniments={orderedAccompaniments}
+          backgroundImage={adminBackgroundImage}
+          periodStart={periodStart ?? null}
+        />
+      ).toBlob()
+    } else {
         // Menu généré par la cliente : fond répétable, nombre de pages variable
         const { pdf } = await import('@react-pdf/renderer')
         const { default: ClientMenuPdfDocument } = await import('@/lib/pdf/ClientMenuPdfDocument')
