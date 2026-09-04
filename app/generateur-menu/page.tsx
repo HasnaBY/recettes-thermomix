@@ -35,6 +35,10 @@ export default function GenerateurMenu() {
   const [limit, setLimit] = useState(3)
   const [showForm, setShowForm] = useState(false)
 
+  // Les notes ne s'affichent que juste après une génération fraîche dans cette session,
+  // pas quand on recharge un menu déjà existant depuis la base.
+  const [justGeneratedId, setJustGeneratedId] = useState<string | null>(null)
+
   const [pickerFor, setPickerFor] = useState<{
     which: 'admin' | 'client'
     itemType: ItemType
@@ -149,6 +153,17 @@ export default function GenerateurMenu() {
         if (userId) {
           await loadMenus(userId)
           await loadWeeklyUsage(userId)
+
+          // Récupère l'id du menu tout juste créé pour n'afficher les notes que cette fois-ci.
+          const { data: latest } = await supabase
+            .from('generated_menus')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('origin', 'client')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single()
+          if (latest) setJustGeneratedId(latest.id)
         }
       }
     } catch (err: any) {
@@ -326,6 +341,8 @@ export default function GenerateurMenu() {
       )
     }
 
+    const showNotes = which === 'client' && menuRow.id === justGeneratedId
+
     return (
       <div className="mb-10 border border-[#F0EAE0] bg-white rounded-2xl p-5">
         <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
@@ -342,7 +359,7 @@ export default function GenerateurMenu() {
           </div>
         </div>
 
-        {menuRow.menu.notes && menuRow.menu.notes.length > 0 && (
+        {showNotes && menuRow.menu.notes && menuRow.menu.notes.length > 0 && (
           <div className="mb-4 border border-[#C9A44C] bg-[#F6DEE1]/20 rounded-xl p-3">
             {menuRow.menu.notes.map((note, i) => (
               <p key={i} className="text-xs text-[#3A3532]/80">
@@ -352,18 +369,18 @@ export default function GenerateurMenu() {
           </div>
         )}
 
+        {renderSection('Plats', '🍽️', menuRow.menu.plats, 'plats', 'bg-[#DCEAF0]/30')}
+        {renderSection('Desserts / goûters', '🍰', menuRow.menu.desserts, 'desserts', 'bg-[#F6DEE1]/30')}
+        {renderSection('Boissons', '🥤', menuRow.menu.boissons, 'boissons', 'bg-[#E3ECDD]/40')}
+        {renderSection('Pains', '🍞', menuRow.menu.pains, 'pains', 'bg-[#F0EAE0]')}
+        {renderSection('Entrées', '🥗', menuRow.menu.entrees, 'entrees', 'bg-[#E3ECDD]/60')}
+
         <MenuPdfDownloadButton
           menu={menuRow.menu}
           origin={menuRow.origin}
           periodStart={menuRow.params?.periodStart}
           menuId={menuRow.id}
         />
-
-        {renderSection('Plats', '🍽️', menuRow.menu.plats, 'plats', 'bg-[#DCEAF0]/30')}
-        {renderSection('Desserts / goûters', '🍰', menuRow.menu.desserts, 'desserts', 'bg-[#F6DEE1]/30')}
-        {renderSection('Boissons', '🥤', menuRow.menu.boissons, 'boissons', 'bg-[#E3ECDD]/40')}
-        {renderSection('Pains', '🍞', menuRow.menu.pains, 'pains', 'bg-[#F0EAE0]')}
-        {renderSection('Entrées', '🥗', menuRow.menu.entrees, 'entrees', 'bg-[#E3ECDD]/60')}
       </div>
     )
   }

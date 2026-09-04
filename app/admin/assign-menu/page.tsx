@@ -439,9 +439,7 @@ export default function AssignMenu() {
           {renderSection('Pains', previewMenu.pains, 'bg-gray-100', 'pains')}
           {renderSection('Entrées', previewMenu.entrees, 'bg-teal-50', 'entrees')}
 
-          <div className="mt-4">
-            <MenuPdfDownloadButton menu={previewMenu} origin="admin" periodStart={periodStart} />
-          </div>
+          <MenuPdfDownloadButton menu={previewMenu} origin="admin" periodStart={periodStart} />
 
           {!sent && (
             <button
