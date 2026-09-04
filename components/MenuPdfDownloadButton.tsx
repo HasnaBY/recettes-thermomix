@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { categorizeIngredient } from '@/lib/categorizeIngredient'
-import { getOrderedPlats, getOrderedAccompaniments } from '@/lib/menuOrder'
 import { categorizeIngredient, isPlainWaterIngredient } from '@/lib/categorizeIngredient'
+import { getOrderedPlats, getOrderedAccompaniments } from '@/lib/menuOrder'
 
 
 type MenuItem = { recipe_id: string; recipe_title: string }
