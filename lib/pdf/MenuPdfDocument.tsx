@@ -2,13 +2,19 @@ import { Document, Page, Text, View, Image, StyleSheet, Link } from '@react-pdf/
 import { Fragment } from 'react'
 import { formatDateRange } from '@/lib/dateHelpers'
 
-const DATE_TOP = 22
-const ROW_TOP = [31.5, 45, 58.2, 71.5, 84]
-const ROW_HEIGHT = 13.5
-const PLAT_LEFT = 24.4
-const PLAT_WIDTH = 32.6
+const DATE_TOP = 25.5
+const ROW_TOP = [32.5, 44.1, 55.7, 67.3, 78.9]
+const ROW_HEIGHT = 10.5
+const PLAT_LEFT = 23.4
+const PLAT_WIDTH = 33.6
 const DESSERT_LEFT = 58.7
 const DESSERT_WIDTH = 32.6
+
+// Zones cliquables invisibles superposées sur les éléments déjà présents dans l'image de fond.
+// À ajuster si le lien ne tombe pas exactement sur le logo/texte selon ton fond.
+const SITE_URL = 'https://www.withlovehasna.com'
+const LOGO_LINK = { top: 1, left: 30, width: 40, height: 18 }
+const FOOTER_LINK = { top: 96.5, left: 20, width: 60, height: 3.5 }
 
 const styles = StyleSheet.create({
   page: { backgroundColor: '#FDFBF6' },
@@ -24,6 +30,8 @@ const styles = StyleSheet.create({
   cellImagePlaceholder: { width: '100%', height: '80%', borderRadius: 10, backgroundColor: '#F0EAE0' },
   cellTitlePlat: { fontSize: 7.5, fontWeight: 700, color: '#4A5A45', textAlign: 'center', marginTop: 4 },
   cellTitleAccomp: { fontSize: 7.5, fontWeight: 700, color: '#C97064', textAlign: 'center', marginTop: 4 },
+
+  invisibleLink: { position: 'absolute' },
 })
 
 type Recipe = { id: string; title: string; image_url: string | null; cookidoo_url: string | null }
@@ -80,8 +88,6 @@ export default function MenuPdfDocument({
 }) {
   const plats = categorizedRecipes.plats ?? []
 
-  // Deuxième colonne : mélange desserts + boissons + pains + entrées,
-  // un élément par jour, dans cet ordre de priorité.
   const accompaniments: Recipe[] = [
     ...(categorizedRecipes.desserts ?? []),
     ...(categorizedRecipes.boissons ?? []),
@@ -106,6 +112,22 @@ export default function MenuPdfDocument({
         {backgroundImage && <Image src={backgroundImage} style={styles.background} fixed />}
 
         <View style={styles.overlay}>
+          {/* Zone cliquable invisible sur le logo/nom de marque en haut */}
+          <Link
+            src={SITE_URL}
+            style={[
+              styles.invisibleLink,
+              {
+                top: `${LOGO_LINK.top}%`,
+                left: `${LOGO_LINK.left}%`,
+                width: `${LOGO_LINK.width}%`,
+                height: `${LOGO_LINK.height}%`,
+              },
+            ]}
+          >
+            <Text> </Text>
+          </Link>
+
           <View style={styles.dateBanner}>
             <Text style={styles.dateStart}>{startLabel}</Text>
             <Text style={styles.dateEnd}>{endLabel}</Text>
@@ -124,6 +146,22 @@ export default function MenuPdfDocument({
               />
             </Fragment>
           ))}
+
+          {/* Zone cliquable invisible sur "www.WithLoveHasna.com" en bas */}
+          <Link
+            src={SITE_URL}
+            style={[
+              styles.invisibleLink,
+              {
+                top: `${FOOTER_LINK.top}%`,
+                left: `${FOOTER_LINK.left}%`,
+                width: `${FOOTER_LINK.width}%`,
+                height: `${FOOTER_LINK.height}%`,
+              },
+            ]}
+          >
+            <Text> </Text>
+          </Link>
         </View>
       </Page>
     </Document>
