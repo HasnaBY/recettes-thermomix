@@ -1,22 +1,22 @@
 import { Document, Page, Text, View, Image, StyleSheet, Link } from '@react-pdf/renderer'
 
-// Zones cliquables invisibles superposées sur le logo et le lien du site déjà dessinés
-// dans l'image de fond. À ajuster si le clic ne tombe pas exactement au bon endroit.
 const SITE_URL = 'https://www.withlovehasna.com'
 const LOGO_LINK = { top: 1, left: 30, width: 40, height: 17 }
 const FOOTER_LINK = { top: 96, left: 20, width: 60, height: 3.5 }
 
-// Le fond contient déjà l'entête "LE CERCLE / With Love, Hasna / LISTE DE COURSES"
-// donc le contenu texte démarre plus bas, sous ce bandeau.
-const CONTENT_TOP_PADDING = 230
-const CONTENT_BOTTOM_PADDING = 50
+// Réserve toujours l'espace de l'entête décoratif (logo + "LISTE DE COURSES") en haut
+// de CHAQUE page, pas seulement la première — c'est ça qui manquait.
+const HEADER_SPACE = 260
+const FOOTER_SPACE = 60
 
 const styles = StyleSheet.create({
-  page: { backgroundColor: '#FDFBF6' },
   background: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
   invisibleLink: { position: 'absolute', border: 'none' },
 
-  content: { paddingTop: CONTENT_TOP_PADDING, paddingBottom: CONTENT_BOTTOM_PADDING, paddingHorizontal: 34, fontSize: 10, color: '#3A3532' },
+  // Espace réservé en haut de page, vide, pour laisser voir l'entête du fond.
+  headerSpacer: { height: HEADER_SPACE },
+
+  content: { paddingHorizontal: 34, paddingBottom: FOOTER_SPACE, fontSize: 10, color: '#3A3532' },
   dateText: { fontSize: 8, color: '#3A3532', opacity: 0.6, marginBottom: 14, textAlign: 'right' },
   shoppingGroupTitle: { fontSize: 11, fontWeight: 700, marginTop: 10, marginBottom: 5, color: '#3A3532', backgroundColor: '#F0EAE0', padding: 6, borderRadius: 6 },
   shoppingItem: { fontSize: 9.5, marginBottom: 3, color: '#3A3532', paddingLeft: 4 },
@@ -40,7 +40,7 @@ export default function ShoppingListPdfDocument({
 }) {
   return (
     <Document>
-      <Page size="A4">
+      <Page size="A4" wrap>
         {backgroundImage && <Image src={backgroundImage} style={styles.background} fixed />}
 
         <Link
@@ -53,6 +53,9 @@ export default function ShoppingListPdfDocument({
         >
           <Text> </Text>
         </Link>
+
+        {/* Bloc vide, répété en haut de CHAQUE page, qui pousse le contenu sous l'entête du fond */}
+        <View style={styles.headerSpacer} fixed />
 
         <View style={styles.content}>
           <Text style={styles.dateText}>Genere le {generatedAt}</Text>
