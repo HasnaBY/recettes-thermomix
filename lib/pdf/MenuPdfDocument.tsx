@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   cellTitlePlat: { fontSize: 7.5, fontWeight: 700, color: '#4A5A45', textAlign: 'center', marginTop: 4 },
   cellTitleAccomp: { fontSize: 7.5, fontWeight: 700, color: '#C97064', textAlign: 'center', marginTop: 4 },
 
-  invisibleLink: { position: 'absolute' },
+  invisibleLink: { position: 'absolute', borderWidth: 0, borderColor: 'transparent' },
 })
 
 type Recipe = { id: string; title: string; image_url: string | null; cookidoo_url: string | null }
