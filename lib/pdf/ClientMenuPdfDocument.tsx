@@ -99,4 +99,27 @@ export default function ClientMenuPdfDocument({
             const style = CATEGORY_STYLES[key]
 
             return (
-              <View key={key}></View>
+              <View key={key}>
+                <Text style={styles.sectionTitle}>{style.label}</Text>
+                {recipes.map((r) => (
+                  <RecipeCard key={r.id} recipe={r} badgeBg={style.badgeBg} badgeLabel={style.label.split(' ')[0]} />
+                ))}
+              </View>
+            )
+          })}
+        </View>
+
+        <Link
+          src={SITE_URL}
+          style={[
+            styles.invisibleLink,
+            { top: `${FOOTER_LINK.top}%`, left: `${FOOTER_LINK.left}%`, width: `${FOOTER_LINK.width}%`, height: `${FOOTER_LINK.height}%` },
+          ]}
+          fixed
+        >
+          <Text> </Text>
+        </Link>
+      </Page>
+    </Document>
+  )
+}

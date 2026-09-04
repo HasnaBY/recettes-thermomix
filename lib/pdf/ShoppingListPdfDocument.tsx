@@ -58,7 +58,7 @@ export default function ShoppingListPdfDocument({
         <View style={styles.headerSpacer} fixed />
 
         <View style={styles.content}>
-          <Text style={styles.dateText}>Genere le {generatedAt}</Text>
+          <Text style={styles.dateText}>Généré le {generatedAt}</Text>
 
           {grouping === 'recipe'
             ? shoppingByRecipe.map((group, i) => (

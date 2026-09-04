@@ -112,14 +112,26 @@ export default function MenuPdfDownloadButton({
           periodStart={periodStart ?? null}
         />
       ).toBlob()
-    } else {
-        // Menu généré par la cliente : fond répétable, nombre de pages variable
+      } else {
+        // Menu généré par la cliente : fond répétable, nombre de pages variable, vraies catégories
+        const buildList = (items: MenuItem[] | undefined) =>
+          (items ?? [])
+            .map((i) => recipeMap.get(i.recipe_id))
+            .filter((r): r is NonNullable<typeof r> => Boolean(r))
+
+        const categorizedRecipes = {
+          plats: buildList(menu.plats),
+          desserts: buildList(menu.desserts),
+          boissons: buildList(menu.boissons),
+          pains: buildList(menu.pains),
+          entrees: buildList(menu.entrees),
+        }
+
         const { pdf } = await import('@react-pdf/renderer')
         const { default: ClientMenuPdfDocument } = await import('@/lib/pdf/ClientMenuPdfDocument')
         blob = await pdf(
           <ClientMenuPdfDocument
-            orderedPlats={orderedPlats}
-            orderedAccompaniments={orderedAccompaniments}
+            categorizedRecipes={categorizedRecipes}
             backgroundImage={clientMenuBackground}
             generatedAt={generatedAt}
           />
