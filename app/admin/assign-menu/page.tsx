@@ -205,7 +205,9 @@ export default function AssignMenu() {
       if (!response.ok) {
         setError(data.error ?? 'Une erreur est survenue')
       } else {
-        setMessage(sendToAll ? `Menu envoyé à ${data.count} cliente(s) avec succès !` : 'Menu envoyé à la cliente avec succès !')
+        setMessage(
+          sendToAll ? `Menu envoyé à ${data.count} cliente(s) avec succès !` : 'Menu envoyé à la cliente avec succès !'
+        )
         setSent(true)
       }
     } catch (err: any) {
@@ -414,4 +416,29 @@ export default function AssignMenu() {
           {renderSection('Pains', previewMenu.pains, 'bg-gray-100', 'pains')}
           {renderSection('Entrées', previewMenu.entrees, 'bg-teal-50', 'entrees')}
 
-          <div
+          <div className="mt-4">
+            <MenuPdfDownloadButton menu={previewMenu} origin="admin" periodStart={periodStart} />
+          </div>
+
+          {!sent && (
+            <button
+              onClick={handleSend}
+              disabled={sending}
+              className="py-2 px-5 bg-gray-900 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+            >
+              {sending ? 'Envoi...' : sendToAll ? `Envoyer à ${clients.length} cliente(s)` : 'Envoyer à la cliente'}
+            </button>
+          )}
+        </div>
+      )}
+
+      {pickerFor && (
+        <RecipePickerModal
+          excludeIds={excludeIds}
+          onSelect={(recipe) => handleManualSwap(recipe.id)}
+          onClose={() => setPickerFor(null)}
+        />
+      )}
+    </div>
+  )
+}
