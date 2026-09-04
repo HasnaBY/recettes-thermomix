@@ -7,7 +7,6 @@ const ROW_TOP = [31.5, 45, 58.2, 71.5, 85]
 const ROW_HEIGHT = 13.5
 const PLAT_LEFT = 24.4
 const PLAT_WIDTH = 32.6
-const PLAT_WIDTH = 33.6
 const DESSERT_LEFT = 58.7
 const DESSERT_WIDTH = 32.6
 
