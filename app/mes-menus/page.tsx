@@ -8,7 +8,7 @@ import { formatWeekLabel } from '@/lib/dateHelpers'
 
 type MenuRow = {
   id: string
-  menu: { plats: { recipe_id: string; recipe_title: string }[]; desserts: { recipe_id: string; recipe_title: string }[]; boissons?: any[]; pains?: any[] }
+  menu: { plats: { recipe_id: string; recipe_title: string }[]; desserts: { recipe_id: string; recipe_title: string }[]; boissons?: any[]; pains?: any[]; entrees?: any[] }
   created_at: string
   origin: string
   week_start: string | null
@@ -18,6 +18,7 @@ type MenuRow = {
 export default function MesMenus() {
   const [menus, setMenus] = useState<MenuRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -36,6 +37,28 @@ export default function MesMenus() {
     }
     load()
   }, [])
+
+  const handleDelete = async (menuId: string) => {
+    if (!confirm('Supprimer définitivement ce menu ?')) return
+    setDeletingId(menuId)
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    const response = await fetch('/api/delete-menu', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ menuId }),
+    })
+
+    if (response.ok) {
+      setMenus((prev) => prev.filter((m) => m.id !== menuId))
+    } else {
+      alert('Erreur lors de la suppression.')
+    }
+    setDeletingId(null)
+  }
 
   if (loading) return <div className="p-8 text-center text-[#3A3532]/60">Chargement...</div>
 
@@ -86,9 +109,17 @@ export default function MesMenus() {
                       </p>
                     </div>
 
+                    <button
+                      onClick={() => handleDelete(row.id)}
+                      disabled={deletingId === row.id}
+                      className="text-xs text-red-600 underline mb-3 block disabled:opacity-50"
+                    >
+                      {deletingId === row.id ? 'Suppression...' : '🗑️ Supprimer ce menu'}
+                    </button>
+
                     {row.pdf_url && (
                       
-                      <a  href={row.pdf_url}
+                        href={row.pdf_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-block mb-3 text-xs text-[#3A3532] underline"
@@ -102,6 +133,7 @@ export default function MesMenus() {
                       { key: 'desserts', label: '🍰 Desserts / goûters' },
                       { key: 'boissons', label: '🥤 Boissons' },
                       { key: 'pains', label: '🍞 Pains' },
+                      { key: 'entrees', label: '🥗 Entrées' },
                     ].map(({ key, label }) => {
                       const items = (row.menu as any)[key] as { recipe_id: string; recipe_title: string }[] | undefined
                       if (!items || items.length === 0) return null

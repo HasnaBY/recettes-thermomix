@@ -9,7 +9,7 @@ import { formatWeekLabel } from '@/lib/dateHelpers'
 type MenuRow = {
   id: string
   user_id: string
-  menu: { plats: { recipe_id: string; recipe_title: string }[]; desserts: { recipe_id: string; recipe_title: string }[]; boissons?: any[]; pains?: any[] }
+  menu: { plats: { recipe_id: string; recipe_title: string }[]; desserts: { recipe_id: string; recipe_title: string }[]; boissons?: any[]; pains?: any[]; entrees?: any[] }
   created_at: string
   origin: string
   week_start: string | null
@@ -20,6 +20,7 @@ export default function AdminMenus() {
   const [menus, setMenus] = useState<MenuRow[]>([])
   const [emailMap, setEmailMap] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -40,6 +41,28 @@ export default function AdminMenus() {
     }
     load()
   }, [])
+
+  const handleDelete = async (menuId: string) => {
+    if (!confirm('Supprimer définitivement ce menu ?')) return
+    setDeletingId(menuId)
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    const response = await fetch('/api/delete-menu', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ menuId }),
+    })
+
+    if (response.ok) {
+      setMenus((prev) => prev.filter((m) => m.id !== menuId))
+    } else {
+      alert('Erreur lors de la suppression.')
+    }
+    setDeletingId(null)
+  }
 
   if (loading) return <div className="p-8 text-center text-gray-500">Chargement...</div>
 
@@ -75,9 +98,17 @@ export default function AdminMenus() {
                       </span>
                     </div>
 
+                    <button
+                      onClick={() => handleDelete(row.id)}
+                      disabled={deletingId === row.id}
+                      className="text-xs text-red-600 underline mb-2 block disabled:opacity-50"
+                    >
+                      {deletingId === row.id ? 'Suppression...' : '🗑️ Supprimer ce menu'}
+                    </button>
+
                     {row.pdf_url && (
                       
-                      <a  href={row.pdf_url}
+                        href={row.pdf_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-block mb-2 text-xs text-gray-700 underline"

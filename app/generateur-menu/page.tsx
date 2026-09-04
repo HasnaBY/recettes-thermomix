@@ -8,14 +8,7 @@ import RecipePickerModal from '@/components/RecipePickerModal'
 import { getNextMonday, toDateInputValue } from '@/lib/dateHelpers'
 
 type MenuItem = { recipe_id: string; recipe_title: string }
-type Menu = {
-  plats?: MenuItem[]
-  desserts?: MenuItem[]
-  boissons?: MenuItem[]
-  pains?: MenuItem[]
-  entrees?: MenuItem[]
-  notes?: string[]
-}
+type Menu = { plats: MenuItem[]; desserts: MenuItem[]; boissons: MenuItem[]; pains: MenuItem[]; entrees: MenuItem[]; notes?: string[] }
 type MenuRow = { id: string; menu: Menu; created_at: string; origin: string; params?: any }
 type ItemType = 'plats' | 'desserts' | 'boissons' | 'pains' | 'entrees'
 
@@ -28,6 +21,7 @@ export default function GenerateurMenu() {
   const [nbDesserts, setNbDesserts] = useState('2')
   const [nbBoissons, setNbBoissons] = useState('0')
   const [nbPains, setNbPains] = useState('0')
+  const [nbEntrees, setNbEntrees] = useState('0')
   const [source, setSource] = useState('favorites')
   const [periodStart, setPeriodStart] = useState(toDateInputValue(getNextMonday()))
 
@@ -35,12 +29,11 @@ export default function GenerateurMenu() {
   const [clientMenu, setClientMenu] = useState<MenuRow | null>(null)
   const [generating, setGenerating] = useState(false)
   const [swappingId, setSwappingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [usedCount, setUsedCount] = useState(0)
   const [limit, setLimit] = useState(3)
   const [showForm, setShowForm] = useState(false)
-
-  const [nbEntrees, setNbEntrees] = useState('0')
 
   const [pickerFor, setPickerFor] = useState<{
     which: 'admin' | 'client'
@@ -75,7 +68,8 @@ export default function GenerateurMenu() {
   }
 
   const loadWeeklyUsage = async (userId: string) => {
-    const currentWeekStart = toDateInputValue(getNextMonday())
+    const { getMondayOfWeek } = await import('@/lib/dateHelpers')
+    const currentWeekStart = toDateInputValue(getMondayOfWeek())
     const { count } = await supabase
       .from('generated_menus')
       .select('*', { count: 'exact', head: true })
@@ -140,9 +134,9 @@ export default function GenerateurMenu() {
           nbDesserts: parseInt(nbDesserts),
           nbBoissons: parseInt(nbBoissons) || 0,
           nbPains: parseInt(nbPains) || 0,
+          nbEntrees: parseInt(nbEntrees) || 0,
           source,
           periodStart,
-          nbEntrees: parseInt(nbEntrees) || 0,
         }),
       })
 
@@ -235,6 +229,39 @@ export default function GenerateurMenu() {
     }
   }
 
+  const handleDeleteMenu = async (which: 'admin' | 'client', menuId: string) => {
+    if (!confirm('Supprimer définitivement ce menu ?')) return
+    setDeletingId(menuId)
+    setError('')
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      const response = await fetch('/api/delete-menu', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ menuId }),
+      })
+
+      if (response.ok) {
+        if (which === 'admin') {
+          setAdminMenu(null)
+        } else {
+          setClientMenu(null)
+          setShowForm(true)
+        }
+      } else {
+        setError('Erreur lors de la suppression.')
+      }
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   if (checkingAccess) return <div className="p-8 text-center text-[#3A3532]/60">Chargement...</div>
 
   if (!approved) {
@@ -301,9 +328,18 @@ export default function GenerateurMenu() {
 
     return (
       <div className="mb-10 border border-[#F0EAE0] bg-white rounded-2xl p-5">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
           <h3 className="font-display text-xl text-[#3A3532]">{title}</h3>
-          <p className="text-xs text-[#3A3532]/40">{new Date(menuRow.created_at).toLocaleDateString('fr-FR')}</p>
+          <div className="flex items-center gap-3">
+            <p className="text-xs text-[#3A3532]/40">{new Date(menuRow.created_at).toLocaleDateString('fr-FR')}</p>
+            <button
+              onClick={() => handleDeleteMenu(which, menuRow.id)}
+              disabled={deletingId === menuRow.id}
+              className="text-xs text-red-600 underline disabled:opacity-50"
+            >
+              {deletingId === menuRow.id ? 'Suppression...' : '🗑️ Supprimer'}
+            </button>
+          </div>
         </div>
 
         {menuRow.menu.notes && menuRow.menu.notes.length > 0 && (
@@ -433,18 +469,18 @@ export default function GenerateurMenu() {
                     className="w-full px-4 py-2 border border-[#F0EAE0] rounded-xl"
                   />
                 </div>
+              </div>
 
-                <div className="flex-1">
-                  <label className="block mb-1 text-sm text-[#3A3532]/70">Entrées</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="14"
-                    value={nbEntrees}
-                    onChange={(e) => setNbEntrees(e.target.value)}
-                    className="w-full px-4 py-2 border border-[#F0EAE0] rounded-xl"
-                  />
-                </div>
+              <div>
+                <label className="block mb-1 text-sm text-[#3A3532]/70">Entrées</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="14"
+                  value={nbEntrees}
+                  onChange={(e) => setNbEntrees(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#F0EAE0] rounded-xl"
+                />
               </div>
 
               <button
