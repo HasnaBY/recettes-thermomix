@@ -6,38 +6,38 @@ const DARK_GREEN = '#2A3D2F'
 const CORAL = '#C97064'
 
 const styles = StyleSheet.create({
-  page: { backgroundColor: '#FDFBF6' },
+  page: { backgroundColor: '#FDFBF6', flexDirection: 'column' },
   background: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
 
-  headerSpacer: { height: 115 },
+  headerSpacer: { height: 140 },
 
-  content: { paddingHorizontal: 38, paddingBottom: 55 },
+  content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 45, paddingBottom: 65 },
 
-  title: { fontSize: 17, fontWeight: 700, color: DARK_GREEN, textAlign: 'center', marginBottom: 4, lineHeight: 1.2 },
-  subtitle: { fontSize: 9.5, fontStyle: 'italic', color: CORAL, textAlign: 'center', marginBottom: 3 },
-  intro: { fontSize: 8.5, color: '#3A3532', opacity: 0.8, textAlign: 'center', marginBottom: 10 },
+  title: { fontSize: 22, fontWeight: 700, color: DARK_GREEN, textAlign: 'center', marginBottom: 6, lineHeight: 1.25 },
+  subtitle: { fontSize: 11.5, fontStyle: 'italic', color: CORAL, textAlign: 'center', marginBottom: 5 },
+  intro: { fontSize: 10, color: '#3A3532', opacity: 0.8, textAlign: 'center', marginBottom: 18 },
 
-  photo: { width: '42%', height: 100, borderRadius: 8, alignSelf: 'center', marginBottom: 8, objectFit: 'cover' },
+  photo: { width: '52%', height: 145, borderRadius: 10, alignSelf: 'center', marginBottom: 14, objectFit: 'cover' },
 
-  description: { fontSize: 8.5, color: '#3A3532', textAlign: 'center', lineHeight: 1.35, marginBottom: 12, paddingHorizontal: 25 },
+  description: { fontSize: 10, color: '#3A3532', textAlign: 'center', lineHeight: 1.5, marginBottom: 22, paddingHorizontal: 30 },
 
-  columnsRow: { flexDirection: 'row', gap: 22, marginBottom: 10 },
+  columnsRow: { flexDirection: 'row', gap: 30, marginBottom: 18 },
   column: { flex: 1 },
-  columnHeader: { fontSize: 10.5, fontWeight: 700, color: DARK_GREEN, marginBottom: 6, borderBottomWidth: 1.3, borderBottomColor: DARK_GREEN, paddingBottom: 3 },
-  ingredientLine: { fontSize: 8, color: '#3A3532', marginBottom: 4, lineHeight: 1.25 },
-  stepRow: { flexDirection: 'row', marginBottom: 4.5 },
-  stepNumber: { fontSize: 8, fontWeight: 700, color: CORAL, width: 13 },
-  stepText: { fontSize: 8, color: '#3A3532', flex: 1, lineHeight: 1.25 },
+  columnHeader: { fontSize: 12.5, fontWeight: 700, color: DARK_GREEN, marginBottom: 9, borderBottomWidth: 1.5, borderBottomColor: DARK_GREEN, paddingBottom: 5 },
+  ingredientLine: { fontSize: 9.5, color: '#3A3532', marginBottom: 6, lineHeight: 1.4 },
+  stepRow: { flexDirection: 'row', marginBottom: 7 },
+  stepNumber: { fontSize: 9.5, fontWeight: 700, color: CORAL, width: 16 },
+  stepText: { fontSize: 9.5, color: '#3A3532', flex: 1, lineHeight: 1.4 },
 
-  metaRow: { fontSize: 7.5, fontWeight: 700, color: DARK_GREEN, marginTop: 4 },
+  metaRow: { fontSize: 8.5, fontWeight: 700, color: DARK_GREEN, marginTop: 8 },
 
-  servingBox: { backgroundColor: '#F6DEE1', borderRadius: 7, padding: 8, marginBottom: 10 },
-  servingLabel: { fontSize: 8, fontWeight: 700, color: '#3A3532', marginBottom: 2 },
-  servingText: { fontSize: 7.5, color: '#3A3532' },
+  servingBox: { backgroundColor: '#F6DEE1', borderRadius: 9, padding: 12, marginBottom: 18 },
+  servingLabel: { fontSize: 9.5, fontWeight: 700, color: '#3A3532', marginBottom: 3 },
+  servingText: { fontSize: 9, color: '#3A3532' },
 
-  ctaBanner: { backgroundColor: DARK_GREEN, borderRadius: 8, padding: 10, alignItems: 'center' },
-  ctaTitle: { fontSize: 9, fontWeight: 700, color: '#FDFBF6', textAlign: 'center', marginBottom: 2 },
-  ctaSubtitle: { fontSize: 7.5, color: '#FDFBF6', textAlign: 'center', opacity: 0.9 },
+  ctaBanner: { backgroundColor: DARK_GREEN, borderRadius: 10, padding: 14, alignItems: 'center' },
+  ctaTitle: { fontSize: 10.5, fontWeight: 700, color: '#FDFBF6', textAlign: 'center', marginBottom: 3 },
+  ctaSubtitle: { fontSize: 9, color: '#FDFBF6', textAlign: 'center', opacity: 0.9 },
 
   invisibleLink: { position: 'absolute', border: 'none' },
 })
@@ -81,78 +81,9 @@ export default function LeadMagnetPdfDocument({
 
   return (
     <Document>
-      <Page size="A4">
+      <Page size="A4" style={styles.page}>
         {backgroundImage && <Image src={backgroundImage} style={styles.background} fixed />}
 
         <Link
           src={SITE_URL}
-          style={[styles.invisibleLink, { top: '1%', left: '30%', width: '40%', height: '13%' }]}
-        >
-          <Text> </Text>
-        </Link>
-
-        <View style={styles.headerSpacer} />
-
-        <View style={styles.content}>
-          <Text style={styles.title}>{recipe.title}</Text>
-          {pdfSubtitle && <Text style={styles.subtitle}>— {pdfSubtitle} —</Text>}
-          {pdfIntro && <Text style={styles.intro}>{pdfIntro}</Text>}
-
-          {recipe.image_url && <Image src={recipe.image_url} style={styles.photo} />}
-
-          {recipe.description && <Text style={styles.description}>{recipe.description}</Text>}
-
-          <View style={styles.columnsRow}>
-            <View style={styles.column}>
-              <Text style={styles.columnHeader}>■ Ingrédients</Text>
-              {(recipe.ingredients ?? []).map((ing, i) => (
-                <Text key={i} style={styles.ingredientLine}>
-                  • {ing}
-                </Text>
-              ))}
-
-              {(recipe.prep_time_minutes || recipe.total_time_minutes) && (
-                <Text style={styles.metaRow}>
-                  ■ {recipe.prep_time_minutes ? `${recipe.prep_time_minutes} min de préparation` : ''}
-                  {recipe.prep_time_minutes && recipe.total_time_minutes ? ' • ' : ''}
-                  {recipe.total_time_minutes ? `${recipe.total_time_minutes} min au total` : ''}
-                </Text>
-              )}
-            </View>
-
-            <View style={styles.column}>
-              <Text style={styles.columnHeader}>■ Étapes</Text>
-              {steps.map((step, i) => (
-                <View key={i} style={styles.stepRow}>
-                  <Text style={styles.stepNumber}>{i + 1}.</Text>
-                  <Text style={styles.stepText}>{step}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-
-          {servingSuggestions && (
-            <View style={styles.servingBox}>
-              <Text style={styles.servingLabel}>■ Idées pour la déguster</Text>
-              <Text style={styles.servingText}>{servingSuggestions}</Text>
-            </View>
-          )}
-
-          {(ctaTitle || ctaSubtitle) && (
-            <View style={styles.ctaBanner}>
-              {ctaTitle && <Text style={styles.ctaTitle}>{ctaTitle}</Text>}
-              {ctaSubtitle && <Text style={styles.ctaSubtitle}>{ctaSubtitle}</Text>}
-            </View>
-          )}
-        </View>
-
-        <Link
-          src={SITE_URL}
-          style={[styles.invisibleLink, { top: '96%', left: '20%', width: '60%', height: '3.5%' }]}
-        >
-          <Text> </Text>
-        </Link>
-      </Page>
-    </Document>
-  )
-}
+          style={[styles.invisibleLink, { top: '1%', left: '30%', width: '40%', height: '13%'
