@@ -398,7 +398,7 @@ export default function AdminLeadMagnet() {
 
       {pdfUrl && (
         
-          href={pdfUrl}
+        <a  href={pdfUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block mt-6 text-sm text-gray-700 underline"
