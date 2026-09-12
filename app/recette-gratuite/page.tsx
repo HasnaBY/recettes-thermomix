@@ -15,6 +15,7 @@ type Settings = {
   page_title: string
   page_subtitle: string
   button_label: string
+  pdf_url: string | null
 }
 
 export default function RecetteGratuite() {
@@ -83,7 +84,7 @@ export default function RecetteGratuite() {
 
   if (loading) return <div className="p-8 text-center text-[#3A3532]/60">Chargement...</div>
 
-  if (!recipe || !settings) {
+  if (!recipe || !settings || !settings.pdf_url) {
     return (
       <div className="p-8 text-center text-[#3A3532]/60">
         Cette offre n'est pas disponible pour le moment.
