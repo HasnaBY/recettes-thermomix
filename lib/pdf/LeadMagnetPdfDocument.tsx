@@ -81,7 +81,7 @@ export default function LeadMagnetPdfDocument({
 
   return (
     <Document>
-      <Page size="A4" wrap={false}>
+      <Page size="A4">
         {backgroundImage && <Image src={backgroundImage} style={styles.background} fixed />}
 
         <Link
