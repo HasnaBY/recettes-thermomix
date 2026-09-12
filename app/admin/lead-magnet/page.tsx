@@ -32,6 +32,7 @@ export default function AdminLeadMagnet() {
   const [saving, setSaving] = useState(false)
   const [generatingPdf, setGeneratingPdf] = useState(false)
   const [generatingTexts, setGeneratingTexts] = useState(false)
+  const [uploadingPdf, setUploadingPdf] = useState(false)
   const [aiWriterEnabled, setAiWriterEnabled] = useState(false)
   const [message, setMessage] = useState('')
   const supabase = createClient()
@@ -208,6 +209,39 @@ export default function AdminLeadMagnet() {
     }
   }
 
+  const handleUploadOwnPdf = async (file: File) => {
+    if (file.type !== 'application/pdf') {
+      setMessage('Le fichier doit être un PDF.')
+      return
+    }
+
+    setUploadingPdf(true)
+    setMessage('')
+
+    try {
+      const fileName = `lead-magnet-manual-${Date.now()}.pdf`
+      const { error: uploadError } = await supabase.storage.from('lead-magnet-pdfs').upload(fileName, file, {
+        contentType: 'application/pdf',
+      })
+      if (uploadError) throw uploadError
+
+      const { data: publicUrlData } = supabase.storage.from('lead-magnet-pdfs').getPublicUrl(fileName)
+
+      const { error: updateError } = await supabase
+        .from('lead_magnet_settings')
+        .update({ pdf_url: publicUrlData.publicUrl })
+        .eq('id', 1)
+      if (updateError) throw updateError
+
+      setPdfUrl(publicUrlData.publicUrl)
+      setMessage('Ton PDF personnalisé a été enregistré avec succès !')
+    } catch (err: any) {
+      setMessage('Erreur : ' + err.message)
+    } finally {
+      setUploadingPdf(false)
+    }
+  }
+
   return (
     <div className="p-6 sm:p-8 max-w-lg mx-auto">
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Recette gratuite (lead magnet)</h1>
@@ -237,7 +271,7 @@ export default function AdminLeadMagnet() {
           disabled={generatingTexts || !selectedRecipeId}
           className="w-full mb-8 py-2.5 border border-[#C9A44C] text-[#3A3532] rounded-lg font-medium disabled:opacity-50 bg-[#F6DEE1]/20"
         >
-          {generatingTexts ? 'Génération en cours...' : '✨ Générer tous les textes avec l\'IA'}
+          {generatingTexts ? 'Génération en cours...' : "✨ Générer tous les textes avec l'IA"}
         </button>
       )}
 
@@ -272,7 +306,7 @@ export default function AdminLeadMagnet() {
         </div>
       </div>
 
-      <h2 className="text-lg font-semibold text-gray-900 mb-3">Contenu du PDF</h2>
+      <h2 className="text-lg font-semibold text-gray-900 mb-3">Contenu du PDF généré automatiquement</h2>
       <div className="flex flex-col gap-4 mb-4">
         <div>
           <label className="block mb-1 text-sm text-gray-600">Phrase accrocheuse</label>
@@ -329,21 +363,11 @@ export default function AdminLeadMagnet() {
         </button>
       </div>
 
-      <div className="border-t border-gray-200 pt-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-2">PDF envoyé aux prospects</h2>
+      <div className="border-t border-gray-200 pt-6 mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">Générer le PDF automatiquement</h2>
         <p className="text-gray-500 text-sm mb-4">
-          Génère le PDF une fois — il sera ensuite envoyé tel quel à chaque nouvelle demande. Régénère-le si tu changes la recette ou les textes ci-dessus.
+          Génère le PDF à partir des textes ci-dessus et de la recette choisie.
         </p>
-
-        {pdfUrl ? (
-          <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="inline-block mb-4 text-sm text-gray-700 underline">
-            📄 Voir le PDF actuellement configuré
-          </a>
-        ) : (
-          <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-            Aucun PDF n'est encore généré.
-          </p>
-        )}
 
         <button
           onClick={handleGeneratePdf}
@@ -353,6 +377,35 @@ export default function AdminLeadMagnet() {
           {generatingPdf ? 'Génération...' : 'Générer / régénérer le PDF'}
         </button>
       </div>
+
+      <div className="border-t border-gray-200 pt-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">Ou uploader ton propre PDF</h2>
+        <p className="text-gray-500 text-sm mb-4">
+          Si tu préfères créer le visuel toi-même (Canva par exemple), uploade directement ton fichier ici — il remplacera le PDF généré automatiquement.
+        </p>
+
+        <input
+          type="file"
+          accept="application/pdf"
+          disabled={uploadingPdf}
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file) handleUploadOwnPdf(file)
+          }}
+        />
+        {uploadingPdf && <p className="text-xs text-gray-500 mt-2">Envoi en cours...</p>}
+      </div>
+
+      {pdfUrl && (
+        
+          href={pdfUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block mt-6 text-sm text-gray-700 underline"
+        >
+          📄 Voir le PDF actuellement configuré (envoyé aux prospects)
+        </a>
+      )}
 
       {message && <p className="text-sm text-gray-700 mt-4">{message}</p>}
 

@@ -9,37 +9,35 @@ const styles = StyleSheet.create({
   page: { backgroundColor: '#FDFBF6' },
   background: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
 
-  headerSpacer: { height: 160 },
+  headerSpacer: { height: 115 },
 
-  content: { paddingHorizontal: 40, paddingBottom: 70 },
+  content: { paddingHorizontal: 38, paddingBottom: 55 },
 
-  title: { fontSize: 20, fontWeight: 700, color: DARK_GREEN, textAlign: 'center', marginBottom: 6, lineHeight: 1.3 },
-  subtitle: { fontSize: 11, fontStyle: 'italic', color: CORAL, textAlign: 'center', marginBottom: 4 },
-  intro: { fontSize: 9.5, color: '#3A3532', opacity: 0.8, textAlign: 'center', marginBottom: 16 },
+  title: { fontSize: 17, fontWeight: 700, color: DARK_GREEN, textAlign: 'center', marginBottom: 4, lineHeight: 1.2 },
+  subtitle: { fontSize: 9.5, fontStyle: 'italic', color: CORAL, textAlign: 'center', marginBottom: 3 },
+  intro: { fontSize: 8.5, color: '#3A3532', opacity: 0.8, textAlign: 'center', marginBottom: 10 },
 
-  photo: { width: '55%', height: 150, borderRadius: 10, alignSelf: 'center', marginBottom: 14, objectFit: 'cover' },
+  photo: { width: '42%', height: 100, borderRadius: 8, alignSelf: 'center', marginBottom: 8, objectFit: 'cover' },
 
-  description: { fontSize: 9.5, color: '#3A3532', textAlign: 'center', lineHeight: 1.5, marginBottom: 20, paddingHorizontal: 20 },
+  description: { fontSize: 8.5, color: '#3A3532', textAlign: 'center', lineHeight: 1.35, marginBottom: 12, paddingHorizontal: 25 },
 
-  columnsRow: { flexDirection: 'row', gap: 24, marginBottom: 16 },
+  columnsRow: { flexDirection: 'row', gap: 22, marginBottom: 10 },
   column: { flex: 1 },
-  columnHeader: { fontSize: 12, fontWeight: 700, color: DARK_GREEN, marginBottom: 8, borderBottomWidth: 1.5, borderBottomColor: DARK_GREEN, paddingBottom: 4 },
-  ingredientLine: { fontSize: 9, color: '#3A3532', marginBottom: 6, lineHeight: 1.4 },
-  stepRow: { flexDirection: 'row', marginBottom: 7 },
-  stepNumber: { fontSize: 9, fontWeight: 700, color: CORAL, width: 16 },
-  stepText: { fontSize: 9, color: '#3A3532', flex: 1, lineHeight: 1.4 },
+  columnHeader: { fontSize: 10.5, fontWeight: 700, color: DARK_GREEN, marginBottom: 6, borderBottomWidth: 1.3, borderBottomColor: DARK_GREEN, paddingBottom: 3 },
+  ingredientLine: { fontSize: 8, color: '#3A3532', marginBottom: 4, lineHeight: 1.25 },
+  stepRow: { flexDirection: 'row', marginBottom: 4.5 },
+  stepNumber: { fontSize: 8, fontWeight: 700, color: CORAL, width: 13 },
+  stepText: { fontSize: 8, color: '#3A3532', flex: 1, lineHeight: 1.25 },
 
-  metaRow: { fontSize: 8.5, fontWeight: 700, color: DARK_GREEN, marginBottom: 4 },
-  conservationLabel: { fontSize: 8.5, fontWeight: 700, color: '#3A3532' },
-  conservationText: { fontSize: 8.5, color: '#3A3532', opacity: 0.8, marginBottom: 14 },
+  metaRow: { fontSize: 7.5, fontWeight: 700, color: DARK_GREEN, marginTop: 4 },
 
-  servingBox: { backgroundColor: '#F6DEE1', borderRadius: 8, padding: 10, marginBottom: 14 },
-  servingLabel: { fontSize: 9, fontWeight: 700, color: '#3A3532', marginBottom: 3 },
-  servingText: { fontSize: 8.5, color: '#3A3532' },
+  servingBox: { backgroundColor: '#F6DEE1', borderRadius: 7, padding: 8, marginBottom: 10 },
+  servingLabel: { fontSize: 8, fontWeight: 700, color: '#3A3532', marginBottom: 2 },
+  servingText: { fontSize: 7.5, color: '#3A3532' },
 
-  ctaBanner: { backgroundColor: DARK_GREEN, borderRadius: 10, padding: 14, alignItems: 'center' },
-  ctaTitle: { fontSize: 10.5, fontWeight: 700, color: '#FDFBF6', textAlign: 'center', marginBottom: 3 },
-  ctaSubtitle: { fontSize: 9, color: '#FDFBF6', textAlign: 'center', opacity: 0.9 },
+  ctaBanner: { backgroundColor: DARK_GREEN, borderRadius: 8, padding: 10, alignItems: 'center' },
+  ctaTitle: { fontSize: 9, fontWeight: 700, color: '#FDFBF6', textAlign: 'center', marginBottom: 2 },
+  ctaSubtitle: { fontSize: 7.5, color: '#FDFBF6', textAlign: 'center', opacity: 0.9 },
 
   invisibleLink: { position: 'absolute', border: 'none' },
 })
@@ -83,12 +81,12 @@ export default function LeadMagnetPdfDocument({
 
   return (
     <Document>
-      <Page size="A4">
+      <Page size="A4" wrap={false}>
         {backgroundImage && <Image src={backgroundImage} style={styles.background} fixed />}
 
         <Link
           src={SITE_URL}
-          style={[styles.invisibleLink, { top: '1%', left: '30%', width: '40%', height: '17%' }]}
+          style={[styles.invisibleLink, { top: '1%', left: '30%', width: '40%', height: '13%' }]}
         >
           <Text> </Text>
         </Link>
