@@ -56,9 +56,12 @@ export async function POST(request: NextRequest) {
     .single()
 
   try {
-    const pdfBuffer = await renderToBuffer(
-      React.createElement(LeadMagnetPdfDocument, { recipe, backgroundImage: bg?.image_url ?? null })
-    )
+    const pdfElement = React.createElement(LeadMagnetPdfDocument, {
+        recipe,
+        backgroundImage: bg?.image_url ?? null,
+        }) as React.ReactElement<any>
+
+        const pdfBuffer = await renderToBuffer(pdfElement)
 
     await getResend().emails.send({
       from: 'With Love, Hasna <onboarding@resend.dev>',
