@@ -118,7 +118,9 @@ export default async function RecipeDetail({
       {recipe.image_url && (
         <img src={recipe.image_url} alt={recipe.title} className="w-full h-64 object-cover rounded-2xl my-4" />
       )}
-
+      <p className="text-xs text-[#3A3532]/40 mb-2">
+        Publiée le {new Date(recipe.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+      </p>
       <div className="mb-3 flex gap-2 flex-wrap">
         <span className={`text-xs px-2 py-0.5 rounded-full ${isCreation ? 'bg-[#F6DEE1]/60' : 'bg-[#DCEAF0]/60'} text-[#3A3532]`}>
           {isCreation ? '👩‍🍳 Ma création' : '📱 Recette Cookidoo'}

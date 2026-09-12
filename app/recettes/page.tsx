@@ -713,7 +713,10 @@ export default function Recettes() {
                     {recipe.origin && ` · ${recipe.origin}`}
                     {recipe.total_time_minutes && ` · ${recipe.total_time_minutes} min au total`}
                   </p>
-                </div>
+                  <p className="text-xs text-[#3A3532]/40 mt-1">
+                    {new Date(recipe.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                                  </div>
               </Link>
 
               {isAdmin && (
