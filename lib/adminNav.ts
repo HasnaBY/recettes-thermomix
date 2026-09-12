@@ -73,4 +73,5 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: '/admin/leads', label: 'Gérer les prospects' },
     ],
   },
+  { href: '/admin/client-activity', label: 'Activité des clientes' },
 ]

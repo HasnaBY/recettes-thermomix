@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import FavoriteButton from '@/components/FavoriteButton'
+import RecipeViewTracker from '@/components/RecipeViewTracker'
 
 function renderWithLinks(text: string) {
   const parts = text.split(/(https?:\/\/[^\s]+)/g)
@@ -114,7 +115,8 @@ export default async function RecipeDetail({
       </div>
 
       <FavoriteButton recipeId={id} />
-
+      <RecipeViewTracker recipeId={id} recipeTitle={recipe.title} />
+      
       {recipe.image_url && (
         <img src={recipe.image_url} alt={recipe.title} className="w-full h-64 object-cover rounded-2xl my-4" />
       )}

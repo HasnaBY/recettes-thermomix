@@ -205,6 +205,13 @@ export async function POST(request: NextRequest) {
   if (insertError) {
     return NextResponse.json({ error: insertError.message }, { status: 500 })
   }
+  if (!isAdminAssigning) {
+  await supabase.from('client_activity').insert({
+    user_id: userData.user.id,
+    event_type: 'menu_generated',
+    detail: `${nbPlats} plats, ${nbDesserts} desserts`,
+  })
+}
 
   return NextResponse.json({ menu: menuJson, menuId: inserted?.id })
 }

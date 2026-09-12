@@ -16,15 +16,30 @@ export default function Login() {
   const redirectAfterLogin = async (userId: string) => {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('is_admin')
+      .select('is_admin, last_login_at')
       .eq('id', userId)
       .single()
 
     if (profile?.is_admin) {
       window.location.href = '/admin'
-    } else {
-      window.location.href = '/recettes'
+      return
     }
+
+    const previousLogin = profile?.last_login_at
+
+    let newRecipesCount = 0
+    if (previousLogin) {
+      const { count } = await supabase
+        .from('recipes')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'published')
+        .gt('created_at', previousLogin)
+      newRecipesCount = count ?? 0
+    }
+
+    await supabase.from('profiles').update({ last_login_at: new Date().toISOString() }).eq('id', userId)
+
+    window.location.href = `/recettes${newRecipesCount > 0 ? `?newRecipes=${newRecipesCount}` : ''}`
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

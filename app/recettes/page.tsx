@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import imageCompression from 'browser-image-compression'
 import TagSelect from '@/components/TagSelect'
+import { useSearchParams } from 'next/navigation'
+import { logActivity } from '@/lib/logActivity'
 
 type Recipe = {
   id: string
@@ -71,6 +73,10 @@ export default function Recettes() {
   const [generateError, setGenerateError] = useState('')
 
   const supabase = createClient()
+
+  const searchParams = useSearchParams()
+  const newRecipesCount = parseInt(searchParams.get('newRecipes') ?? '0')
+  const [showNewRecipesBanner, setShowNewRecipesBanner] = useState(newRecipesCount > 0)
 
   const loadRecipes = async (adminFlag: boolean) => {
     let query = supabase.from('recipes').select('*')
@@ -364,6 +370,16 @@ export default function Recettes() {
     <div className="p-6 sm:p-8 max-w-5xl mx-auto">
       <div className="flex justify-between items-center mb-2 flex-wrap gap-2">
         <h1 className="font-display text-3xl text-[#3A3532]">Mes recettes</h1>
+        {showNewRecipesBanner && (
+          <div className="border border-[#C9A44C] bg-[#F6DEE1]/30 rounded-2xl p-4 mb-6 flex justify-between items-center">
+            <p className="text-sm text-[#3A3532]">
+              🎉 {newRecipesCount} nouvelle{newRecipesCount > 1 ? 's' : ''} recette{newRecipesCount > 1 ? 's' : ''} depuis ta dernière visite !
+            </p>
+            <button onClick={() => setShowNewRecipesBanner(false)} className="text-[#3A3532]/50 text-lg">
+              ✕
+            </button>
+          </div>
+        )}
         {isAdmin && (
           <button
             onClick={() => setShowQuickAdd((v) => !v)}
