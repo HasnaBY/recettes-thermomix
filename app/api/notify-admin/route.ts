@@ -12,6 +12,7 @@ const LABELS: Record<string, { subject: string; adminPath: string }> = {
   new_referral: { subject: 'Nouveau parrainage déclaré', adminPath: '/admin/referrals' },
   new_club_signup: { subject: 'Nouvelle demande pour Le Cercle', adminPath: '/admin/club' },
   new_contact_message: { subject: 'Nouveau message de contact', adminPath: '/admin/messages' },
+  new_lead: { subject: 'Nouveau prospect (recette gratuite)', adminPath: '/admin/leads' },
 }
 
 const CONTACT_TYPE_LABELS: Record<string, string> = {

@@ -66,4 +66,11 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: '/admin/assign-menu', label: 'Générer un menu pour une cliente' },
     ],
   },
+  {
+    title: 'Recette gratuite & prospects',
+    links: [
+      { href: '/admin/lead-magnet', label: 'Configurer la recette gratuite' },
+      { href: '/admin/leads', label: 'Gérer les prospects' },
+    ],
+  },
 ]
