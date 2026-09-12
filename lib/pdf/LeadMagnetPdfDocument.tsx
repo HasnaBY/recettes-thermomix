@@ -86,4 +86,73 @@ export default function LeadMagnetPdfDocument({
 
         <Link
           src={SITE_URL}
-          style={[styles.invisibleLink, { top: '1%', left: '30%', width: '40%', height: '13%'
+          style={[styles.invisibleLink, { top: '1%', left: '30%', width: '40%', height: '13%' }]}
+        >
+          <Text> </Text>
+        </Link>
+
+        <View style={styles.headerSpacer} />
+
+        <View style={styles.content}>
+          <Text style={styles.title}>{recipe.title}</Text>
+          {pdfSubtitle && <Text style={styles.subtitle}>— {pdfSubtitle} —</Text>}
+          {pdfIntro && <Text style={styles.intro}>{pdfIntro}</Text>}
+
+          {recipe.image_url && <Image src={recipe.image_url} style={styles.photo} />}
+
+          {recipe.description && <Text style={styles.description}>{recipe.description}</Text>}
+
+          <View style={styles.columnsRow}>
+            <View style={styles.column}>
+              <Text style={styles.columnHeader}>■ Ingrédients</Text>
+              {(recipe.ingredients ?? []).map((ing, i) => (
+                <Text key={i} style={styles.ingredientLine}>
+                  • {ing}
+                </Text>
+              ))}
+
+              {(recipe.prep_time_minutes || recipe.total_time_minutes) && (
+                <Text style={styles.metaRow}>
+                  ■ {recipe.prep_time_minutes ? `${recipe.prep_time_minutes} min de préparation` : ''}
+                  {recipe.prep_time_minutes && recipe.total_time_minutes ? ' • ' : ''}
+                  {recipe.total_time_minutes ? `${recipe.total_time_minutes} min au total` : ''}
+                </Text>
+              )}
+            </View>
+
+            <View style={styles.column}>
+              <Text style={styles.columnHeader}>■ Étapes</Text>
+              {steps.map((step, i) => (
+                <View key={i} style={styles.stepRow}>
+                  <Text style={styles.stepNumber}>{i + 1}.</Text>
+                  <Text style={styles.stepText}>{step}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {servingSuggestions && (
+            <View style={styles.servingBox}>
+              <Text style={styles.servingLabel}>■ Idées pour la déguster</Text>
+              <Text style={styles.servingText}>{servingSuggestions}</Text>
+            </View>
+          )}
+
+          {(ctaTitle || ctaSubtitle) && (
+            <View style={styles.ctaBanner}>
+              {ctaTitle && <Text style={styles.ctaTitle}>{ctaTitle}</Text>}
+              {ctaSubtitle && <Text style={styles.ctaSubtitle}>{ctaSubtitle}</Text>}
+            </View>
+          )}
+        </View>
+
+        <Link
+          src={SITE_URL}
+          style={[styles.invisibleLink, { top: '96%', left: '20%', width: '60%', height: '3.5%' }]}
+        >
+          <Text> </Text>
+        </Link>
+      </Page>
+    </Document>
+  )
+}
