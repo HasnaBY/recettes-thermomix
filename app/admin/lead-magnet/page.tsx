@@ -3,17 +3,36 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-type Recipe = { id: string; title: string; image_url: string | null }
+type Recipe = {
+  id: string
+  title: string
+  image_url: string | null
+  description: string | null
+  ingredients: string[] | null
+  prep_time_minutes: number | null
+  total_time_minutes: number | null
+}
 
 export default function AdminLeadMagnet() {
-  const [recipes, setRecipes] = useState<Recipe[]>([])
+  const [recipes, setRecipes] = useState<{ id: string; title: string }[]>([])
   const [selectedRecipeId, setSelectedRecipeId] = useState('')
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
+
   const [pageTitle, setPageTitle] = useState('')
   const [pageSubtitle, setPageSubtitle] = useState('')
   const [buttonLabel, setButtonLabel] = useState('')
+
+  const [pdfSubtitle, setPdfSubtitle] = useState('')
+  const [pdfIntro, setPdfIntro] = useState('')
+  const [servingSuggestions, setServingSuggestions] = useState('')
+  const [ctaTitle, setCtaTitle] = useState('')
+  const [ctaSubtitle, setCtaSubtitle] = useState('')
+
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [generatingPdf, setGeneratingPdf] = useState(false)
+  const [generatingTexts, setGeneratingTexts] = useState(false)
+  const [aiWriterEnabled, setAiWriterEnabled] = useState(false)
   const [message, setMessage] = useState('')
   const supabase = createClient()
 
@@ -21,7 +40,7 @@ export default function AdminLeadMagnet() {
     const load = async () => {
       const { data: recipesData } = await supabase
         .from('recipes')
-        .select('id, title, image_url')
+        .select('id, title')
         .eq('status', 'published')
         .order('title')
       setRecipes(recipesData ?? [])
@@ -32,11 +51,79 @@ export default function AdminLeadMagnet() {
         setPageTitle(settings.page_title ?? '')
         setPageSubtitle(settings.page_subtitle ?? '')
         setButtonLabel(settings.button_label ?? '')
+        setPdfSubtitle(settings.pdf_subtitle ?? '')
+        setPdfIntro(settings.pdf_intro ?? '')
+        setServingSuggestions(settings.pdf_serving_suggestions ?? '')
+        setCtaTitle(settings.pdf_cta_title ?? '')
+        setCtaSubtitle(settings.pdf_cta_subtitle ?? '')
         setPdfUrl(settings.pdf_url ?? null)
       }
+
+      const { data: aiFeatures } = await supabase.from('ai_features').select('recipe_writer_enabled').eq('id', 1).single()
+      setAiWriterEnabled(!!aiFeatures?.recipe_writer_enabled)
     }
     load()
   }, [])
+
+  useEffect(() => {
+    if (!selectedRecipeId) {
+      setSelectedRecipe(null)
+      return
+    }
+    supabase
+      .from('recipes')
+      .select('id, title, image_url, description, ingredients, prep_time_minutes, total_time_minutes')
+      .eq('id', selectedRecipeId)
+      .single()
+      .then(({ data }) => setSelectedRecipe(data as any))
+  }, [selectedRecipeId])
+
+  const handleGenerateTexts = async () => {
+    if (!selectedRecipe) {
+      setMessage("Choisis d'abord une recette.")
+      return
+    }
+    setGeneratingTexts(true)
+    setMessage('')
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      const response = await fetch('/api/generate-lead-magnet-texts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({
+          recipeTitle: selectedRecipe.title,
+          recipeDescription: selectedRecipe.description,
+          ingredients: selectedRecipe.ingredients,
+          prepTime: selectedRecipe.prep_time_minutes,
+          totalTime: selectedRecipe.total_time_minutes,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setMessage(data.error ?? 'Erreur lors de la génération')
+      } else {
+        setPageTitle(data.page_title ?? pageTitle)
+        setPageSubtitle(data.page_subtitle ?? pageSubtitle)
+        setButtonLabel(data.button_label ?? buttonLabel)
+        setPdfSubtitle(data.pdf_subtitle ?? pdfSubtitle)
+        setPdfIntro(data.pdf_intro ?? pdfIntro)
+        setServingSuggestions(data.pdf_serving_suggestions ?? servingSuggestions)
+        setCtaTitle(data.pdf_cta_title ?? ctaTitle)
+        setCtaSubtitle(data.pdf_cta_subtitle ?? ctaSubtitle)
+        setMessage('Textes générés — vérifie et ajuste-les avant d\'enregistrer.')
+      }
+    } catch (err: any) {
+      setMessage('Erreur : ' + err.message)
+    } finally {
+      setGeneratingTexts(false)
+    }
+  }
 
   const handleSaveTexts = async () => {
     setSaving(true)
@@ -48,10 +135,15 @@ export default function AdminLeadMagnet() {
         page_title: pageTitle,
         page_subtitle: pageSubtitle,
         button_label: buttonLabel,
+        pdf_subtitle: pdfSubtitle,
+        pdf_intro: pdfIntro,
+        pdf_serving_suggestions: servingSuggestions,
+        pdf_cta_title: ctaTitle,
+        pdf_cta_subtitle: ctaSubtitle,
       })
       .eq('id', 1)
     setSaving(false)
-    setMessage(error ? error.message : 'Textes enregistrés — pense à régénérer le PDF si tu as changé de recette.')
+    setMessage(error ? error.message : 'Textes enregistrés — pense à régénérer le PDF pour appliquer les changements.')
   }
 
   const handleGeneratePdf = async () => {
@@ -82,7 +174,15 @@ export default function AdminLeadMagnet() {
       const { default: LeadMagnetPdfDocument } = await import('@/lib/pdf/LeadMagnetPdfDocument')
 
       const blob = await pdf(
-        <LeadMagnetPdfDocument recipe={recipe} backgroundImage={bg?.image_url ?? null} />
+        <LeadMagnetPdfDocument
+          recipe={recipe}
+          backgroundImage={bg?.image_url ?? null}
+          pdfSubtitle={pdfSubtitle}
+          pdfIntro={pdfIntro}
+          servingSuggestions={servingSuggestions}
+          ctaTitle={ctaTitle}
+          ctaSubtitle={ctaSubtitle}
+        />
       ).toBlob()
 
       const fileName = `lead-magnet-${Date.now()}.pdf`
@@ -115,23 +215,34 @@ export default function AdminLeadMagnet() {
         Cette page est accessible à l'adresse <strong>/recette-gratuite</strong> — c'est le lien à partager sur tes réseaux sociaux.
       </p>
 
-      <div className="flex flex-col gap-4 mb-8">
-        <div>
-          <label className="block mb-1 text-sm text-gray-600">Recette offerte</label>
-          <select
-            value={selectedRecipeId}
-            onChange={(e) => setSelectedRecipeId(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-          >
-            <option value="">Choisir une recette</option>
-            {recipes.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.title}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div className="mb-6">
+        <label className="block mb-1 text-sm text-gray-600">Recette offerte</label>
+        <select
+          value={selectedRecipeId}
+          onChange={(e) => setSelectedRecipeId(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+        >
+          <option value="">Choisir une recette</option>
+          {recipes.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.title}
+            </option>
+          ))}
+        </select>
+      </div>
 
+      {aiWriterEnabled && (
+        <button
+          onClick={handleGenerateTexts}
+          disabled={generatingTexts || !selectedRecipeId}
+          className="w-full mb-8 py-2.5 border border-[#C9A44C] text-[#3A3532] rounded-lg font-medium disabled:opacity-50 bg-[#F6DEE1]/20"
+        >
+          {generatingTexts ? 'Génération en cours...' : '✨ Générer tous les textes avec l\'IA'}
+        </button>
+      )}
+
+      <h2 className="text-lg font-semibold text-gray-900 mb-3">Page web</h2>
+      <div className="flex flex-col gap-4 mb-8">
         <div>
           <label className="block mb-1 text-sm text-gray-600">Titre de la page</label>
           <input
@@ -159,6 +270,55 @@ export default function AdminLeadMagnet() {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg"
           />
         </div>
+      </div>
+
+      <h2 className="text-lg font-semibold text-gray-900 mb-3">Contenu du PDF</h2>
+      <div className="flex flex-col gap-4 mb-4">
+        <div>
+          <label className="block mb-1 text-sm text-gray-600">Phrase accrocheuse</label>
+          <input
+            value={pdfSubtitle}
+            onChange={(e) => setPdfSubtitle(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1 text-sm text-gray-600">Phrase d'intro</label>
+          <input
+            value={pdfIntro}
+            onChange={(e) => setPdfIntro(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1 text-sm text-gray-600">Idées de dégustation (séparées par des •)</label>
+          <input
+            placeholder="Brioche • Crêpes • Fraises"
+            value={servingSuggestions}
+            onChange={(e) => setServingSuggestions(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1 text-sm text-gray-600">Titre du bandeau final</label>
+          <input
+            value={ctaTitle}
+            onChange={(e) => setCtaTitle(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1 text-sm text-gray-600">Sous-texte du bandeau final</label>
+          <input
+            value={ctaSubtitle}
+            onChange={(e) => setCtaSubtitle(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+          />
+        </div>
 
         <button
           onClick={handleSaveTexts}
@@ -172,7 +332,7 @@ export default function AdminLeadMagnet() {
       <div className="border-t border-gray-200 pt-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-2">PDF envoyé aux prospects</h2>
         <p className="text-gray-500 text-sm mb-4">
-          Génère le PDF une fois — il sera ensuite envoyé tel quel à chaque nouvelle demande, sans regénération. Régénère-le uniquement si tu changes de recette ou de fond.
+          Génère le PDF une fois — il sera ensuite envoyé tel quel à chaque nouvelle demande. Régénère-le si tu changes la recette ou les textes ci-dessus.
         </p>
 
         {pdfUrl ? (
@@ -181,7 +341,7 @@ export default function AdminLeadMagnet() {
           </a>
         ) : (
           <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-            Aucun PDF n'est encore généré — la page /recette-gratuite ne fonctionnera pas tant que tu n'as pas cliqué sur le bouton ci-dessous.
+            Aucun PDF n'est encore généré.
           </p>
         )}
 
@@ -196,13 +356,15 @@ export default function AdminLeadMagnet() {
 
       {message && <p className="text-sm text-gray-700 mt-4">{message}</p>}
 
-      <p className="text-xs text-gray-400 mt-6">
-        Pense aussi à ajouter un fond décoratif pour le PDF dans{' '}
-        <a href="/admin/brand-photos" className="underline">
-          Photos de marque
-        </a>
-        , sous "Fond décoratif du PDF recette offerte", avant de générer.
-      </p>
+      {!aiWriterEnabled && (
+        <p className="text-xs text-gray-400 mt-4">
+          💡 Active "Assistant rédaction" dans{' '}
+          <a href="/admin/ai-settings" className="underline">
+            les réglages IA
+          </a>{' '}
+          pour pouvoir générer ces textes automatiquement.
+        </p>
+      )}
     </div>
   )
 }
