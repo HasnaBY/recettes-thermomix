@@ -9,35 +9,35 @@ const styles = StyleSheet.create({
   page: { backgroundColor: '#FDFBF6', flexDirection: 'column' },
   background: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
 
-  headerSpacer: { height: 140 },
+  headerSpacer: { height: 130 },
 
-  content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 45, paddingBottom: 65 },
+  content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 42, paddingBottom: 60 },
 
-  title: { fontSize: 22, fontWeight: 700, color: DARK_GREEN, textAlign: 'center', marginBottom: 6, lineHeight: 1.25 },
-  subtitle: { fontSize: 11.5, fontStyle: 'italic', color: CORAL, textAlign: 'center', marginBottom: 5 },
-  intro: { fontSize: 10, color: '#3A3532', opacity: 0.8, textAlign: 'center', marginBottom: 18 },
+  title: { fontSize: 18, fontWeight: 700, color: DARK_GREEN, textAlign: 'center', marginBottom: 5, lineHeight: 1.2 },
+  subtitle: { fontSize: 10, fontStyle: 'italic', color: CORAL, textAlign: 'center', marginBottom: 4 },
+  intro: { fontSize: 8.5, color: '#3A3532', opacity: 0.8, textAlign: 'center', marginBottom: 12 },
 
-  photo: { width: '52%', height: 145, borderRadius: 10, alignSelf: 'center', marginBottom: 14, objectFit: 'cover' },
+  photo: { width: '44%', height: 105, borderRadius: 9, alignSelf: 'center', marginBottom: 10, objectFit: 'cover' },
 
-  description: { fontSize: 10, color: '#3A3532', textAlign: 'center', lineHeight: 1.5, marginBottom: 22, paddingHorizontal: 30 },
+  description: { fontSize: 8.5, color: '#3A3532', textAlign: 'center', lineHeight: 1.4, marginBottom: 14, paddingHorizontal: 26 },
 
-  columnsRow: { flexDirection: 'row', gap: 30, marginBottom: 18 },
+  columnsRow: { flexDirection: 'row', gap: 24, marginBottom: 12 },
   column: { flex: 1 },
-  columnHeader: { fontSize: 12.5, fontWeight: 700, color: DARK_GREEN, marginBottom: 9, borderBottomWidth: 1.5, borderBottomColor: DARK_GREEN, paddingBottom: 5 },
-  ingredientLine: { fontSize: 9.5, color: '#3A3532', marginBottom: 6, lineHeight: 1.4 },
-  stepRow: { flexDirection: 'row', marginBottom: 7 },
-  stepNumber: { fontSize: 9.5, fontWeight: 700, color: CORAL, width: 16 },
-  stepText: { fontSize: 9.5, color: '#3A3532', flex: 1, lineHeight: 1.4 },
+  columnHeader: { fontSize: 10.5, fontWeight: 700, color: DARK_GREEN, marginBottom: 7, borderBottomWidth: 1.3, borderBottomColor: DARK_GREEN, paddingBottom: 4 },
+  ingredientLine: { fontSize: 8, color: '#3A3532', marginBottom: 4.5, lineHeight: 1.3 },
+  stepRow: { flexDirection: 'row', marginBottom: 5 },
+  stepNumber: { fontSize: 8, fontWeight: 700, color: CORAL, width: 14 },
+  stepText: { fontSize: 8, color: '#3A3532', flex: 1, lineHeight: 1.3 },
 
-  metaRow: { fontSize: 8.5, fontWeight: 700, color: DARK_GREEN, marginTop: 8 },
+  metaRow: { fontSize: 7.5, fontWeight: 700, color: DARK_GREEN, marginTop: 6 },
 
-  servingBox: { backgroundColor: '#F6DEE1', borderRadius: 9, padding: 12, marginBottom: 18 },
-  servingLabel: { fontSize: 9.5, fontWeight: 700, color: '#3A3532', marginBottom: 3 },
-  servingText: { fontSize: 9, color: '#3A3532' },
+  servingBox: { backgroundColor: '#F6DEE1', borderRadius: 8, padding: 9, marginBottom: 12 },
+  servingLabel: { fontSize: 8.5, fontWeight: 700, color: '#3A3532', marginBottom: 2 },
+  servingText: { fontSize: 8, color: '#3A3532' },
 
-  ctaBanner: { backgroundColor: DARK_GREEN, borderRadius: 10, padding: 14, alignItems: 'center' },
-  ctaTitle: { fontSize: 10.5, fontWeight: 700, color: '#FDFBF6', textAlign: 'center', marginBottom: 3 },
-  ctaSubtitle: { fontSize: 9, color: '#FDFBF6', textAlign: 'center', opacity: 0.9 },
+  ctaBanner: { backgroundColor: DARK_GREEN, borderRadius: 9, padding: 11, alignItems: 'center' },
+  ctaTitle: { fontSize: 9.5, fontWeight: 700, color: '#FDFBF6', textAlign: 'center', marginBottom: 2 },
+  ctaSubtitle: { fontSize: 8, color: '#FDFBF6', textAlign: 'center', opacity: 0.9 },
 
   invisibleLink: { position: 'absolute', border: 'none' },
 })
