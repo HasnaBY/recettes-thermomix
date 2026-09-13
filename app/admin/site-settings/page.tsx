@@ -19,6 +19,7 @@ export default function AdminSiteSettings() {
   const supabase = createClient()
   const [menuPdfTagline, setMenuPdfTagline] = useState('')
   const [clientMenuPdfEnabled, setClientMenuPdfEnabled] = useState(true)
+  const [newRecipesWindowDays, setNewRecipesWindowDays] = useState('7')
 
   useEffect(() => {
     supabase
@@ -39,6 +40,7 @@ export default function AdminSiteSettings() {
           setMenuGenerationLimit((data.menu_generation_limit ?? 3).toString())
           setMenuPdfTagline(data.menu_pdf_tagline ?? 'Idées gourmandes pour simplifier le quotidien')
           setClientMenuPdfEnabled(data.client_menu_pdf_enabled ?? true)
+          setNewRecipesWindowDays((data.new_recipes_window_days ?? 7).toString())
         }
         setLoading(false)
       })
@@ -72,6 +74,17 @@ export default function AdminSiteSettings() {
       .eq('id', 1)
     setSaving(false)
     setMessage(error ? error.message : 'Réseaux sociaux enregistrés')
+  }
+
+  const handleSaveNewRecipesWindow = async () => {
+    setSaving(true)
+    setMessage('')
+    const { error } = await supabase
+      .from('site_settings')
+      .update({ new_recipes_window_days: parseInt(newRecipesWindowDays) || 7 })
+      .eq('id', 1)
+    setSaving(false)
+    setMessage(error ? error.message : 'Période enregistrée')
   }
 
   const handleSaveMenuLimit = async () => {
@@ -165,6 +178,27 @@ export default function AdminSiteSettings() {
       </div>
       <p className="text-xs text-gray-400 -mt-8 mb-10">
         Nombre maximum de générations de menu par cliente (les comptes admin ne sont pas limités).
+      </p>
+
+      <h2 className="text-lg font-semibold text-gray-900 mb-3 mt-10">Nouvelles recettes (bannière à la connexion)</h2>
+      <div className="flex gap-2 mb-4">
+        <input
+          type="number"
+          min="1"
+          value={newRecipesWindowDays}
+          onChange={(e) => setNewRecipesWindowDays(e.target.value)}
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+        />
+        <button
+          onClick={handleSaveNewRecipesWindow}
+          disabled={saving}
+          className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+        >
+          Enregistrer
+        </button>
+      </div>
+      <p className="text-xs text-gray-400 -mt-2 mb-10">
+        Nombre de jours utilisé pour calculer "X nouvelles recettes" affiché aux clientes à la connexion (7 par défaut).
       </p>
 
       <h2 className="text-lg font-semibold text-gray-900 mb-3">Réseaux sociaux</h2>

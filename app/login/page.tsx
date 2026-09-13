@@ -16,7 +16,7 @@ export default function Login() {
   const redirectAfterLogin = async (userId: string) => {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('is_admin, last_login_at')
+      .select('is_admin')
       .eq('id', userId)
       .single()
 
@@ -25,21 +25,26 @@ export default function Login() {
       return
     }
 
-    const previousLogin = profile?.last_login_at
+    const { data: settings } = await supabase
+      .from('site_settings')
+      .select('new_recipes_window_days')
+      .eq('id', 1)
+      .single()
 
-    let newRecipesCount = 0
-    if (previousLogin) {
-      const { count } = await supabase
-        .from('recipes')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'published')
-        .gt('created_at', previousLogin)
-      newRecipesCount = count ?? 0
-    }
+    const windowDays = settings?.new_recipes_window_days ?? 7
 
-    await supabase.from('profiles').update({ last_login_at: new Date().toISOString() }).eq('id', userId)
+    const sinceDate = new Date()
+    sinceDate.setDate(sinceDate.getDate() - windowDays)
 
-    window.location.href = `/recettes${newRecipesCount > 0 ? `?newRecipes=${newRecipesCount}` : ''}`
+    const { count } = await supabase
+      .from('recipes')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'published')
+      .gt('created_at', sinceDate.toISOString())
+
+    const newRecipesCount = count ?? 0
+
+    window.location.href = `/recettes${newRecipesCount > 0 ? `?newRecipes=${newRecipesCount}&days=${windowDays}` : ''}`
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
