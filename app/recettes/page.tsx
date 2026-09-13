@@ -751,11 +751,11 @@ function RecettesContent() {
       )}
     </div>
   )
+}
   export default function Recettes() {
   return (
     <Suspense fallback={<div className="p-8 text-center text-[#3A3532]/60">Chargement...</div>}>
       <RecettesContent />
     </Suspense>
   )
-}
 }
