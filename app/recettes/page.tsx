@@ -7,6 +7,7 @@ import imageCompression from 'browser-image-compression'
 import TagSelect from '@/components/TagSelect'
 import { useSearchParams } from 'next/navigation'
 import { logActivity } from '@/lib/logActivity'
+import { Suspense } from 'react'
 
 type Recipe = {
   id: string
@@ -24,7 +25,7 @@ type Recipe = {
 
 type AddMode = 'manual' | 'import' | 'creator'
 
-export default function Recettes() {
+function RecettesContent() {
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -750,4 +751,11 @@ export default function Recettes() {
       )}
     </div>
   )
+  export default function Recettes() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-[#3A3532]/60">Chargement...</div>}>
+      <RecettesContent />
+    </Suspense>
+  )
+}
 }
