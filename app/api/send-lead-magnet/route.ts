@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    await getResend().emails.send({
+    const result = await getResend().emails.send({
       from: 'With Love, Hasna <onboarding@resend.dev>',
       to: email,
       subject: `Ta recette offerte : ${recipeTitle} — Thermomix With Love, Hasna`,
@@ -61,10 +61,22 @@ export async function POST(request: NextRequest) {
         </div>
       `,
     })
+
+    // Resend renvoie parfois un succès HTTP tout en signalant une erreur dans le corps de la réponse.
+    if (result.error) {
+      console.error('[send-lead-magnet] Erreur Resend:', result.error)
+      return NextResponse.json(
+        { error: `Ton contact a bien été enregistré, mais l'envoi de l'email a échoué : ${result.error.message}` },
+        { status: 500 }
+      )
+    }
+
+    console.log('[send-lead-magnet] Email envoyé avec succès, id:', result.data?.id)
   } catch (err: any) {
+    console.error('[send-lead-magnet] Exception lors de l\'envoi:', err)
     return NextResponse.json(
-      { error: "Ton contact a bien été enregistré, mais l'envoi de l'email a rencontré un souci. Hasna te recontactera directement." },
-      { status: 200 }
+      { error: "Ton contact a bien été enregistré, mais l'envoi de l'email a rencontré un souci technique." },
+      { status: 500 }
     )
   }
 
