@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
   `
 
   await getResend().emails.send({
-    from: 'With Love, Hasna <onboarding@resend.dev>',
+    from: 'With Love, Hasna <contact@withlovehasna.com>',
     to: record.email,
     subject: 'Ton compte est validé — Thermomix With Love, Hasna',
     html,

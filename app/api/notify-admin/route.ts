@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       : ''
 
   await getResend().emails.send({
-    from: 'onboarding@resend.dev',
+    from: 'With Love, Hasna <contact@withlovehasna.com>',
     to: process.env.ADMIN_EMAIL!,
     subject: `${config.subject}${subjectSuffix} — Thermomix With Love`,
     text: `${config.subject}\n\n${detail}\n\nVoir : ${siteUrl}${config.adminPath}`,

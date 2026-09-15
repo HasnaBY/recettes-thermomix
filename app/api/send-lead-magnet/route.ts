@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = await getResend().emails.send({
-      from: 'With Love, Hasna <onboarding@resend.dev>',
+      from: 'With Love, Hasna <contact@withlovehasna.com>',
       to: email,
       subject: `Ta recette offerte : ${recipeTitle} — Thermomix With Love, Hasna`,
       html: `
